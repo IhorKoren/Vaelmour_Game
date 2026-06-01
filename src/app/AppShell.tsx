@@ -60,17 +60,40 @@ export default function AppShell() {
     return true; // Prevent immediate notification on new game / first cold start
   });
 
-  // Track hero health transitions to trigger Telegram notifications securely
-  useEffect(() => {
-    const derived = calculateDerivedStats(hero.stats, hero.baseHp, undefined, hero);
-    if (hero.currentHp < derived.maxHp) {
-      // Health dropped below 100% - reset notification flag
-      setFullHealthNotificationSent(false);
-    } else if (hero.currentHp >= derived.maxHp && !fullHealthNotificationSent) {
-      setFullHealthNotificationSent(true);
-      void sendFullHealthNotification();
-    }
-  }, [hero.currentHp, hero.maxHp, fullHealthNotificationSent]);
+  // Track hero health transitions to trigger Telegram notifications only when player is away
+useEffect(() => {
+  const derived = calculateDerivedStats(hero.stats, hero.baseHp, undefined, hero);
+
+  const isFullHp = hero.currentHp >= derived.maxHp;
+  const isBelowFullHp = hero.currentHp < derived.maxHp;
+
+  if (isBelowFullHp) {
+    setFullHealthNotificationSent(false);
+    return;
+  }
+
+  if (!isFullHp || fullHealthNotificationSent) {
+    return;
+  }
+
+  setFullHealthNotificationSent(true);
+
+  const telegramWebApp = window.Telegram?.WebApp as { isActive?: boolean } | undefined;
+
+  const playerIsAway =
+    document.hidden ||
+    document.visibilityState === 'hidden' ||
+    !document.hasFocus() ||
+    telegramWebApp?.isActive === false;
+
+  if (!playerIsAway) {
+    console.info('[Telegram Notifications] Full HP reached, but player is active. Notification skipped.');
+    return;
+  }
+
+  console.info('[Telegram Notifications] Full HP reached while player is away. Sending notification.');
+  void sendFullHealthNotification();
+}, [hero.currentHp, hero.maxHp, fullHealthNotificationSent]);
 
   useEffect(() => {
     const preloadNonCriticalTabs = () => {
