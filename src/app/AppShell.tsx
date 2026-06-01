@@ -64,8 +64,8 @@ export default function AppShell() {
 useEffect(() => {
   const derived = calculateDerivedStats(hero.stats, hero.baseHp, undefined, hero);
 
-  const isFullHp = hero.currentHp >= derived.maxHp;
   const isBelowFullHp = hero.currentHp < derived.maxHp;
+  const isFullHp = hero.currentHp >= derived.maxHp;
 
   if (isBelowFullHp) {
     setFullHealthNotificationSent(false);
@@ -78,7 +78,15 @@ useEffect(() => {
 
   setFullHealthNotificationSent(true);
 
-  const telegramWebApp = window.Telegram?.WebApp as { isActive?: boolean } | undefined;
+  const telegramWebApp = (
+    window as Window & {
+      Telegram?: {
+        WebApp?: {
+          isActive?: boolean;
+        };
+      };
+    }
+  ).Telegram?.WebApp;
 
   const playerIsAway =
     document.hidden ||
@@ -94,20 +102,6 @@ useEffect(() => {
   console.info('[Telegram Notifications] Full HP reached while player is away. Sending notification.');
   void sendFullHealthNotification();
 }, [hero.currentHp, hero.maxHp, fullHealthNotificationSent]);
-
-  useEffect(() => {
-    const preloadNonCriticalTabs = () => {
-      void import('../features/character/CharacterScreen');
-      void import('../features/inventory/InventoryScreen');
-      void import('../features/quests/QuestsScreen');
-      void import('../features/map/MapScreen');
-      void import('../features/shop/ShopScreen');
-    };
-
-    const idleCallback = window.setTimeout(preloadNonCriticalTabs, 1200);
-    return () => window.clearTimeout(idleCallback);
-  }, []);
-
   useEffect(() => {
     const flushOnBackground = () => {
       if (document.hidden) {
