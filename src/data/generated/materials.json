@@ -1,0 +1,554 @@
+[
+  {
+    "id": "MAT_001",
+    "sourceSheet": "LC Mats",
+    "name": "Torn Cloth",
+    "tierRaw": "I",
+    "tier": 1,
+    "rarity": "common",
+    "category": "Fabric",
+    "levelBand": "1–6",
+    "levelRange": [
+      1,
+      -6
+    ],
+    "primaryUsage": "Starter light armor, wraps",
+    "stackSize": 99,
+    "sellValueGold": 1,
+    "source": "Basic material from humanoids and scavenged camps.",
+    "tags": [
+      "fabric",
+      "common"
+    ],
+    "notes": "Basic material from humanoids and scavenged camps."
+  },
+  {
+    "id": "MAT_002",
+    "sourceSheet": "LC Mats",
+    "name": "Cracked Leather",
+    "tierRaw": "I",
+    "tier": 1,
+    "rarity": "common",
+    "category": "Leather",
+    "levelBand": "1–6",
+    "levelRange": [
+      1,
+      -6
+    ],
+    "primaryUsage": "Skirmisher armor, straps",
+    "stackSize": 99,
+    "sellValueGold": 2,
+    "source": "Dropped by wolves and raiders.",
+    "tags": [
+      "leather",
+      "common"
+    ],
+    "notes": "Dropped by wolves and raiders."
+  },
+  {
+    "id": "MAT_003",
+    "sourceSheet": "LC Mats",
+    "name": "Bent Iron Scrap",
+    "tierRaw": "I",
+    "tier": 1,
+    "rarity": "common",
+    "category": "Metal",
+    "levelBand": "1–6",
+    "levelRange": [
+      1,
+      -6
+    ],
+    "primaryUsage": "Basic weapons, reinforced vests",
+    "stackSize": 99,
+    "sellValueGold": 3,
+    "source": "Low-tier metal material.",
+    "tags": [
+      "metal",
+      "common"
+    ],
+    "notes": "Low-tier metal material."
+  },
+  {
+    "id": "MAT_004",
+    "sourceSheet": "LC Mats",
+    "name": "Wolf Fang",
+    "tierRaw": "I",
+    "tier": 1,
+    "rarity": "uncommon",
+    "category": "Beast",
+    "levelBand": "3–8",
+    "levelRange": [
+      3,
+      -8
+    ],
+    "primaryUsage": "Bleed weapons, talismans",
+    "stackSize": 50,
+    "sellValueGold": 8,
+    "source": "Used in bleed-oriented recipes.",
+    "tags": [
+      "beast",
+      "uncommon"
+    ],
+    "notes": "Used in bleed-oriented recipes."
+  },
+  {
+    "id": "MAT_005",
+    "sourceSheet": "LC Mats",
+    "name": "Raider Emblem",
+    "tierRaw": "I",
+    "tier": 1,
+    "rarity": "uncommon",
+    "category": "Humanoid Token",
+    "levelBand": "5–10",
+    "levelRange": [
+      5,
+      -10
+    ],
+    "primaryUsage": "Rage gear, axe recipes",
+    "stackSize": 50,
+    "sellValueGold": 9,
+    "source": "Proof from raider enemies.",
+    "tags": [
+      "humanoid_token",
+      "uncommon"
+    ],
+    "notes": "Proof from raider enemies."
+  },
+  {
+    "id": "MAT_006",
+    "sourceSheet": "LC Mats",
+    "name": "Blackfang Pelt",
+    "tierRaw": "II",
+    "tier": 2,
+    "rarity": "rare",
+    "category": "Beast",
+    "levelBand": "5–12",
+    "levelRange": [
+      5,
+      -12
+    ],
+    "primaryUsage": "Rare skirmisher armor",
+    "stackSize": 25,
+    "sellValueGold": 25,
+    "source": "Rare drop from Blackfang enemies.",
+    "tags": [
+      "beast",
+      "rare"
+    ],
+    "notes": "Rare drop from Blackfang enemies."
+  },
+  {
+    "id": "MAT_007",
+    "sourceSheet": "LC Mats",
+    "name": "Iron Rivets",
+    "tierRaw": "II",
+    "tier": 2,
+    "rarity": "common",
+    "category": "Metal",
+    "levelBand": "7–12",
+    "levelRange": [
+      7,
+      -12
+    ],
+    "primaryUsage": "Medium/heavy armor",
+    "stackSize": 99,
+    "sellValueGold": 5,
+    "source": "Used for mail and brigandine.",
+    "tags": [
+      "metal",
+      "common"
+    ],
+    "notes": "Used for mail and brigandine."
+  },
+  {
+    "id": "MAT_008",
+    "sourceSheet": "LC Mats",
+    "name": "Chain Links",
+    "tierRaw": "II",
+    "tier": 2,
+    "rarity": "common",
+    "category": "Metal",
+    "levelBand": "7–14",
+    "levelRange": [
+      7,
+      -14
+    ],
+    "primaryUsage": "Fighter mail",
+    "stackSize": 99,
+    "sellValueGold": 6,
+    "source": "Core mail armor component.",
+    "tags": [
+      "metal",
+      "common"
+    ],
+    "notes": "Core mail armor component."
+  },
+  {
+    "id": "MAT_009",
+    "sourceSheet": "LC Mats",
+    "name": "Guard Insignia",
+    "tierRaw": "II",
+    "tier": 2,
+    "rarity": "uncommon",
+    "category": "Humanoid Token",
+    "levelBand": "7–14",
+    "levelRange": [
+      7,
+      -14
+    ],
+    "primaryUsage": "Block/poise items",
+    "stackSize": 50,
+    "sellValueGold": 12,
+    "source": "Dropped by Iron Legion enemies.",
+    "tags": [
+      "humanoid_token",
+      "uncommon"
+    ],
+    "notes": "Dropped by Iron Legion enemies."
+  },
+  {
+    "id": "MAT_010",
+    "sourceSheet": "LC Mats",
+    "name": "Ash Resin",
+    "tierRaw": "II",
+    "tier": 2,
+    "rarity": "uncommon",
+    "category": "Alchemy",
+    "levelBand": "11–16",
+    "levelRange": [
+      11,
+      -16
+    ],
+    "primaryUsage": "Bleed resistance, talismans",
+    "stackSize": 50,
+    "sellValueGold": 13,
+    "source": "Gathered from Ashen Marsh enemies and nodes.",
+    "tags": [
+      "alchemy",
+      "uncommon"
+    ],
+    "notes": "Gathered from Ashen Marsh enemies and nodes."
+  },
+  {
+    "id": "MAT_011",
+    "sourceSheet": "LC Mats",
+    "name": "Blood Ash",
+    "tierRaw": "III",
+    "tier": 3,
+    "rarity": "rare",
+    "category": "Alchemy",
+    "levelBand": "11–18",
+    "levelRange": [
+      11,
+      -18
+    ],
+    "primaryUsage": "Rare bleed talismans",
+    "stackSize": 25,
+    "sellValueGold": 30,
+    "source": "Rare cult material.",
+    "tags": [
+      "alchemy",
+      "rare"
+    ],
+    "notes": "Rare cult material."
+  },
+  {
+    "id": "MAT_012",
+    "sourceSheet": "LC Mats",
+    "name": "Mercenary Mark",
+    "tierRaw": "III",
+    "tier": 3,
+    "rarity": "uncommon",
+    "category": "Humanoid Token",
+    "levelBand": "13–20",
+    "levelRange": [
+      13,
+      -20
+    ],
+    "primaryUsage": "Fighter weapons, rings",
+    "stackSize": 50,
+    "sellValueGold": 16,
+    "source": "Used in balanced fighter recipes.",
+    "tags": [
+      "humanoid_token",
+      "uncommon"
+    ],
+    "notes": "Used in balanced fighter recipes."
+  },
+  {
+    "id": "MAT_013",
+    "sourceSheet": "LC Mats",
+    "name": "Tempered Iron Bar",
+    "tierRaw": "III",
+    "tier": 3,
+    "rarity": "common",
+    "category": "Metal",
+    "levelBand": "13–20",
+    "levelRange": [
+      13,
+      -20
+    ],
+    "primaryUsage": "Tier III weapons/armor",
+    "stackSize": 99,
+    "sellValueGold": 10,
+    "source": "Refined from scrap and rivets.",
+    "tags": [
+      "metal",
+      "common"
+    ],
+    "notes": "Refined from scrap and rivets."
+  },
+  {
+    "id": "MAT_014",
+    "sourceSheet": "LC Mats",
+    "name": "Executioner's Hook",
+    "tierRaw": "III",
+    "tier": 3,
+    "rarity": "rare",
+    "category": "Brute Token",
+    "levelBand": "15–22",
+    "levelRange": [
+      15,
+      -22
+    ],
+    "primaryUsage": "Execute gear and heavy weapons",
+    "stackSize": 25,
+    "sellValueGold": 35,
+    "source": "Rare drop from executioner enemies.",
+    "tags": [
+      "brute_token",
+      "rare"
+    ],
+    "notes": "Rare drop from executioner enemies."
+  },
+  {
+    "id": "MAT_015",
+    "sourceSheet": "LC Mats",
+    "name": "Raven Feather",
+    "tierRaw": "IV",
+    "tier": 4,
+    "rarity": "uncommon",
+    "category": "Beast",
+    "levelBand": "17–24",
+    "levelRange": [
+      17,
+      -24
+    ],
+    "primaryUsage": "Crit gear and skirmisher items",
+    "stackSize": 50,
+    "sellValueGold": 18,
+    "source": "From Raven Hollow enemies.",
+    "tags": [
+      "beast",
+      "uncommon"
+    ],
+    "notes": "From Raven Hollow enemies."
+  },
+  {
+    "id": "MAT_016",
+    "sourceSheet": "LC Mats",
+    "name": "Legion Steel Plate",
+    "tierRaw": "IV",
+    "tier": 4,
+    "rarity": "uncommon",
+    "category": "Metal",
+    "levelBand": "19–26",
+    "levelRange": [
+      19,
+      -26
+    ],
+    "primaryUsage": "Vanguard armor",
+    "stackSize": 50,
+    "sellValueGold": 20,
+    "source": "Iron Bastion material.",
+    "tags": [
+      "metal",
+      "uncommon"
+    ],
+    "notes": "Iron Bastion material."
+  },
+  {
+    "id": "MAT_017",
+    "sourceSheet": "LC Mats",
+    "name": "Ash Sigil Fragment",
+    "tierRaw": "IV",
+    "tier": 4,
+    "rarity": "rare",
+    "category": "Key Fragment",
+    "levelBand": "21–28",
+    "levelRange": [
+      21,
+      -28
+    ],
+    "primaryUsage": "Ash sanctuary recipes and boss keys",
+    "stackSize": 25,
+    "sellValueGold": 45,
+    "source": "Progression material.",
+    "tags": [
+      "key_fragment",
+      "rare"
+    ],
+    "notes": "Progression material."
+  },
+  {
+    "id": "MAT_018",
+    "sourceSheet": "LC Mats",
+    "name": "Arena Medal",
+    "tierRaw": "IV",
+    "tier": 4,
+    "rarity": "rare",
+    "category": "Humanoid Token",
+    "levelBand": "23–28",
+    "levelRange": [
+      23,
+      -28
+    ],
+    "primaryUsage": "Counter gear, duelist recipes",
+    "stackSize": 25,
+    "sellValueGold": 45,
+    "source": "Arena-related rare material.",
+    "tags": [
+      "humanoid_token",
+      "rare"
+    ],
+    "notes": "Arena-related rare material."
+  },
+  {
+    "id": "MAT_019",
+    "sourceSheet": "LC Mats",
+    "name": "Crimson Ore",
+    "tierRaw": "V",
+    "tier": 5,
+    "rarity": "uncommon",
+    "category": "Ore",
+    "levelBand": "25–30",
+    "levelRange": [
+      25,
+      -30
+    ],
+    "primaryUsage": "Heavy weapons and high-tier armor",
+    "stackSize": 50,
+    "sellValueGold": 25,
+    "source": "Quarry material.",
+    "tags": [
+      "ore",
+      "uncommon"
+    ],
+    "notes": "Quarry material."
+  },
+  {
+    "id": "MAT_020",
+    "sourceSheet": "LC Mats",
+    "name": "Vaelor Ash Core",
+    "tierRaw": "V",
+    "tier": 5,
+    "rarity": "epic",
+    "category": "Boss Core",
+    "levelBand": "27–30",
+    "levelRange": [
+      27,
+      -30
+    ],
+    "primaryUsage": "Epic recipes and key crafts",
+    "stackSize": 10,
+    "sellValueGold": 120,
+    "source": "Late arc epic material.",
+    "tags": [
+      "boss_core",
+      "epic"
+    ],
+    "notes": "Late arc epic material."
+  },
+  {
+    "id": "MAT_021",
+    "sourceSheet": "LC Mats",
+    "name": "Fine Leather Thread",
+    "tierRaw": "II",
+    "tier": 2,
+    "rarity": "common",
+    "category": "Refined",
+    "levelBand": "7–30",
+    "levelRange": [
+      7,
+      -30
+    ],
+    "primaryUsage": "Refined armor component",
+    "stackSize": 99,
+    "sellValueGold": 7,
+    "source": "Crafted/refined from leather and cloth.",
+    "tags": [
+      "refined",
+      "common"
+    ],
+    "notes": "Crafted/refined from leather and cloth."
+  },
+  {
+    "id": "MAT_022",
+    "sourceSheet": "LC Mats",
+    "name": "Polished Weapon Grip",
+    "tierRaw": "III",
+    "tier": 3,
+    "rarity": "common",
+    "category": "Refined",
+    "levelBand": "13–30",
+    "levelRange": [
+      13,
+      -30
+    ],
+    "primaryUsage": "Weapons",
+    "stackSize": 99,
+    "sellValueGold": 12,
+    "source": "Generic weapon component.",
+    "tags": [
+      "refined",
+      "common"
+    ],
+    "notes": "Generic weapon component."
+  },
+  {
+    "id": "MAT_023",
+    "sourceSheet": "LC Mats",
+    "name": "Rage-Etched Shard",
+    "tierRaw": "III",
+    "tier": 3,
+    "rarity": "rare",
+    "category": "Essence",
+    "levelBand": "15–30",
+    "levelRange": [
+      15,
+      -30
+    ],
+    "primaryUsage": "Rage-based items",
+    "stackSize": 25,
+    "sellValueGold": 40,
+    "source": "Rare essence from elites.",
+    "tags": [
+      "essence",
+      "rare"
+    ],
+    "notes": "Rare essence from elites."
+  },
+  {
+    "id": "MAT_024",
+    "sourceSheet": "LC Mats",
+    "name": "Staggered Bone Plate",
+    "tierRaw": "IV",
+    "tier": 4,
+    "rarity": "rare",
+    "category": "Bone",
+    "levelBand": "19–30",
+    "levelRange": [
+      19,
+      -30
+    ],
+    "primaryUsage": "Poise/stagger recipes",
+    "stackSize": 25,
+    "sellValueGold": 42,
+    "source": "From brutes and elite defenders.",
+    "tags": [
+      "bone",
+      "rare"
+    ],
+    "notes": "From brutes and elite defenders."
+  }
+]

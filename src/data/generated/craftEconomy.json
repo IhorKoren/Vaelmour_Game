@@ -1,0 +1,52 @@
+[
+  {
+    "tier": "I",
+    "level_range": "1–6",
+    "typical_gold_cost": "15–140",
+    "common_material_need": "2–7",
+    "uncommon_material_need": "0–4",
+    "rare_material_need": "0–1",
+    "expected_farm_time": "8–18 min",
+    "design_purpose": "Teach crafting without flooding inventory."
+  },
+  {
+    "tier": "II",
+    "level_range": "7–12",
+    "typical_gold_cost": "90–230",
+    "common_material_need": "5–10",
+    "uncommon_material_need": "2–5",
+    "rare_material_need": "0–1",
+    "expected_farm_time": "20–40 min",
+    "design_purpose": "Start meaningful farming choices."
+  },
+  {
+    "tier": "III",
+    "level_range": "13–18",
+    "typical_gold_cost": "180–420",
+    "common_material_need": "7–13",
+    "uncommon_material_need": "3–7",
+    "rare_material_need": "1–2",
+    "expected_farm_time": "35–60 min",
+    "design_purpose": "Build identity becomes important."
+  },
+  {
+    "tier": "IV",
+    "level_range": "19–24",
+    "typical_gold_cost": "320–720",
+    "common_material_need": "8–15",
+    "uncommon_material_need": "4–9",
+    "rare_material_need": "1–4",
+    "expected_farm_time": "55–90 min",
+    "design_purpose": "Rare recipes and elite hunting matter."
+  },
+  {
+    "tier": "V",
+    "level_range": "25–30",
+    "typical_gold_cost": "560–1400",
+    "common_material_need": "10–18",
+    "uncommon_material_need": "6–12",
+    "rare_material_need": "3–7",
+    "expected_farm_time": "90–150 min",
+    "design_purpose": "End of first arc; supports long-term gear goals."
+  }
+]

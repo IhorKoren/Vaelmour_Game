@@ -1,0 +1,366 @@
+[
+  {
+    "id": "REC_AMULET_NEW_001",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Wolf Fang Charm",
+    "result": "amulet_001_wolf_fang_charm",
+    "itemType": "Amulet",
+    "requiredLevel": 2,
+    "tierRaw": "I",
+    "tier": 1,
+    "rarity": "common",
+    "unlockMethod": "Auto-known",
+    "recipeSource": "Crafting trainer",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_004",
+        "qty": 3
+      },
+      {
+        "id": "MAT_002",
+        "qty": 2
+      }
+    ],
+    "goldCost": 35,
+    "successChance": 1,
+    "outputEffect": "Starter bleed charm."
+  },
+  {
+    "id": "REC_AMULET_NEW_002",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Road Saint Pendant",
+    "result": "amulet_002_road_saint_pendant",
+    "itemType": "Amulet",
+    "requiredLevel": 4,
+    "tierRaw": "I",
+    "tier": 1,
+    "rarity": "common",
+    "unlockMethod": "Auto-known",
+    "recipeSource": "Crafting trainer",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_004",
+        "qty": 2
+      },
+      {
+        "id": "MAT_002",
+        "qty": 2
+      }
+    ],
+    "goldCost": 55,
+    "successChance": 1,
+    "outputEffect": "Early sustain amulet."
+  },
+  {
+    "id": "REC_AMULET_NEW_003",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Iron Sigil",
+    "result": "amulet_003_iron_sigil",
+    "itemType": "Amulet",
+    "requiredLevel": 6,
+    "tierRaw": "I",
+    "tier": 1,
+    "rarity": "uncommon",
+    "unlockMethod": "Blackfang Forest progress",
+    "recipeSource": "Blackfang Forest",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_004",
+        "qty": 3
+      },
+      {
+        "id": "MAT_002",
+        "qty": 2
+      }
+    ],
+    "goldCost": 85,
+    "successChance": 1,
+    "outputEffect": "Anti-stagger talisman."
+  },
+  {
+    "id": "REC_AMULET_NEW_004",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Ash-Touched Charm",
+    "result": "amulet_004_ash_touched_charm",
+    "itemType": "Amulet",
+    "requiredLevel": 8,
+    "tierRaw": "II",
+    "tier": 2,
+    "rarity": "uncommon",
+    "unlockMethod": "Old Watchtower progress",
+    "recipeSource": "Old Watchtower",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_010",
+        "qty": 4
+      },
+      {
+        "id": "MAT_008",
+        "qty": 2
+      }
+    ],
+    "goldCost": 175,
+    "successChance": 1,
+    "outputEffect": "Bleed resistance/recovery charm."
+  },
+  {
+    "id": "REC_AMULET_NEW_005",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Blood Priest's Charm",
+    "result": "amulet_005_blood_priest_s_charm",
+    "itemType": "Amulet",
+    "requiredLevel": 11,
+    "tierRaw": "II",
+    "tier": 2,
+    "rarity": "uncommon",
+    "unlockMethod": "Zone progress / enemy drop",
+    "recipeSource": "Iron Gate Warden",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_010",
+        "qty": 5
+      },
+      {
+        "id": "MAT_008",
+        "qty": 3
+      }
+    ],
+    "goldCost": 210,
+    "successChance": 1,
+    "outputEffect": "Blood ash damage charm. Renamed to avoid dagger-slot ambiguity."
+  },
+  {
+    "id": "REC_AMULET_NEW_006",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Mercenary Luck Talisman",
+    "result": "amulet_006_mercenary_luck_talisman",
+    "itemType": "Amulet",
+    "requiredLevel": 14,
+    "tierRaw": "III",
+    "tier": 3,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "Ash Disciple / Ash Blood Priest",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_023",
+        "qty": 4
+      },
+      {
+        "id": "MAT_013",
+        "qty": 3
+      },
+      {
+        "id": "MAT_012",
+        "qty": 2
+      },
+      {
+        "id": "MAT_011",
+        "qty": 1
+      }
+    ],
+    "goldCost": 425,
+    "successChance": 1,
+    "outputEffect": "Balanced combat amulet."
+  },
+  {
+    "id": "REC_AMULET_NEW_007",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Executioner's Mark",
+    "result": "amulet_007_executioner_s_mark",
+    "itemType": "Amulet",
+    "requiredLevel": 17,
+    "tierRaw": "III",
+    "tier": 3,
+    "rarity": "uncommon",
+    "unlockMethod": "Zone progress / enemy drop",
+    "recipeSource": "Veteran Sellblade / Crossroad Duelist",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_023",
+        "qty": 5
+      },
+      {
+        "id": "MAT_013",
+        "qty": 4
+      },
+      {
+        "id": "MAT_012",
+        "qty": 2
+      }
+    ],
+    "goldCost": 360,
+    "successChance": 1,
+    "outputEffect": "Execute-themed amulet."
+  },
+  {
+    "id": "REC_AMULET_NEW_008",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Ravenfeather Talisman",
+    "result": "amulet_008_ravenfeather_talisman",
+    "itemType": "Amulet",
+    "requiredLevel": 20,
+    "tierRaw": "IV",
+    "tier": 4,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "Executioner / Headsman Veteran",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_017",
+        "qty": 6
+      },
+      {
+        "id": "MAT_016",
+        "qty": 5
+      },
+      {
+        "id": "MAT_023",
+        "qty": 1
+      }
+    ],
+    "goldCost": 705,
+    "successChance": 1,
+    "outputEffect": "Agile crit/dodge amulet."
+  },
+  {
+    "id": "REC_AMULET_NEW_009",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Zealot's Ash Charm",
+    "result": "amulet_009_zealot_s_ash_charm",
+    "itemType": "Amulet",
+    "requiredLevel": 23,
+    "tierRaw": "IV",
+    "tier": 4,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "Raven Fang Stalker / Elite Spawn",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_017",
+        "qty": 8
+      },
+      {
+        "id": "MAT_016",
+        "qty": 3
+      },
+      {
+        "id": "MAT_023",
+        "qty": 2
+      }
+    ],
+    "goldCost": 745,
+    "successChance": 1,
+    "outputEffect": "High-tier ash damage charm."
+  },
+  {
+    "id": "REC_AMULET_NEW_010",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Breaker Sigil",
+    "result": "amulet_010_breaker_sigil",
+    "itemType": "Amulet",
+    "requiredLevel": 26,
+    "tierRaw": "V",
+    "tier": 5,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "War Brute / Ironbound Breaker",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_023",
+        "qty": 7
+      },
+      {
+        "id": "MAT_019",
+        "qty": 6
+      },
+      {
+        "id": "MAT_024",
+        "qty": 4
+      }
+    ],
+    "goldCost": 1080,
+    "successChance": 1,
+    "outputEffect": "Stagger/poise defensive amulet."
+  },
+  {
+    "id": "REC_AMULET_NEW_011",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Three Ash Sigils Pendant",
+    "result": "amulet_011_three_ash_sigils_pendant",
+    "itemType": "Amulet",
+    "requiredLevel": 28,
+    "tierRaw": "V",
+    "tier": 5,
+    "rarity": "epic",
+    "unlockMethod": "Boss / elite milestone recipe",
+    "recipeSource": "Arena Duelist / Arena Champion Spawn",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_023",
+        "qty": 11
+      },
+      {
+        "id": "MAT_019",
+        "qty": 7
+      },
+      {
+        "id": "MAT_024",
+        "qty": 5
+      },
+      {
+        "id": "MAT_020",
+        "qty": 3
+      }
+    ],
+    "goldCost": 1540,
+    "successChance": 1,
+    "outputEffect": "Epic pre-boss talisman, not the key item."
+  },
+  {
+    "id": "REC_AMULET_NEW_012",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Vaelor Core Amulet",
+    "result": "amulet_012_vaelor_core_amulet",
+    "itemType": "Amulet",
+    "requiredLevel": 30,
+    "tierRaw": "V",
+    "tier": 5,
+    "rarity": "epic",
+    "unlockMethod": "Boss / elite milestone recipe",
+    "recipeSource": "Ash Lord Vaelor / Elite Spawn",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_023",
+        "qty": 7
+      },
+      {
+        "id": "MAT_019",
+        "qty": 5
+      },
+      {
+        "id": "MAT_024",
+        "qty": 3
+      },
+      {
+        "id": "MAT_020",
+        "qty": 1
+      }
+    ],
+    "goldCost": 1580,
+    "successChance": 1,
+    "outputEffect": "End-arc epic amulet."
+  }
+]

@@ -1,0 +1,298 @@
+[
+  {
+    "material_id": "MAT_001",
+    "source_location": "Broken Road Outskirts",
+    "source_enemy_method": "Road Thug / Broken Shield Guard",
+    "source_type": "Enemy Drop",
+    "drop_obtain_chance": "45",
+    "notes": "Best early cloth source."
+  },
+  {
+    "material_id": "MAT_001",
+    "source_location": "Raider Camp",
+    "source_enemy_method": "Wild Raider / Blood Raider",
+    "source_type": "Enemy Drop",
+    "drop_obtain_chance": "30",
+    "notes": "Secondary humanoid source."
+  },
+  {
+    "material_id": "MAT_002",
+    "source_location": "Broken Road Outskirts",
+    "source_enemy_method": "Young Wolf / Starved Stalker",
+    "source_type": "Enemy Drop",
+    "drop_obtain_chance": "38",
+    "notes": "Early leather source."
+  },
+  {
+    "material_id": "MAT_002",
+    "source_location": "Blackfang Forest",
+    "source_enemy_method": "Young Wolf / Fang Stalker",
+    "source_type": "Enemy Drop",
+    "drop_obtain_chance": "42",
+    "notes": "Best leather source tier I."
+  },
+  {
+    "material_id": "MAT_003",
+    "source_location": "Broken Road Outskirts",
+    "source_enemy_method": "Broken Shield Guard",
+    "source_type": "Enemy Drop",
+    "drop_obtain_chance": "35",
+    "notes": "Starter metal."
+  },
+  {
+    "material_id": "MAT_003",
+    "source_location": "Old Watchtower",
+    "source_enemy_method": "Iron Guard",
+    "source_type": "Enemy Drop",
+    "drop_obtain_chance": "28",
+    "notes": "Backup source."
+  },
+  {
+    "material_id": "MAT_004",
+    "source_location": "Blackfang Forest",
+    "source_enemy_method": "Fang Stalker",
+    "source_type": "Enemy Drop",
+    "drop_obtain_chance": "18",
+    "notes": "Common bleed component."
+  },
+  {
+    "material_id": "MAT_004",
+    "source_location": "Raven Hollow",
+    "source_enemy_method": "Raven Fang Stalker",
+    "source_type": "Enemy Drop",
+    "drop_obtain_chance": "22",
+    "notes": "Better later source."
+  },
+  {
+    "material_id": "MAT_005",
+    "source_location": "Raider Camp",
+    "source_enemy_method": "Wild Raider / Blood Raider",
+    "source_type": "Enemy Drop",
+    "drop_obtain_chance": "22",
+    "notes": "Rage gear material."
+  },
+  {
+    "material_id": "MAT_005",
+    "source_location": "Execution Grounds",
+    "source_enemy_method": "Blood Raider",
+    "source_type": "Enemy Drop",
+    "drop_obtain_chance": "18",
+    "notes": "Later source."
+  },
+  {
+    "material_id": "MAT_006",
+    "source_location": "Blackfang Forest",
+    "source_enemy_method": "Blackfang Alpha Spawn",
+    "source_type": "Rare Enemy Drop",
+    "drop_obtain_chance": "7",
+    "notes": "Rare pelt."
+  },
+  {
+    "material_id": "MAT_006",
+    "source_location": "Raven Hollow",
+    "source_enemy_method": "Blackfang Alpha Spawn",
+    "source_type": "Rare Enemy Drop",
+    "drop_obtain_chance": "9",
+    "notes": "Better chance later."
+  },
+  {
+    "material_id": "MAT_007",
+    "source_location": "Old Watchtower",
+    "source_enemy_method": "Iron Guard / Shield Veteran",
+    "source_type": "Enemy Drop",
+    "drop_obtain_chance": "34",
+    "notes": "Rivets for armor."
+  },
+  {
+    "material_id": "MAT_008",
+    "source_location": "Old Watchtower",
+    "source_enemy_method": "Shield Veteran",
+    "source_type": "Enemy Drop",
+    "drop_obtain_chance": "28",
+    "notes": "Mail crafting."
+  },
+  {
+    "material_id": "MAT_008",
+    "source_location": "Mercenary Crossroads",
+    "source_enemy_method": "Mercenary Swordsman",
+    "source_type": "Enemy Drop",
+    "drop_obtain_chance": "20",
+    "notes": "Alternative source."
+  },
+  {
+    "material_id": "MAT_009",
+    "source_location": "Old Watchtower",
+    "source_enemy_method": "Tower Shield Veteran",
+    "source_type": "Rare Enemy Drop",
+    "drop_obtain_chance": "10",
+    "notes": "Defender token."
+  },
+  {
+    "material_id": "MAT_009",
+    "source_location": "Iron Bastion Approach",
+    "source_enemy_method": "Iron Guard / Legion Protector",
+    "source_type": "Enemy Drop",
+    "drop_obtain_chance": "18",
+    "notes": "Reliable source."
+  },
+  {
+    "material_id": "MAT_010",
+    "source_location": "Ashen Marsh",
+    "source_enemy_method": "Ash Disciple / Blood Priest",
+    "source_type": "Enemy Drop",
+    "drop_obtain_chance": "24",
+    "notes": "Ash material."
+  },
+  {
+    "material_id": "MAT_011",
+    "source_location": "Ashen Marsh",
+    "source_enemy_method": "Ash Blood Priest",
+    "source_type": "Rare Enemy Drop",
+    "drop_obtain_chance": "8",
+    "notes": "Rare bleed material."
+  },
+  {
+    "material_id": "MAT_011",
+    "source_location": "Ash Cult Sanctuary",
+    "source_enemy_method": "Ash-Cursed Champion",
+    "source_type": "Rare Enemy Drop",
+    "drop_obtain_chance": "12",
+    "notes": "Better source."
+  },
+  {
+    "material_id": "MAT_012",
+    "source_location": "Mercenary Crossroads",
+    "source_enemy_method": "Crossroad Duelist / Veteran Sellblade",
+    "source_type": "Enemy Drop",
+    "drop_obtain_chance": "20",
+    "notes": "Fighter recipes."
+  },
+  {
+    "material_id": "MAT_013",
+    "source_location": "Mercenary Crossroads",
+    "source_enemy_method": "All humanoids",
+    "source_type": "Enemy Drop",
+    "drop_obtain_chance": "28",
+    "notes": "Tier III general metal."
+  },
+  {
+    "material_id": "MAT_013",
+    "source_location": "Iron Bastion Inner Yard",
+    "source_enemy_method": "Legion Protector",
+    "source_type": "Enemy Drop",
+    "drop_obtain_chance": "32",
+    "notes": "Better source."
+  },
+  {
+    "material_id": "MAT_014",
+    "source_location": "Execution Grounds",
+    "source_enemy_method": "Headsman Veteran",
+    "source_type": "Rare Enemy Drop",
+    "drop_obtain_chance": "8",
+    "notes": "Execute material."
+  },
+  {
+    "material_id": "MAT_014",
+    "source_location": "Crimson Quarry",
+    "source_enemy_method": "War Brute",
+    "source_type": "Enemy Drop",
+    "drop_obtain_chance": "12",
+    "notes": "Better late source."
+  },
+  {
+    "material_id": "MAT_015",
+    "source_location": "Raven Hollow",
+    "source_enemy_method": "Raven Fang Stalker",
+    "source_type": "Enemy Drop",
+    "drop_obtain_chance": "18",
+    "notes": "Crit/skirmisher source."
+  },
+  {
+    "material_id": "MAT_016",
+    "source_location": "Iron Bastion Inner Yard",
+    "source_enemy_method": "Legion Protector / Iron Tyrant Guard",
+    "source_type": "Enemy Drop",
+    "drop_obtain_chance": "18",
+    "notes": "Vanguard material."
+  },
+  {
+    "material_id": "MAT_017",
+    "source_location": "Ash Cult Sanctuary",
+    "source_enemy_method": "Ash Fang Zealot / Ash-Cursed Champion",
+    "source_type": "Rare Enemy Drop",
+    "drop_obtain_chance": "8",
+    "notes": "Key/progression material."
+  },
+  {
+    "material_id": "MAT_017",
+    "source_location": "Vaelor's Threshold",
+    "source_enemy_method": "Ash Fang Zealot",
+    "source_type": "Enemy Drop",
+    "drop_obtain_chance": "12",
+    "notes": "End arc source."
+  },
+  {
+    "material_id": "MAT_018",
+    "source_location": "Warbound Arena Ruins",
+    "source_enemy_method": "Arena Duelist / Arena Champion Spawn",
+    "source_type": "Rare Enemy Drop",
+    "drop_obtain_chance": "9",
+    "notes": "Duelist recipes."
+  },
+  {
+    "material_id": "MAT_019",
+    "source_location": "Crimson Quarry",
+    "source_enemy_method": "Pit Crusher / War Brute",
+    "source_type": "Enemy Drop",
+    "drop_obtain_chance": "24",
+    "notes": "Tier V heavy crafting."
+  },
+  {
+    "material_id": "MAT_019",
+    "source_location": "Vaelor's Threshold",
+    "source_enemy_method": "War Brute",
+    "source_type": "Enemy Drop",
+    "drop_obtain_chance": "18",
+    "notes": "Backup source."
+  },
+  {
+    "material_id": "MAT_020",
+    "source_location": "Vaelor's Threshold",
+    "source_enemy_method": "Elite Spawn / Ash Lord Vaelor",
+    "source_type": "Boss/Elite Drop",
+    "drop_obtain_chance": "3",
+    "notes": "Epic boss core."
+  },
+  {
+    "material_id": "MAT_021",
+    "source_location": "Crafting",
+    "source_enemy_method": "Refine 2 Torn Cloth + 2 Cracked Leather",
+    "source_type": "Refined Craft",
+    "drop_obtain_chance": "100",
+    "notes": "Used in many armor recipes."
+  },
+  {
+    "material_id": "MAT_022",
+    "source_location": "Crafting",
+    "source_enemy_method": "Refine 2 Bent Iron Scrap + 1 Torn Cloth",
+    "source_type": "Refined Craft",
+    "drop_obtain_chance": "100",
+    "notes": "Used in weapons."
+  },
+  {
+    "material_id": "MAT_023",
+    "source_location": "Any level 15+ Elite",
+    "source_enemy_method": "Elite Enemy",
+    "source_type": "Elite Drop",
+    "drop_obtain_chance": "6",
+    "notes": "Rage essence."
+  },
+  {
+    "material_id": "MAT_024",
+    "source_location": "Execution Grounds / Crimson Quarry",
+    "source_enemy_method": "Brute enemies / Elite defenders",
+    "source_type": "Enemy Drop",
+    "drop_obtain_chance": "9",
+    "notes": "Stagger/poise component."
+  }
+]

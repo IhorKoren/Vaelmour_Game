@@ -1,0 +1,2108 @@
+[
+  {
+    "id": "MAT_001",
+    "name": "Torn Cloth",
+    "category": "material",
+    "rarity": "common",
+    "tier": 1,
+    "description": "Basic material from humanoids and scavenged camps.",
+    "sourceSheet": "LC Mats"
+  },
+  {
+    "id": "MAT_002",
+    "name": "Cracked Leather",
+    "category": "material",
+    "rarity": "common",
+    "tier": 1,
+    "description": "Dropped by wolves and raiders.",
+    "sourceSheet": "LC Mats"
+  },
+  {
+    "id": "MAT_003",
+    "name": "Bent Iron Scrap",
+    "category": "material",
+    "rarity": "common",
+    "tier": 1,
+    "description": "Low-tier metal material.",
+    "sourceSheet": "LC Mats"
+  },
+  {
+    "id": "MAT_004",
+    "name": "Wolf Fang",
+    "category": "material",
+    "rarity": "uncommon",
+    "tier": 1,
+    "description": "Used in bleed-oriented recipes.",
+    "sourceSheet": "LC Mats"
+  },
+  {
+    "id": "MAT_005",
+    "name": "Raider Emblem",
+    "category": "material",
+    "rarity": "uncommon",
+    "tier": 1,
+    "description": "Proof from raider enemies.",
+    "sourceSheet": "LC Mats"
+  },
+  {
+    "id": "MAT_006",
+    "name": "Blackfang Pelt",
+    "category": "material",
+    "rarity": "rare",
+    "tier": 2,
+    "description": "Rare drop from Blackfang enemies.",
+    "sourceSheet": "LC Mats"
+  },
+  {
+    "id": "MAT_007",
+    "name": "Iron Rivets",
+    "category": "material",
+    "rarity": "common",
+    "tier": 2,
+    "description": "Used for mail and brigandine.",
+    "sourceSheet": "LC Mats"
+  },
+  {
+    "id": "MAT_008",
+    "name": "Chain Links",
+    "category": "material",
+    "rarity": "common",
+    "tier": 2,
+    "description": "Core mail armor component.",
+    "sourceSheet": "LC Mats"
+  },
+  {
+    "id": "MAT_009",
+    "name": "Guard Insignia",
+    "category": "material",
+    "rarity": "uncommon",
+    "tier": 2,
+    "description": "Dropped by Iron Legion enemies.",
+    "sourceSheet": "LC Mats"
+  },
+  {
+    "id": "MAT_010",
+    "name": "Ash Resin",
+    "category": "material",
+    "rarity": "uncommon",
+    "tier": 2,
+    "description": "Gathered from Ashen Marsh enemies and nodes.",
+    "sourceSheet": "LC Mats"
+  },
+  {
+    "id": "MAT_011",
+    "name": "Blood Ash",
+    "category": "material",
+    "rarity": "rare",
+    "tier": 3,
+    "description": "Rare cult material.",
+    "sourceSheet": "LC Mats"
+  },
+  {
+    "id": "MAT_012",
+    "name": "Mercenary Mark",
+    "category": "material",
+    "rarity": "uncommon",
+    "tier": 3,
+    "description": "Used in balanced fighter recipes.",
+    "sourceSheet": "LC Mats"
+  },
+  {
+    "id": "MAT_013",
+    "name": "Tempered Iron Bar",
+    "category": "material",
+    "rarity": "common",
+    "tier": 3,
+    "description": "Refined from scrap and rivets.",
+    "sourceSheet": "LC Mats"
+  },
+  {
+    "id": "MAT_014",
+    "name": "Executioner's Hook",
+    "category": "material",
+    "rarity": "rare",
+    "tier": 3,
+    "description": "Rare drop from executioner enemies.",
+    "sourceSheet": "LC Mats"
+  },
+  {
+    "id": "MAT_015",
+    "name": "Raven Feather",
+    "category": "material",
+    "rarity": "uncommon",
+    "tier": 4,
+    "description": "From Raven Hollow enemies.",
+    "sourceSheet": "LC Mats"
+  },
+  {
+    "id": "MAT_016",
+    "name": "Legion Steel Plate",
+    "category": "material",
+    "rarity": "uncommon",
+    "tier": 4,
+    "description": "Iron Bastion material.",
+    "sourceSheet": "LC Mats"
+  },
+  {
+    "id": "MAT_017",
+    "name": "Ash Sigil Fragment",
+    "category": "material",
+    "rarity": "rare",
+    "tier": 4,
+    "description": "Progression material.",
+    "sourceSheet": "LC Mats"
+  },
+  {
+    "id": "MAT_018",
+    "name": "Arena Medal",
+    "category": "material",
+    "rarity": "rare",
+    "tier": 4,
+    "description": "Arena-related rare material.",
+    "sourceSheet": "LC Mats"
+  },
+  {
+    "id": "MAT_019",
+    "name": "Crimson Ore",
+    "category": "material",
+    "rarity": "uncommon",
+    "tier": 5,
+    "description": "Quarry material.",
+    "sourceSheet": "LC Mats"
+  },
+  {
+    "id": "MAT_020",
+    "name": "Vaelor Ash Core",
+    "category": "material",
+    "rarity": "epic",
+    "tier": 5,
+    "description": "Late arc epic material.",
+    "sourceSheet": "LC Mats"
+  },
+  {
+    "id": "MAT_021",
+    "name": "Fine Leather Thread",
+    "category": "material",
+    "rarity": "common",
+    "tier": 2,
+    "description": "Crafted/refined from leather and cloth.",
+    "sourceSheet": "LC Mats"
+  },
+  {
+    "id": "MAT_022",
+    "name": "Polished Weapon Grip",
+    "category": "material",
+    "rarity": "common",
+    "tier": 3,
+    "description": "Generic weapon component.",
+    "sourceSheet": "LC Mats"
+  },
+  {
+    "id": "MAT_023",
+    "name": "Rage-Etched Shard",
+    "category": "material",
+    "rarity": "rare",
+    "tier": 3,
+    "description": "Rare essence from elites.",
+    "sourceSheet": "LC Mats"
+  },
+  {
+    "id": "MAT_024",
+    "name": "Staggered Bone Plate",
+    "category": "material",
+    "rarity": "rare",
+    "tier": 4,
+    "description": "From brutes and elite defenders.",
+    "sourceSheet": "LC Mats"
+  },
+  {
+    "id": "weapon_01_axe_hatchet_tier_1_001",
+    "name": "Hatchet Tier 1",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 1,
+    "description": "Balance Patch 1.0: Axe tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_01_sword_longsword_tier_1_002",
+    "name": "Longsword Tier 1",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 1,
+    "description": "Balance Patch 1.0: Sword tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_01_hammer_warhammer_tier_1_003",
+    "name": "Warhammer Tier 1",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 1,
+    "description": "Balance Patch 1.0: Hammer tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_02_axe_hatchet_tier_1_004",
+    "name": "Hatchet Tier 1",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 1,
+    "description": "Balance Patch 1.0: Axe tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_02_sword_longsword_tier_1_005",
+    "name": "Longsword Tier 1",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 1,
+    "description": "Balance Patch 1.0: Sword tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_02_hammer_warhammer_tier_1_006",
+    "name": "Warhammer Tier 1",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 1,
+    "description": "Balance Patch 1.0: Hammer tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_03_axe_hatchet_tier_2_007",
+    "name": "Hatchet Tier 2",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 2,
+    "description": "Balance Patch 1.0: Axe tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_03_sword_longsword_tier_2_008",
+    "name": "Longsword Tier 2",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 2,
+    "description": "Balance Patch 1.0: Sword tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_03_hammer_warhammer_tier_2_009",
+    "name": "Warhammer Tier 2",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 2,
+    "description": "Balance Patch 1.0: Hammer tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_04_axe_hatchet_tier_2_010",
+    "name": "Hatchet Tier 2",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 2,
+    "description": "Balance Patch 1.0: Axe tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_04_sword_longsword_tier_2_011",
+    "name": "Longsword Tier 2",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 2,
+    "description": "Balance Patch 1.0: Sword tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_04_hammer_warhammer_tier_2_012",
+    "name": "Warhammer Tier 2",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 2,
+    "description": "Balance Patch 1.0: Hammer tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_05_axe_hatchet_tier_3_013",
+    "name": "Hatchet Tier 3",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 3,
+    "description": "Balance Patch 1.0: Axe tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_05_sword_longsword_tier_3_014",
+    "name": "Longsword Tier 3",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 3,
+    "description": "Balance Patch 1.0: Sword tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_05_hammer_warhammer_tier_3_015",
+    "name": "Warhammer Tier 3",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 3,
+    "description": "Balance Patch 1.0: Hammer tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_06_axe_hatchet_tier_3_016",
+    "name": "Hatchet Tier 3",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 3,
+    "description": "Balance Patch 1.0: Axe tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_06_sword_longsword_tier_3_017",
+    "name": "Longsword Tier 3",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 3,
+    "description": "Balance Patch 1.0: Sword tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_06_hammer_warhammer_tier_3_018",
+    "name": "Warhammer Tier 3",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 3,
+    "description": "Balance Patch 1.0: Hammer tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_07_axe_hatchet_tier_4_019",
+    "name": "Hatchet Tier 4",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 4,
+    "description": "Balance Patch 1.0: Axe tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_07_sword_longsword_tier_4_020",
+    "name": "Longsword Tier 4",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 4,
+    "description": "Balance Patch 1.0: Sword tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_07_hammer_warhammer_tier_4_021",
+    "name": "Warhammer Tier 4",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 4,
+    "description": "Balance Patch 1.0: Hammer tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_08_axe_hatchet_tier_4_022",
+    "name": "Hatchet Tier 4",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 4,
+    "description": "Balance Patch 1.0: Axe tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_08_sword_longsword_tier_4_023",
+    "name": "Longsword Tier 4",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 4,
+    "description": "Balance Patch 1.0: Sword tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_08_hammer_warhammer_tier_4_024",
+    "name": "Warhammer Tier 4",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 4,
+    "description": "Balance Patch 1.0: Hammer tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_09_axe_hatchet_tier_5_025",
+    "name": "Hatchet Tier 5",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 5,
+    "description": "Balance Patch 1.0: Axe tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_09_sword_longsword_tier_5_026",
+    "name": "Longsword Tier 5",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 5,
+    "description": "Balance Patch 1.0: Sword tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_09_hammer_warhammer_tier_5_027",
+    "name": "Warhammer Tier 5",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 5,
+    "description": "Balance Patch 1.0: Hammer tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_10_axe_hatchet_tier_5_028",
+    "name": "Hatchet Tier 5",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 5,
+    "description": "Balance Patch 1.0: Axe tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_10_sword_longsword_tier_5_029",
+    "name": "Longsword Tier 5",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 5,
+    "description": "Balance Patch 1.0: Sword tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_10_hammer_warhammer_tier_5_030",
+    "name": "Warhammer Tier 5",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 5,
+    "description": "Balance Patch 1.0: Hammer tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_11_axe_hatchet_tier_6_031",
+    "name": "Hatchet Tier 6",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 6,
+    "description": "Balance Patch 1.0: Axe tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_11_sword_longsword_tier_6_032",
+    "name": "Longsword Tier 6",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 6,
+    "description": "Balance Patch 1.0: Sword tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_11_hammer_warhammer_tier_6_033",
+    "name": "Warhammer Tier 6",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 6,
+    "description": "Balance Patch 1.0: Hammer tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_12_axe_hatchet_tier_6_034",
+    "name": "Hatchet Tier 6",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 6,
+    "description": "Balance Patch 1.0: Axe tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_12_sword_longsword_tier_6_035",
+    "name": "Longsword Tier 6",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 6,
+    "description": "Balance Patch 1.0: Sword tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_12_hammer_warhammer_tier_6_036",
+    "name": "Warhammer Tier 6",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 6,
+    "description": "Balance Patch 1.0: Hammer tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_13_axe_hatchet_tier_7_037",
+    "name": "Hatchet Tier 7",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 7,
+    "description": "Balance Patch 1.0: Axe tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_13_sword_longsword_tier_7_038",
+    "name": "Longsword Tier 7",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 7,
+    "description": "Balance Patch 1.0: Sword tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_13_hammer_warhammer_tier_7_039",
+    "name": "Warhammer Tier 7",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 7,
+    "description": "Balance Patch 1.0: Hammer tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_14_axe_hatchet_tier_7_040",
+    "name": "Hatchet Tier 7",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 7,
+    "description": "Balance Patch 1.0: Axe tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_14_sword_longsword_tier_7_041",
+    "name": "Longsword Tier 7",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 7,
+    "description": "Balance Patch 1.0: Sword tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_14_hammer_warhammer_tier_7_042",
+    "name": "Warhammer Tier 7",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 7,
+    "description": "Balance Patch 1.0: Hammer tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_15_axe_hatchet_tier_8_043",
+    "name": "Hatchet Tier 8",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 8,
+    "description": "Balance Patch 1.0: Axe tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_15_sword_longsword_tier_8_044",
+    "name": "Longsword Tier 8",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 8,
+    "description": "Balance Patch 1.0: Sword tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_15_hammer_warhammer_tier_8_045",
+    "name": "Warhammer Tier 8",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 8,
+    "description": "Balance Patch 1.0: Hammer tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_16_axe_hatchet_tier_8_046",
+    "name": "Hatchet Tier 8",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 8,
+    "description": "Balance Patch 1.0: Axe tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_16_sword_longsword_tier_8_047",
+    "name": "Longsword Tier 8",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 8,
+    "description": "Balance Patch 1.0: Sword tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_16_hammer_warhammer_tier_8_048",
+    "name": "Warhammer Tier 8",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 8,
+    "description": "Balance Patch 1.0: Hammer tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_17_axe_hatchet_tier_9_049",
+    "name": "Hatchet Tier 9",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 9,
+    "description": "Balance Patch 1.0: Axe tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_17_sword_longsword_tier_9_050",
+    "name": "Longsword Tier 9",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 9,
+    "description": "Balance Patch 1.0: Sword tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_17_hammer_warhammer_tier_9_051",
+    "name": "Warhammer Tier 9",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 9,
+    "description": "Balance Patch 1.0: Hammer tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_18_axe_hatchet_tier_9_052",
+    "name": "Hatchet Tier 9",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 9,
+    "description": "Balance Patch 1.0: Axe tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_18_sword_longsword_tier_9_053",
+    "name": "Longsword Tier 9",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 9,
+    "description": "Balance Patch 1.0: Sword tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_18_hammer_warhammer_tier_9_054",
+    "name": "Warhammer Tier 9",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 9,
+    "description": "Balance Patch 1.0: Hammer tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_19_axe_hatchet_tier_10_055",
+    "name": "Hatchet Tier 10",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 10,
+    "description": "Balance Patch 1.0: Axe tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_19_sword_longsword_tier_10_056",
+    "name": "Longsword Tier 10",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 10,
+    "description": "Balance Patch 1.0: Sword tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_19_hammer_warhammer_tier_10_057",
+    "name": "Warhammer Tier 10",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 10,
+    "description": "Balance Patch 1.0: Hammer tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_20_axe_hatchet_tier_10_058",
+    "name": "Hatchet Tier 10",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 10,
+    "description": "Balance Patch 1.0: Axe tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_20_sword_longsword_tier_10_059",
+    "name": "Longsword Tier 10",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 10,
+    "description": "Balance Patch 1.0: Sword tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_20_hammer_warhammer_tier_10_060",
+    "name": "Warhammer Tier 10",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 10,
+    "description": "Balance Patch 1.0: Hammer tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_21_axe_hatchet_tier_11_061",
+    "name": "Hatchet Tier 11",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 11,
+    "description": "Balance Patch 1.0: Axe tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_21_sword_longsword_tier_11_062",
+    "name": "Longsword Tier 11",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 11,
+    "description": "Balance Patch 1.0: Sword tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_21_hammer_warhammer_tier_11_063",
+    "name": "Warhammer Tier 11",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 11,
+    "description": "Balance Patch 1.0: Hammer tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_22_axe_hatchet_tier_11_064",
+    "name": "Hatchet Tier 11",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 11,
+    "description": "Balance Patch 1.0: Axe tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_22_sword_longsword_tier_11_065",
+    "name": "Longsword Tier 11",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 11,
+    "description": "Balance Patch 1.0: Sword tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_22_hammer_warhammer_tier_11_066",
+    "name": "Warhammer Tier 11",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 11,
+    "description": "Balance Patch 1.0: Hammer tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_23_axe_hatchet_tier_12_067",
+    "name": "Hatchet Tier 12",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 12,
+    "description": "Balance Patch 1.0: Axe tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_23_sword_longsword_tier_12_068",
+    "name": "Longsword Tier 12",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 12,
+    "description": "Balance Patch 1.0: Sword tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_23_hammer_warhammer_tier_12_069",
+    "name": "Warhammer Tier 12",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 12,
+    "description": "Balance Patch 1.0: Hammer tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_24_axe_hatchet_tier_12_070",
+    "name": "Hatchet Tier 12",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 12,
+    "description": "Balance Patch 1.0: Axe tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_24_sword_longsword_tier_12_071",
+    "name": "Longsword Tier 12",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 12,
+    "description": "Balance Patch 1.0: Sword tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_24_hammer_warhammer_tier_12_072",
+    "name": "Warhammer Tier 12",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 12,
+    "description": "Balance Patch 1.0: Hammer tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_25_axe_hatchet_tier_13_073",
+    "name": "Hatchet Tier 13",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 13,
+    "description": "Balance Patch 1.0: Axe tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_25_sword_longsword_tier_13_074",
+    "name": "Longsword Tier 13",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 13,
+    "description": "Balance Patch 1.0: Sword tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_25_hammer_warhammer_tier_13_075",
+    "name": "Warhammer Tier 13",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 13,
+    "description": "Balance Patch 1.0: Hammer tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_26_axe_hatchet_tier_13_076",
+    "name": "Hatchet Tier 13",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 13,
+    "description": "Balance Patch 1.0: Axe tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_26_sword_longsword_tier_13_077",
+    "name": "Longsword Tier 13",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 13,
+    "description": "Balance Patch 1.0: Sword tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_26_hammer_warhammer_tier_13_078",
+    "name": "Warhammer Tier 13",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 13,
+    "description": "Balance Patch 1.0: Hammer tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_27_axe_hatchet_tier_14_079",
+    "name": "Hatchet Tier 14",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 14,
+    "description": "Balance Patch 1.0: Axe tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_27_sword_longsword_tier_14_080",
+    "name": "Longsword Tier 14",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 14,
+    "description": "Balance Patch 1.0: Sword tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_27_hammer_warhammer_tier_14_081",
+    "name": "Warhammer Tier 14",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 14,
+    "description": "Balance Patch 1.0: Hammer tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_28_axe_hatchet_tier_14_082",
+    "name": "Hatchet Tier 14",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 14,
+    "description": "Balance Patch 1.0: Axe tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_28_sword_longsword_tier_14_083",
+    "name": "Longsword Tier 14",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 14,
+    "description": "Balance Patch 1.0: Sword tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_28_hammer_warhammer_tier_14_084",
+    "name": "Warhammer Tier 14",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 14,
+    "description": "Balance Patch 1.0: Hammer tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_29_axe_hatchet_tier_15_085",
+    "name": "Hatchet Tier 15",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 15,
+    "description": "Balance Patch 1.0: Axe tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_29_sword_longsword_tier_15_086",
+    "name": "Longsword Tier 15",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 15,
+    "description": "Balance Patch 1.0: Sword tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_29_hammer_warhammer_tier_15_087",
+    "name": "Warhammer Tier 15",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 15,
+    "description": "Balance Patch 1.0: Hammer tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_30_axe_hatchet_tier_15_088",
+    "name": "Hatchet Tier 15",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 15,
+    "description": "Balance Patch 1.0: Axe tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_30_sword_longsword_tier_15_089",
+    "name": "Longsword Tier 15",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 15,
+    "description": "Balance Patch 1.0: Sword tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "weapon_30_hammer_warhammer_tier_15_090",
+    "name": "Warhammer Tier 15",
+    "category": "weapon",
+    "rarity": "common",
+    "tier": 15,
+    "description": "Balance Patch 1.0: Hammer tuned for identity-based DPS, not flat scaling abuse.",
+    "sourceSheet": "LVL Weapons"
+  },
+  {
+    "id": "armor_01_skirmisher_skirmisher_vest_tier_1_001",
+    "name": "Skirmisher Vest Tier 1",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 1,
+    "description": "Balance Patch 1.0: Skirmisher armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_01_fighter_fighter_mail_tier_1_002",
+    "name": "Fighter Mail Tier 1",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 1,
+    "description": "Balance Patch 1.0: Fighter armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_01_vanguard_vanguard_plate_tier_1_003",
+    "name": "Vanguard Plate Tier 1",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 1,
+    "description": "Balance Patch 1.0: Vanguard armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_02_skirmisher_skirmisher_vest_tier_1_004",
+    "name": "Skirmisher Vest Tier 1",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 1,
+    "description": "Balance Patch 1.0: Skirmisher armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_02_fighter_fighter_mail_tier_1_005",
+    "name": "Fighter Mail Tier 1",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 1,
+    "description": "Balance Patch 1.0: Fighter armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_02_vanguard_vanguard_plate_tier_1_006",
+    "name": "Vanguard Plate Tier 1",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 1,
+    "description": "Balance Patch 1.0: Vanguard armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_03_skirmisher_skirmisher_vest_tier_2_007",
+    "name": "Skirmisher Vest Tier 2",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 2,
+    "description": "Balance Patch 1.0: Skirmisher armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_03_fighter_fighter_mail_tier_2_008",
+    "name": "Fighter Mail Tier 2",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 2,
+    "description": "Balance Patch 1.0: Fighter armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_03_vanguard_vanguard_plate_tier_2_009",
+    "name": "Vanguard Plate Tier 2",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 2,
+    "description": "Balance Patch 1.0: Vanguard armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_04_skirmisher_skirmisher_vest_tier_2_010",
+    "name": "Skirmisher Vest Tier 2",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 2,
+    "description": "Balance Patch 1.0: Skirmisher armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_04_fighter_fighter_mail_tier_2_011",
+    "name": "Fighter Mail Tier 2",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 2,
+    "description": "Balance Patch 1.0: Fighter armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_04_vanguard_vanguard_plate_tier_2_012",
+    "name": "Vanguard Plate Tier 2",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 2,
+    "description": "Balance Patch 1.0: Vanguard armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_05_skirmisher_skirmisher_vest_tier_3_013",
+    "name": "Skirmisher Vest Tier 3",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 3,
+    "description": "Balance Patch 1.0: Skirmisher armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_05_fighter_fighter_mail_tier_3_014",
+    "name": "Fighter Mail Tier 3",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 3,
+    "description": "Balance Patch 1.0: Fighter armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_05_vanguard_vanguard_plate_tier_3_015",
+    "name": "Vanguard Plate Tier 3",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 3,
+    "description": "Balance Patch 1.0: Vanguard armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_06_skirmisher_skirmisher_vest_tier_3_016",
+    "name": "Skirmisher Vest Tier 3",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 3,
+    "description": "Balance Patch 1.0: Skirmisher armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_06_fighter_fighter_mail_tier_3_017",
+    "name": "Fighter Mail Tier 3",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 3,
+    "description": "Balance Patch 1.0: Fighter armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_06_vanguard_vanguard_plate_tier_3_018",
+    "name": "Vanguard Plate Tier 3",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 3,
+    "description": "Balance Patch 1.0: Vanguard armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_07_skirmisher_skirmisher_vest_tier_4_019",
+    "name": "Skirmisher Vest Tier 4",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 4,
+    "description": "Balance Patch 1.0: Skirmisher armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_07_fighter_fighter_mail_tier_4_020",
+    "name": "Fighter Mail Tier 4",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 4,
+    "description": "Balance Patch 1.0: Fighter armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_07_vanguard_vanguard_plate_tier_4_021",
+    "name": "Vanguard Plate Tier 4",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 4,
+    "description": "Balance Patch 1.0: Vanguard armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_08_skirmisher_skirmisher_vest_tier_4_022",
+    "name": "Skirmisher Vest Tier 4",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 4,
+    "description": "Balance Patch 1.0: Skirmisher armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_08_fighter_fighter_mail_tier_4_023",
+    "name": "Fighter Mail Tier 4",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 4,
+    "description": "Balance Patch 1.0: Fighter armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_08_vanguard_vanguard_plate_tier_4_024",
+    "name": "Vanguard Plate Tier 4",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 4,
+    "description": "Balance Patch 1.0: Vanguard armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_09_skirmisher_skirmisher_vest_tier_5_025",
+    "name": "Skirmisher Vest Tier 5",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 5,
+    "description": "Balance Patch 1.0: Skirmisher armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_09_fighter_fighter_mail_tier_5_026",
+    "name": "Fighter Mail Tier 5",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 5,
+    "description": "Balance Patch 1.0: Fighter armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_09_vanguard_vanguard_plate_tier_5_027",
+    "name": "Vanguard Plate Tier 5",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 5,
+    "description": "Balance Patch 1.0: Vanguard armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_10_skirmisher_skirmisher_vest_tier_5_028",
+    "name": "Skirmisher Vest Tier 5",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 5,
+    "description": "Balance Patch 1.0: Skirmisher armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_10_fighter_fighter_mail_tier_5_029",
+    "name": "Fighter Mail Tier 5",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 5,
+    "description": "Balance Patch 1.0: Fighter armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_10_vanguard_vanguard_plate_tier_5_030",
+    "name": "Vanguard Plate Tier 5",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 5,
+    "description": "Balance Patch 1.0: Vanguard armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_11_skirmisher_skirmisher_vest_tier_6_031",
+    "name": "Skirmisher Vest Tier 6",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 6,
+    "description": "Balance Patch 1.0: Skirmisher armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_11_fighter_fighter_mail_tier_6_032",
+    "name": "Fighter Mail Tier 6",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 6,
+    "description": "Balance Patch 1.0: Fighter armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_11_vanguard_vanguard_plate_tier_6_033",
+    "name": "Vanguard Plate Tier 6",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 6,
+    "description": "Balance Patch 1.0: Vanguard armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_12_skirmisher_skirmisher_vest_tier_6_034",
+    "name": "Skirmisher Vest Tier 6",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 6,
+    "description": "Balance Patch 1.0: Skirmisher armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_12_fighter_fighter_mail_tier_6_035",
+    "name": "Fighter Mail Tier 6",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 6,
+    "description": "Balance Patch 1.0: Fighter armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_12_vanguard_vanguard_plate_tier_6_036",
+    "name": "Vanguard Plate Tier 6",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 6,
+    "description": "Balance Patch 1.0: Vanguard armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_13_skirmisher_skirmisher_vest_tier_7_037",
+    "name": "Skirmisher Vest Tier 7",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 7,
+    "description": "Balance Patch 1.0: Skirmisher armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_13_fighter_fighter_mail_tier_7_038",
+    "name": "Fighter Mail Tier 7",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 7,
+    "description": "Balance Patch 1.0: Fighter armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_13_vanguard_vanguard_plate_tier_7_039",
+    "name": "Vanguard Plate Tier 7",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 7,
+    "description": "Balance Patch 1.0: Vanguard armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_14_skirmisher_skirmisher_vest_tier_7_040",
+    "name": "Skirmisher Vest Tier 7",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 7,
+    "description": "Balance Patch 1.0: Skirmisher armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_14_fighter_fighter_mail_tier_7_041",
+    "name": "Fighter Mail Tier 7",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 7,
+    "description": "Balance Patch 1.0: Fighter armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_14_vanguard_vanguard_plate_tier_7_042",
+    "name": "Vanguard Plate Tier 7",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 7,
+    "description": "Balance Patch 1.0: Vanguard armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_15_skirmisher_skirmisher_vest_tier_8_043",
+    "name": "Skirmisher Vest Tier 8",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 8,
+    "description": "Balance Patch 1.0: Skirmisher armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_15_fighter_fighter_mail_tier_8_044",
+    "name": "Fighter Mail Tier 8",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 8,
+    "description": "Balance Patch 1.0: Fighter armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_15_vanguard_vanguard_plate_tier_8_045",
+    "name": "Vanguard Plate Tier 8",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 8,
+    "description": "Balance Patch 1.0: Vanguard armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_16_skirmisher_skirmisher_vest_tier_8_046",
+    "name": "Skirmisher Vest Tier 8",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 8,
+    "description": "Balance Patch 1.0: Skirmisher armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_16_fighter_fighter_mail_tier_8_047",
+    "name": "Fighter Mail Tier 8",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 8,
+    "description": "Balance Patch 1.0: Fighter armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_16_vanguard_vanguard_plate_tier_8_048",
+    "name": "Vanguard Plate Tier 8",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 8,
+    "description": "Balance Patch 1.0: Vanguard armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_17_skirmisher_skirmisher_vest_tier_9_049",
+    "name": "Skirmisher Vest Tier 9",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 9,
+    "description": "Balance Patch 1.0: Skirmisher armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_17_fighter_fighter_mail_tier_9_050",
+    "name": "Fighter Mail Tier 9",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 9,
+    "description": "Balance Patch 1.0: Fighter armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_17_vanguard_vanguard_plate_tier_9_051",
+    "name": "Vanguard Plate Tier 9",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 9,
+    "description": "Balance Patch 1.0: Vanguard armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_18_skirmisher_skirmisher_vest_tier_9_052",
+    "name": "Skirmisher Vest Tier 9",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 9,
+    "description": "Balance Patch 1.0: Skirmisher armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_18_fighter_fighter_mail_tier_9_053",
+    "name": "Fighter Mail Tier 9",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 9,
+    "description": "Balance Patch 1.0: Fighter armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_18_vanguard_vanguard_plate_tier_9_054",
+    "name": "Vanguard Plate Tier 9",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 9,
+    "description": "Balance Patch 1.0: Vanguard armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_19_skirmisher_skirmisher_vest_tier_10_055",
+    "name": "Skirmisher Vest Tier 10",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 10,
+    "description": "Balance Patch 1.0: Skirmisher armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_19_fighter_fighter_mail_tier_10_056",
+    "name": "Fighter Mail Tier 10",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 10,
+    "description": "Balance Patch 1.0: Fighter armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_19_vanguard_vanguard_plate_tier_10_057",
+    "name": "Vanguard Plate Tier 10",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 10,
+    "description": "Balance Patch 1.0: Vanguard armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_20_skirmisher_skirmisher_vest_tier_10_058",
+    "name": "Skirmisher Vest Tier 10",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 10,
+    "description": "Balance Patch 1.0: Skirmisher armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_20_fighter_fighter_mail_tier_10_059",
+    "name": "Fighter Mail Tier 10",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 10,
+    "description": "Balance Patch 1.0: Fighter armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_20_vanguard_vanguard_plate_tier_10_060",
+    "name": "Vanguard Plate Tier 10",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 10,
+    "description": "Balance Patch 1.0: Vanguard armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_21_skirmisher_skirmisher_vest_tier_11_061",
+    "name": "Skirmisher Vest Tier 11",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 11,
+    "description": "Balance Patch 1.0: Skirmisher armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_21_fighter_fighter_mail_tier_11_062",
+    "name": "Fighter Mail Tier 11",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 11,
+    "description": "Balance Patch 1.0: Fighter armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_21_vanguard_vanguard_plate_tier_11_063",
+    "name": "Vanguard Plate Tier 11",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 11,
+    "description": "Balance Patch 1.0: Vanguard armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_22_skirmisher_skirmisher_vest_tier_11_064",
+    "name": "Skirmisher Vest Tier 11",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 11,
+    "description": "Balance Patch 1.0: Skirmisher armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_22_fighter_fighter_mail_tier_11_065",
+    "name": "Fighter Mail Tier 11",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 11,
+    "description": "Balance Patch 1.0: Fighter armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_22_vanguard_vanguard_plate_tier_11_066",
+    "name": "Vanguard Plate Tier 11",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 11,
+    "description": "Balance Patch 1.0: Vanguard armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_23_skirmisher_skirmisher_vest_tier_12_067",
+    "name": "Skirmisher Vest Tier 12",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 12,
+    "description": "Balance Patch 1.0: Skirmisher armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_23_fighter_fighter_mail_tier_12_068",
+    "name": "Fighter Mail Tier 12",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 12,
+    "description": "Balance Patch 1.0: Fighter armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_23_vanguard_vanguard_plate_tier_12_069",
+    "name": "Vanguard Plate Tier 12",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 12,
+    "description": "Balance Patch 1.0: Vanguard armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_24_skirmisher_skirmisher_vest_tier_12_070",
+    "name": "Skirmisher Vest Tier 12",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 12,
+    "description": "Balance Patch 1.0: Skirmisher armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_24_fighter_fighter_mail_tier_12_071",
+    "name": "Fighter Mail Tier 12",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 12,
+    "description": "Balance Patch 1.0: Fighter armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_24_vanguard_vanguard_plate_tier_12_072",
+    "name": "Vanguard Plate Tier 12",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 12,
+    "description": "Balance Patch 1.0: Vanguard armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_25_skirmisher_skirmisher_vest_tier_13_073",
+    "name": "Skirmisher Vest Tier 13",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 13,
+    "description": "Balance Patch 1.0: Skirmisher armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_25_fighter_fighter_mail_tier_13_074",
+    "name": "Fighter Mail Tier 13",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 13,
+    "description": "Balance Patch 1.0: Fighter armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_25_vanguard_vanguard_plate_tier_13_075",
+    "name": "Vanguard Plate Tier 13",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 13,
+    "description": "Balance Patch 1.0: Vanguard armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_26_skirmisher_skirmisher_vest_tier_13_076",
+    "name": "Skirmisher Vest Tier 13",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 13,
+    "description": "Balance Patch 1.0: Skirmisher armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_26_fighter_fighter_mail_tier_13_077",
+    "name": "Fighter Mail Tier 13",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 13,
+    "description": "Balance Patch 1.0: Fighter armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_26_vanguard_vanguard_plate_tier_13_078",
+    "name": "Vanguard Plate Tier 13",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 13,
+    "description": "Balance Patch 1.0: Vanguard armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_27_skirmisher_skirmisher_vest_tier_14_079",
+    "name": "Skirmisher Vest Tier 14",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 14,
+    "description": "Balance Patch 1.0: Skirmisher armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_27_fighter_fighter_mail_tier_14_080",
+    "name": "Fighter Mail Tier 14",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 14,
+    "description": "Balance Patch 1.0: Fighter armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_27_vanguard_vanguard_plate_tier_14_081",
+    "name": "Vanguard Plate Tier 14",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 14,
+    "description": "Balance Patch 1.0: Vanguard armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_28_skirmisher_skirmisher_vest_tier_14_082",
+    "name": "Skirmisher Vest Tier 14",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 14,
+    "description": "Balance Patch 1.0: Skirmisher armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_28_fighter_fighter_mail_tier_14_083",
+    "name": "Fighter Mail Tier 14",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 14,
+    "description": "Balance Patch 1.0: Fighter armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_28_vanguard_vanguard_plate_tier_14_084",
+    "name": "Vanguard Plate Tier 14",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 14,
+    "description": "Balance Patch 1.0: Vanguard armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_29_skirmisher_skirmisher_vest_tier_15_085",
+    "name": "Skirmisher Vest Tier 15",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 15,
+    "description": "Balance Patch 1.0: Skirmisher armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_29_fighter_fighter_mail_tier_15_086",
+    "name": "Fighter Mail Tier 15",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 15,
+    "description": "Balance Patch 1.0: Fighter armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_29_vanguard_vanguard_plate_tier_15_087",
+    "name": "Vanguard Plate Tier 15",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 15,
+    "description": "Balance Patch 1.0: Vanguard armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_30_skirmisher_skirmisher_vest_tier_15_088",
+    "name": "Skirmisher Vest Tier 15",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 15,
+    "description": "Balance Patch 1.0: Skirmisher armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_30_fighter_fighter_mail_tier_15_089",
+    "name": "Fighter Mail Tier 15",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 15,
+    "description": "Balance Patch 1.0: Fighter armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "armor_30_vanguard_vanguard_plate_tier_15_090",
+    "name": "Vanguard Plate Tier 15",
+    "category": "armor",
+    "rarity": "common",
+    "tier": 15,
+    "description": "Balance Patch 1.0: Vanguard armor now has clearer identity and tradeoffs.",
+    "sourceSheet": "LVL Armor"
+  },
+  {
+    "id": "cracked_hatchet",
+    "name": "Cracked Hatchet",
+    "category": "crafted",
+    "rarity": "common",
+    "tier": 1,
+    "description": "+Starter damage",
+    "sourceSheet": "LC Craft Rcps"
+  },
+  {
+    "id": "roadside_leather_vest",
+    "name": "Roadside Leather Vest",
+    "category": "crafted",
+    "rarity": "common",
+    "tier": 1,
+    "description": "+Basic armor",
+    "sourceSheet": "LC Craft Rcps"
+  },
+  {
+    "id": "wolf_fang_charm",
+    "name": "Wolf Fang Charm",
+    "category": "crafted",
+    "rarity": "uncommon",
+    "tier": 1,
+    "description": "+Bleed chance",
+    "sourceSheet": "LC Craft Rcps"
+  },
+  {
+    "id": "raider_cleaver",
+    "name": "Raider Cleaver",
+    "category": "crafted",
+    "rarity": "uncommon",
+    "tier": 1,
+    "description": "+Rage from attacks",
+    "sourceSheet": "LC Craft Rcps"
+  },
+  {
+    "id": "blackfang_strap_vest",
+    "name": "Blackfang Strap Vest",
+    "category": "crafted",
+    "rarity": "uncommon",
+    "tier": 2,
+    "description": "+Bleed resist",
+    "sourceSheet": "LC Craft Rcps"
+  },
+  {
+    "id": "wolfbite_hatchet",
+    "name": "Wolfbite Hatchet",
+    "category": "crafted",
+    "rarity": "rare",
+    "tier": 2,
+    "description": "+Bleed chance / bleed damage",
+    "sourceSheet": "LC Craft Rcps"
+  },
+  {
+    "id": "watchtower_longsword",
+    "name": "Watchtower Longsword",
+    "category": "crafted",
+    "rarity": "uncommon",
+    "tier": 2,
+    "description": "+Block efficiency",
+    "sourceSheet": "LC Craft Rcps"
+  },
+  {
+    "id": "shield_veteran_mail",
+    "name": "Shield Veteran Mail",
+    "category": "crafted",
+    "rarity": "rare",
+    "tier": 2,
+    "description": "+Poise",
+    "sourceSheet": "LC Craft Rcps"
+  },
+  {
+    "id": "ironbound_hammer",
+    "name": "Ironbound Hammer",
+    "category": "crafted",
+    "rarity": "uncommon",
+    "tier": 2,
+    "description": "+Stagger power",
+    "sourceSheet": "LC Craft Rcps"
+  },
+  {
+    "id": "iron_sigil",
+    "name": "Iron Sigil",
+    "category": "crafted",
+    "rarity": "rare",
+    "tier": 2,
+    "description": "-Stagger duration",
+    "sourceSheet": "LC Craft Rcps"
+  },
+  {
+    "id": "ash-touched_charm",
+    "name": "Ash-Touched Charm",
+    "category": "crafted",
+    "rarity": "uncommon",
+    "tier": 2,
+    "description": "+Bleed resistance",
+    "sourceSheet": "LC Craft Rcps"
+  },
+  {
+    "id": "blood_priests_dagger_charm",
+    "name": "Blood Priest's Dagger Charm",
+    "category": "crafted",
+    "rarity": "rare",
+    "tier": 3,
+    "description": "+Bleed damage",
+    "sourceSheet": "LC Craft Rcps"
+  },
+  {
+    "id": "sellblade_longsword",
+    "name": "Sellblade Longsword",
+    "category": "crafted",
+    "rarity": "uncommon",
+    "tier": 3,
+    "description": "+Attack speed",
+    "sourceSheet": "LC Craft Rcps"
+  },
+  {
+    "id": "crossroad_duelist_mail",
+    "name": "Crossroad Duelist Mail",
+    "category": "crafted",
+    "rarity": "rare",
+    "tier": 3,
+    "description": "+Counter chance",
+    "sourceSheet": "LC Craft Rcps"
+  },
+  {
+    "id": "headsmans_maul",
+    "name": "Headsman's Maul",
+    "category": "crafted",
+    "rarity": "uncommon",
+    "tier": 3,
+    "description": "+Execute damage",
+    "sourceSheet": "LC Craft Rcps"
+  },
+  {
+    "id": "pit_crusher_plate",
+    "name": "Pit Crusher Plate",
+    "category": "crafted",
+    "rarity": "rare",
+    "tier": 3,
+    "description": "+Stagger resistance",
+    "sourceSheet": "LC Craft Rcps"
+  },
+  {
+    "id": "ravenfang_harness",
+    "name": "Ravenfang Harness",
+    "category": "crafted",
+    "rarity": "uncommon",
+    "tier": 4,
+    "description": "+Crit chance",
+    "sourceSheet": "LC Craft Rcps"
+  },
+  {
+    "id": "blackfang_edge",
+    "name": "Blackfang Edge",
+    "category": "crafted",
+    "rarity": "rare",
+    "tier": 4,
+    "description": "+Bleed damage",
+    "sourceSheet": "LC Craft Rcps"
+  },
+  {
+    "id": "legion_protector_plate",
+    "name": "Legion Protector Plate",
+    "category": "crafted",
+    "rarity": "uncommon",
+    "tier": 4,
+    "description": "+Poise",
+    "sourceSheet": "LC Craft Rcps"
+  },
+  {
+    "id": "tyrant_guard_hammer",
+    "name": "Tyrant Guard Hammer",
+    "category": "crafted",
+    "rarity": "rare",
+    "tier": 4,
+    "description": "+Stagger power",
+    "sourceSheet": "LC Craft Rcps"
+  },
+  {
+    "id": "zealots_ash_charm",
+    "name": "Zealot's Ash Charm",
+    "category": "crafted",
+    "rarity": "uncommon",
+    "tier": 4,
+    "description": "+Bleed damage",
+    "sourceSheet": "LC Craft Rcps"
+  },
+  {
+    "id": "ash-cursed_vest",
+    "name": "Ash-Cursed Vest",
+    "category": "crafted",
+    "rarity": "rare",
+    "tier": 4,
+    "description": "Bleeds tick faster",
+    "sourceSheet": "LC Craft Rcps"
+  },
+  {
+    "id": "arena_longsword",
+    "name": "Arena Longsword",
+    "category": "crafted",
+    "rarity": "uncommon",
+    "tier": 4,
+    "description": "+Counter damage",
+    "sourceSheet": "LC Craft Rcps"
+  },
+  {
+    "id": "champions_mail",
+    "name": "Champion's Mail",
+    "category": "crafted",
+    "rarity": "rare",
+    "tier": 4,
+    "description": "+Attack speed",
+    "sourceSheet": "LC Craft Rcps"
+  },
+  {
+    "id": "quarry_breaker_maul",
+    "name": "Quarry Breaker Maul",
+    "category": "crafted",
+    "rarity": "uncommon",
+    "tier": 5,
+    "description": "+Stagger power",
+    "sourceSheet": "LC Craft Rcps"
+  },
+  {
+    "id": "crimson_plate",
+    "name": "Crimson Plate",
+    "category": "crafted",
+    "rarity": "rare",
+    "tier": 5,
+    "description": "+Damage reduction above 70% HP",
+    "sourceSheet": "LC Craft Rcps"
+  },
+  {
+    "id": "vaelor_threshold_blade",
+    "name": "Vaelor Threshold Blade",
+    "category": "crafted",
+    "rarity": "rare",
+    "tier": 5,
+    "description": "+Crit and Rage",
+    "sourceSheet": "LC Craft Rcps"
+  },
+  {
+    "id": "ash_lords_executioner_axe",
+    "name": "Ash Lord's Executioner Axe",
+    "category": "crafted",
+    "rarity": "epic",
+    "tier": 5,
+    "description": "Bleeds trigger bonus Rage",
+    "sourceSheet": "LC Craft Rcps"
+  },
+  {
+    "id": "warbound_citadel_plate",
+    "name": "Warbound Citadel Plate",
+    "category": "crafted",
+    "rarity": "epic",
+    "tier": 5,
+    "description": "Fortified at low HP",
+    "sourceSheet": "LC Craft Rcps"
+  },
+  {
+    "id": "three_ash_sigils",
+    "name": "Three Ash Sigils",
+    "category": "crafted",
+    "rarity": "epic",
+    "tier": 5,
+    "description": "Unlocks Ash Lord Vaelor encounter",
+    "sourceSheet": "LC Craft Rcps"
+  }
+]

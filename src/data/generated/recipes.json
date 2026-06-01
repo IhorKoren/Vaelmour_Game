@@ -1,0 +1,968 @@
+[
+  {
+    "id": "REC_001",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Cracked Hatchet",
+    "result": "Cracked Hatchet",
+    "itemType": "Axe",
+    "requiredLevel": 2,
+    "tierRaw": "I",
+    "tier": 1,
+    "rarity": "common",
+    "unlockMethod": "Auto-known",
+    "recipeSource": "Crafting trainer",
+    "station": "crafting",
+    "goldCost": 10,
+    "materials": [
+      {
+        "id": "MAT_003",
+        "qty": 3
+      },
+      {
+        "id": "MAT_001",
+        "qty": 2
+      }
+    ],
+    "successChance": 1,
+    "outputEffect": "+Starter damage"
+  },
+  {
+    "id": "REC_002",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Roadside Leather Vest",
+    "result": "Roadside Leather Vest",
+    "itemType": "Chest",
+    "requiredLevel": 2,
+    "tierRaw": "I",
+    "tier": 1,
+    "rarity": "common",
+    "unlockMethod": "Auto-known",
+    "recipeSource": "Crafting trainer",
+    "station": "crafting",
+    "goldCost": 12,
+    "materials": [
+      {
+        "id": "MAT_002",
+        "qty": 4
+      },
+      {
+        "id": "MAT_001",
+        "qty": 2
+      }
+    ],
+    "successChance": 1,
+    "outputEffect": "+Basic armor"
+  },
+  {
+    "id": "REC_003",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Wolf Fang Charm",
+    "result": "Wolf Fang Charm",
+    "itemType": "Talisman",
+    "requiredLevel": 4,
+    "tierRaw": "I",
+    "tier": 1,
+    "rarity": "uncommon",
+    "unlockMethod": "Blackfang Forest progress",
+    "recipeSource": "Blackfang Forest",
+    "station": "crafting",
+    "goldCost": 35,
+    "materials": [
+      {
+        "id": "MAT_004",
+        "qty": 3
+      },
+      {
+        "id": "MAT_002",
+        "qty": 4
+      }
+    ],
+    "successChance": 1,
+    "outputEffect": "+Bleed chance"
+  },
+  {
+    "id": "REC_004",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Raider Cleaver",
+    "result": "Raider Cleaver",
+    "itemType": "Axe",
+    "requiredLevel": 5,
+    "tierRaw": "I",
+    "tier": 1,
+    "rarity": "uncommon",
+    "unlockMethod": "Recipe drop",
+    "recipeSource": "Wild Raider / Blood Raider",
+    "station": "crafting",
+    "goldCost": 45,
+    "materials": [
+      {
+        "id": "MAT_003",
+        "qty": 6
+      },
+      {
+        "id": "MAT_005",
+        "qty": 2
+      },
+      {
+        "id": "MAT_022",
+        "qty": 1
+      }
+    ],
+    "successChance": 1,
+    "outputEffect": "+Rage from attacks"
+  },
+  {
+    "id": "REC_005",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Blackfang Strap Vest",
+    "result": "Blackfang Strap Vest",
+    "itemType": "Chest",
+    "requiredLevel": 5,
+    "tierRaw": "II",
+    "tier": 2,
+    "rarity": "uncommon",
+    "unlockMethod": "Recipe drop",
+    "recipeSource": "Fang Stalker",
+    "station": "crafting",
+    "goldCost": 55,
+    "materials": [
+      {
+        "id": "MAT_002",
+        "qty": 8
+      },
+      {
+        "id": "MAT_004",
+        "qty": 2
+      },
+      {
+        "id": "MAT_021",
+        "qty": 2
+      }
+    ],
+    "successChance": 1,
+    "outputEffect": "+Bleed resist"
+  },
+  {
+    "id": "REC_006",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Wolfbite Hatchet",
+    "result": "Wolfbite Hatchet",
+    "itemType": "Axe",
+    "requiredLevel": 6,
+    "tierRaw": "II",
+    "tier": 2,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "Blackfang Alpha Spawn",
+    "station": "crafting",
+    "goldCost": 120,
+    "materials": [
+      {
+        "id": "MAT_004",
+        "qty": 5
+      },
+      {
+        "id": "MAT_006",
+        "qty": 1
+      },
+      {
+        "id": "MAT_022",
+        "qty": 2
+      },
+      {
+        "id": "MAT_003",
+        "qty": 5
+      }
+    ],
+    "successChance": 1,
+    "outputEffect": "+Bleed chance / bleed damage"
+  },
+  {
+    "id": "REC_007",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Watchtower Longsword",
+    "result": "Watchtower Longsword",
+    "itemType": "Sword",
+    "requiredLevel": 8,
+    "tierRaw": "II",
+    "tier": 2,
+    "rarity": "uncommon",
+    "unlockMethod": "Old Watchtower progress",
+    "recipeSource": "Old Watchtower",
+    "station": "crafting",
+    "goldCost": 75,
+    "materials": [
+      {
+        "id": "MAT_008",
+        "qty": 4
+      },
+      {
+        "id": "MAT_007",
+        "qty": 5
+      },
+      {
+        "id": "MAT_022",
+        "qty": 2
+      }
+    ],
+    "successChance": 1,
+    "outputEffect": "+Block efficiency"
+  },
+  {
+    "id": "REC_008",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Shield Veteran Mail",
+    "result": "Shield Veteran Mail",
+    "itemType": "Chest",
+    "requiredLevel": 9,
+    "tierRaw": "II",
+    "tier": 2,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "Tower Shield Veteran",
+    "station": "crafting",
+    "goldCost": 150,
+    "materials": [
+      {
+        "id": "MAT_008",
+        "qty": 8
+      },
+      {
+        "id": "MAT_009",
+        "qty": 2
+      },
+      {
+        "id": "MAT_007",
+        "qty": 8
+      },
+      {
+        "id": "MAT_021",
+        "qty": 2
+      }
+    ],
+    "successChance": 1,
+    "outputEffect": "+Poise"
+  },
+  {
+    "id": "REC_009",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Ironbound Hammer",
+    "result": "Ironbound Hammer",
+    "itemType": "Hammer",
+    "requiredLevel": 10,
+    "tierRaw": "II",
+    "tier": 2,
+    "rarity": "uncommon",
+    "unlockMethod": "Iron Bastion progress",
+    "recipeSource": "Gate Hammerman",
+    "station": "crafting",
+    "goldCost": 90,
+    "materials": [
+      {
+        "id": "MAT_007",
+        "qty": 8
+      },
+      {
+        "id": "MAT_022",
+        "qty": 3
+      },
+      {
+        "id": "MAT_003",
+        "qty": 8
+      }
+    ],
+    "successChance": 1,
+    "outputEffect": "+Stagger power"
+  },
+  {
+    "id": "REC_010",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Iron Sigil",
+    "result": "Iron Sigil",
+    "itemType": "Talisman",
+    "requiredLevel": 12,
+    "tierRaw": "II",
+    "tier": 2,
+    "rarity": "rare",
+    "unlockMethod": "Elite recipe drop",
+    "recipeSource": "Ironbound Elite / Elite Spawn",
+    "station": "crafting",
+    "goldCost": 160,
+    "materials": [
+      {
+        "id": "MAT_009",
+        "qty": 3
+      },
+      {
+        "id": "MAT_016",
+        "qty": 1
+      },
+      {
+        "id": "MAT_024",
+        "qty": 1
+      }
+    ],
+    "successChance": 1,
+    "outputEffect": "-Stagger duration"
+  },
+  {
+    "id": "REC_011",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Ash-Touched Charm",
+    "result": "Ash-Touched Charm",
+    "itemType": "Talisman",
+    "requiredLevel": 12,
+    "tierRaw": "II",
+    "tier": 2,
+    "rarity": "uncommon",
+    "unlockMethod": "Ashen Marsh progress",
+    "recipeSource": "Ash Disciple",
+    "station": "crafting",
+    "goldCost": 85,
+    "materials": [
+      {
+        "id": "MAT_010",
+        "qty": 5
+      },
+      {
+        "id": "MAT_011",
+        "qty": 1
+      },
+      {
+        "id": "MAT_001",
+        "qty": 5
+      }
+    ],
+    "successChance": 1,
+    "outputEffect": "+Bleed resistance"
+  },
+  {
+    "id": "REC_012",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Blood Priest's Dagger Charm",
+    "result": "Blood Priest's Dagger Charm",
+    "itemType": "Talisman",
+    "requiredLevel": 14,
+    "tierRaw": "III",
+    "tier": 3,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "Blood Priest / Ash Blood Priest",
+    "station": "crafting",
+    "goldCost": 180,
+    "materials": [
+      {
+        "id": "MAT_011",
+        "qty": 3
+      },
+      {
+        "id": "MAT_010",
+        "qty": 8
+      },
+      {
+        "id": "MAT_004",
+        "qty": 4
+      }
+    ],
+    "successChance": 1,
+    "outputEffect": "+Bleed damage"
+  },
+  {
+    "id": "REC_013",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Sellblade Longsword",
+    "result": "Sellblade Longsword",
+    "itemType": "Sword",
+    "requiredLevel": 14,
+    "tierRaw": "III",
+    "tier": 3,
+    "rarity": "uncommon",
+    "unlockMethod": "Mercenary Crossroads progress",
+    "recipeSource": "Mercenary Swordsman",
+    "station": "crafting",
+    "goldCost": 130,
+    "materials": [
+      {
+        "id": "MAT_013",
+        "qty": 8
+      },
+      {
+        "id": "MAT_012",
+        "qty": 3
+      },
+      {
+        "id": "MAT_022",
+        "qty": 3
+      }
+    ],
+    "successChance": 1,
+    "outputEffect": "+Attack speed"
+  },
+  {
+    "id": "REC_014",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Crossroad Duelist Mail",
+    "result": "Crossroad Duelist Mail",
+    "itemType": "Chest",
+    "requiredLevel": 15,
+    "tierRaw": "III",
+    "tier": 3,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "Crossroad Duelist",
+    "station": "crafting",
+    "goldCost": 220,
+    "materials": [
+      {
+        "id": "MAT_013",
+        "qty": 8
+      },
+      {
+        "id": "MAT_012",
+        "qty": 5
+      },
+      {
+        "id": "MAT_008",
+        "qty": 6
+      },
+      {
+        "id": "MAT_021",
+        "qty": 3
+      }
+    ],
+    "successChance": 1,
+    "outputEffect": "+Counter chance"
+  },
+  {
+    "id": "REC_015",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Headsman's Maul",
+    "result": "Headsman's Maul",
+    "itemType": "Hammer",
+    "requiredLevel": 16,
+    "tierRaw": "III",
+    "tier": 3,
+    "rarity": "uncommon",
+    "unlockMethod": "Execution Grounds progress",
+    "recipeSource": "Executioner",
+    "station": "crafting",
+    "goldCost": 140,
+    "materials": [
+      {
+        "id": "MAT_013",
+        "qty": 10
+      },
+      {
+        "id": "MAT_014",
+        "qty": 1
+      },
+      {
+        "id": "MAT_022",
+        "qty": 3
+      }
+    ],
+    "successChance": 1,
+    "outputEffect": "+Execute damage"
+  },
+  {
+    "id": "REC_016",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Pit Crusher Plate",
+    "result": "Pit Crusher Plate",
+    "itemType": "Chest",
+    "requiredLevel": 17,
+    "tierRaw": "III",
+    "tier": 3,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "Pit Crusher",
+    "station": "crafting",
+    "goldCost": 260,
+    "materials": [
+      {
+        "id": "MAT_013",
+        "qty": 12
+      },
+      {
+        "id": "MAT_014",
+        "qty": 3
+      },
+      {
+        "id": "MAT_024",
+        "qty": 2
+      },
+      {
+        "id": "MAT_016",
+        "qty": 2
+      }
+    ],
+    "successChance": 1,
+    "outputEffect": "+Stagger resistance"
+  },
+  {
+    "id": "REC_017",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Ravenfang Harness",
+    "result": "Ravenfang Harness",
+    "itemType": "Chest",
+    "requiredLevel": 18,
+    "tierRaw": "IV",
+    "tier": 4,
+    "rarity": "uncommon",
+    "unlockMethod": "Raven Hollow progress",
+    "recipeSource": "Raven Fang Stalker",
+    "station": "crafting",
+    "goldCost": 170,
+    "materials": [
+      {
+        "id": "MAT_015",
+        "qty": 5
+      },
+      {
+        "id": "MAT_006",
+        "qty": 2
+      },
+      {
+        "id": "MAT_021",
+        "qty": 4
+      }
+    ],
+    "successChance": 1,
+    "outputEffect": "+Crit chance"
+  },
+  {
+    "id": "REC_018",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Blackfang Edge",
+    "result": "Blackfang Edge",
+    "itemType": "Axe",
+    "requiredLevel": 19,
+    "tierRaw": "IV",
+    "tier": 4,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "Blackfang Alpha Spawn",
+    "station": "crafting",
+    "goldCost": 300,
+    "materials": [
+      {
+        "id": "MAT_015",
+        "qty": 6
+      },
+      {
+        "id": "MAT_006",
+        "qty": 3
+      },
+      {
+        "id": "MAT_023",
+        "qty": 1
+      },
+      {
+        "id": "MAT_022",
+        "qty": 4
+      }
+    ],
+    "successChance": 1,
+    "outputEffect": "+Bleed damage"
+  },
+  {
+    "id": "REC_019",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Legion Protector Plate",
+    "result": "Legion Protector Plate",
+    "itemType": "Chest",
+    "requiredLevel": 20,
+    "tierRaw": "IV",
+    "tier": 4,
+    "rarity": "uncommon",
+    "unlockMethod": "Iron Bastion Inner Yard progress",
+    "recipeSource": "Legion Protector",
+    "station": "crafting",
+    "goldCost": 190,
+    "materials": [
+      {
+        "id": "MAT_016",
+        "qty": 8
+      },
+      {
+        "id": "MAT_013",
+        "qty": 8
+      },
+      {
+        "id": "MAT_024",
+        "qty": 1
+      }
+    ],
+    "successChance": 1,
+    "outputEffect": "+Poise"
+  },
+  {
+    "id": "REC_020",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Tyrant Guard Hammer",
+    "result": "Tyrant Guard Hammer",
+    "itemType": "Hammer",
+    "requiredLevel": 21,
+    "tierRaw": "IV",
+    "tier": 4,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "Iron Tyrant Guard",
+    "station": "crafting",
+    "goldCost": 340,
+    "materials": [
+      {
+        "id": "MAT_016",
+        "qty": 6
+      },
+      {
+        "id": "MAT_024",
+        "qty": 3
+      },
+      {
+        "id": "MAT_023",
+        "qty": 1
+      },
+      {
+        "id": "MAT_022",
+        "qty": 4
+      }
+    ],
+    "successChance": 1,
+    "outputEffect": "+Stagger power"
+  },
+  {
+    "id": "REC_021",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Zealot's Ash Charm",
+    "result": "Zealot's Ash Charm",
+    "itemType": "Talisman",
+    "requiredLevel": 22,
+    "tierRaw": "IV",
+    "tier": 4,
+    "rarity": "uncommon",
+    "unlockMethod": "Ash Cult Sanctuary progress",
+    "recipeSource": "Ash Fang Zealot",
+    "station": "crafting",
+    "goldCost": 200,
+    "materials": [
+      {
+        "id": "MAT_017",
+        "qty": 2
+      },
+      {
+        "id": "MAT_011",
+        "qty": 4
+      },
+      {
+        "id": "MAT_010",
+        "qty": 8
+      }
+    ],
+    "successChance": 1,
+    "outputEffect": "+Bleed damage"
+  },
+  {
+    "id": "REC_022",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Ash-Cursed Vest",
+    "result": "Ash-Cursed Vest",
+    "itemType": "Chest",
+    "requiredLevel": 23,
+    "tierRaw": "IV",
+    "tier": 4,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "Ash-Cursed Champion",
+    "station": "crafting",
+    "goldCost": 380,
+    "materials": [
+      {
+        "id": "MAT_017",
+        "qty": 3
+      },
+      {
+        "id": "MAT_011",
+        "qty": 5
+      },
+      {
+        "id": "MAT_021",
+        "qty": 5
+      },
+      {
+        "id": "MAT_023",
+        "qty": 1
+      }
+    ],
+    "successChance": 1,
+    "outputEffect": "Bleeds tick faster"
+  },
+  {
+    "id": "REC_023",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Arena Longsword",
+    "result": "Arena Longsword",
+    "itemType": "Sword",
+    "requiredLevel": 24,
+    "tierRaw": "IV",
+    "tier": 4,
+    "rarity": "uncommon",
+    "unlockMethod": "Warbound Arena progress",
+    "recipeSource": "Arena Duelist",
+    "station": "crafting",
+    "goldCost": 230,
+    "materials": [
+      {
+        "id": "MAT_018",
+        "qty": 2
+      },
+      {
+        "id": "MAT_013",
+        "qty": 10
+      },
+      {
+        "id": "MAT_022",
+        "qty": 5
+      }
+    ],
+    "successChance": 1,
+    "outputEffect": "+Counter damage"
+  },
+  {
+    "id": "REC_024",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Champion's Mail",
+    "result": "Champion's Mail",
+    "itemType": "Chest",
+    "requiredLevel": 25,
+    "tierRaw": "IV",
+    "tier": 4,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "Arena Champion Spawn",
+    "station": "crafting",
+    "goldCost": 420,
+    "materials": [
+      {
+        "id": "MAT_018",
+        "qty": 4
+      },
+      {
+        "id": "MAT_016",
+        "qty": 5
+      },
+      {
+        "id": "MAT_012",
+        "qty": 6
+      },
+      {
+        "id": "MAT_021",
+        "qty": 5
+      }
+    ],
+    "successChance": 1,
+    "outputEffect": "+Attack speed"
+  },
+  {
+    "id": "REC_025",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Quarry Breaker Maul",
+    "result": "Quarry Breaker Maul",
+    "itemType": "Hammer",
+    "requiredLevel": 26,
+    "tierRaw": "V",
+    "tier": 5,
+    "rarity": "uncommon",
+    "unlockMethod": "Crimson Quarry progress",
+    "recipeSource": "War Brute",
+    "station": "crafting",
+    "goldCost": 260,
+    "materials": [
+      {
+        "id": "MAT_019",
+        "qty": 8
+      },
+      {
+        "id": "MAT_024",
+        "qty": 2
+      },
+      {
+        "id": "MAT_022",
+        "qty": 5
+      }
+    ],
+    "successChance": 1,
+    "outputEffect": "+Stagger power"
+  },
+  {
+    "id": "REC_026",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Crimson Plate",
+    "result": "Crimson Plate",
+    "itemType": "Chest",
+    "requiredLevel": 27,
+    "tierRaw": "V",
+    "tier": 5,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "Ironbound Breaker",
+    "station": "crafting",
+    "goldCost": 500,
+    "materials": [
+      {
+        "id": "MAT_019",
+        "qty": 10
+      },
+      {
+        "id": "MAT_016",
+        "qty": 6
+      },
+      {
+        "id": "MAT_024",
+        "qty": 4
+      },
+      {
+        "id": "MAT_013",
+        "qty": 8
+      }
+    ],
+    "successChance": 1,
+    "outputEffect": "+Damage reduction above 70% HP"
+  },
+  {
+    "id": "REC_027",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Vaelor Threshold Blade",
+    "result": "Vaelor Threshold Blade",
+    "itemType": "Sword",
+    "requiredLevel": 28,
+    "tierRaw": "V",
+    "tier": 5,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "Raven Fang Stalker / Elite Spawn",
+    "station": "crafting",
+    "goldCost": 560,
+    "materials": [
+      {
+        "id": "MAT_020",
+        "qty": 1
+      },
+      {
+        "id": "MAT_019",
+        "qty": 8
+      },
+      {
+        "id": "MAT_018",
+        "qty": 3
+      },
+      {
+        "id": "MAT_022",
+        "qty": 6
+      }
+    ],
+    "successChance": 1,
+    "outputEffect": "+Crit and Rage"
+  },
+  {
+    "id": "REC_028",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Ash Lord's Executioner Axe",
+    "result": "Ash Lord's Executioner Axe",
+    "itemType": "Axe",
+    "requiredLevel": 29,
+    "tierRaw": "V",
+    "tier": 5,
+    "rarity": "epic",
+    "unlockMethod": "Boss recipe",
+    "recipeSource": "Ash Lord Vaelor / Elite Spawn",
+    "station": "crafting",
+    "goldCost": 900,
+    "materials": [
+      {
+        "id": "MAT_020",
+        "qty": 3
+      },
+      {
+        "id": "MAT_017",
+        "qty": 5
+      },
+      {
+        "id": "MAT_023",
+        "qty": 3
+      },
+      {
+        "id": "MAT_022",
+        "qty": 8
+      }
+    ],
+    "successChance": 1,
+    "outputEffect": "Bleeds trigger bonus Rage"
+  },
+  {
+    "id": "REC_029",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Warbound Citadel Plate",
+    "result": "Warbound Citadel Plate",
+    "itemType": "Chest",
+    "requiredLevel": 30,
+    "tierRaw": "V",
+    "tier": 5,
+    "rarity": "epic",
+    "unlockMethod": "Boss recipe",
+    "recipeSource": "Ash Lord Vaelor / Iron Tyrant Guard",
+    "station": "crafting",
+    "goldCost": 950,
+    "materials": [
+      {
+        "id": "MAT_020",
+        "qty": 3
+      },
+      {
+        "id": "MAT_019",
+        "qty": 12
+      },
+      {
+        "id": "MAT_024",
+        "qty": 6
+      },
+      {
+        "id": "MAT_016",
+        "qty": 8
+      }
+    ],
+    "successChance": 1,
+    "outputEffect": "Fortified at low HP"
+  },
+  {
+    "id": "REC_030",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Three Ash Sigils",
+    "result": "Three Ash Sigils",
+    "itemType": "Key Item",
+    "requiredLevel": 30,
+    "tierRaw": "V",
+    "tier": 5,
+    "rarity": "epic",
+    "unlockMethod": "Milestone craft",
+    "recipeSource": "Vaelor's Threshold progress",
+    "station": "crafting",
+    "goldCost": 600,
+    "materials": [
+      {
+        "id": "MAT_017",
+        "qty": 9
+      },
+      {
+        "id": "MAT_020",
+        "qty": 1
+      },
+      {
+        "id": "MAT_011",
+        "qty": 5
+      }
+    ],
+    "successChance": 1,
+    "outputEffect": "Unlocks Ash Lord Vaelor encounter"
+  }
+]

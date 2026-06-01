@@ -1,0 +1,289 @@
+[
+  {
+    "recipe_id": "---",
+    "source_location": "---",
+    "drops_from": "---",
+    "recipe_drop_chance": "---:",
+    "dropped_recipe": "---"
+  },
+  {
+    "recipe_id": "REC_HEAD_NEW_003",
+    "source_location": "Blackfang Forest",
+    "drops_from": "Young Wolf / Fang Stalker",
+    "recipe_drop_chance": "4.5",
+    "dropped_recipe": "Recipe: Raider Iron Cap"
+  },
+  {
+    "recipe_id": "REC_HEAD_NEW_004",
+    "source_location": "Old Watchtower",
+    "drops_from": "Tower Shield Veteran / Iron Guard",
+    "recipe_drop_chance": "4.5",
+    "dropped_recipe": "Recipe: Watch Captain Helm"
+  },
+  {
+    "recipe_id": "REC_HEAD_NEW_005",
+    "source_location": "Blackfang Gate",
+    "drops_from": "Iron Gate Warden",
+    "recipe_drop_chance": "4.5",
+    "dropped_recipe": "Recipe: Ironmarch Visor"
+  },
+  {
+    "recipe_id": "REC_HEAD_NEW_006",
+    "source_location": "Ashen Marsh",
+    "drops_from": "Ash Disciple / Ash Blood Priest",
+    "recipe_drop_chance": "2.6",
+    "dropped_recipe": "Recipe: Ashen Veil Hood"
+  },
+  {
+    "recipe_id": "REC_HEAD_NEW_007",
+    "source_location": "Mercenary Crossroads",
+    "drops_from": "Veteran Sellblade / Crossroad Duelist",
+    "recipe_drop_chance": "4.5",
+    "dropped_recipe": "Recipe: Sellblade Duel Helm"
+  },
+  {
+    "recipe_id": "REC_HEAD_NEW_008",
+    "source_location": "Execution Grounds",
+    "drops_from": "Executioner / Headsman Veteran",
+    "recipe_drop_chance": "2.6",
+    "dropped_recipe": "Recipe: Raven Eye Cowl"
+  },
+  {
+    "recipe_id": "REC_HEAD_NEW_009",
+    "source_location": "Raven Hollow",
+    "drops_from": "Raven Fang Stalker / Elite Spawn",
+    "recipe_drop_chance": "2.6",
+    "dropped_recipe": "Recipe: Sanctuary Ash Visor"
+  },
+  {
+    "recipe_id": "REC_HEAD_NEW_010",
+    "source_location": "Crimson Quarry",
+    "drops_from": "War Brute / Ironbound Breaker",
+    "recipe_drop_chance": "2.6",
+    "dropped_recipe": "Recipe: Crimson Plate Helm"
+  },
+  {
+    "recipe_id": "REC_HEAD_NEW_011",
+    "source_location": "Warbound Arena Ruins",
+    "drops_from": "Arena Duelist / Arena Champion Spawn",
+    "recipe_drop_chance": "12.0",
+    "dropped_recipe": "Recipe: Threshold Crown-Helm"
+  },
+  {
+    "recipe_id": "REC_HEAD_NEW_012",
+    "source_location": "Vaelor's Threshold",
+    "drops_from": "Ash Lord Vaelor / Elite Spawn",
+    "recipe_drop_chance": "12.0",
+    "dropped_recipe": "Recipe: Vaelor Ash Crown"
+  },
+  {
+    "recipe_id": "REC_HANDS_NEW_003",
+    "source_location": "Blackfang Forest",
+    "drops_from": "Young Wolf / Fang Stalker",
+    "recipe_drop_chance": "4.5",
+    "dropped_recipe": "Recipe: Blackfang Claws"
+  },
+  {
+    "recipe_id": "REC_HANDS_NEW_004",
+    "source_location": "Old Watchtower",
+    "drops_from": "Tower Shield Veteran / Iron Guard",
+    "recipe_drop_chance": "4.5",
+    "dropped_recipe": "Recipe: Watchtower Bracers"
+  },
+  {
+    "recipe_id": "REC_HANDS_NEW_005",
+    "source_location": "Blackfang Gate",
+    "drops_from": "Iron Gate Warden",
+    "recipe_drop_chance": "4.5",
+    "dropped_recipe": "Recipe: Ironbound Gauntlets"
+  },
+  {
+    "recipe_id": "REC_HANDS_NEW_006",
+    "source_location": "Ashen Marsh",
+    "drops_from": "Ash Disciple / Ash Blood Priest",
+    "recipe_drop_chance": "2.6",
+    "dropped_recipe": "Recipe: Ash-Sealed Handwraps"
+  },
+  {
+    "recipe_id": "REC_HANDS_NEW_007",
+    "source_location": "Mercenary Crossroads",
+    "drops_from": "Veteran Sellblade / Crossroad Duelist",
+    "recipe_drop_chance": "4.5",
+    "dropped_recipe": "Recipe: Sellblade Duelist Gloves"
+  },
+  {
+    "recipe_id": "REC_HANDS_NEW_008",
+    "source_location": "Execution Grounds",
+    "drops_from": "Executioner / Headsman Veteran",
+    "recipe_drop_chance": "2.6",
+    "dropped_recipe": "Recipe: Executioner's Gauntlets"
+  },
+  {
+    "recipe_id": "REC_HANDS_NEW_009",
+    "source_location": "Raven Hollow",
+    "drops_from": "Raven Fang Stalker / Elite Spawn",
+    "recipe_drop_chance": "2.6",
+    "dropped_recipe": "Recipe: Raven Talon Grips"
+  },
+  {
+    "recipe_id": "REC_HANDS_NEW_010",
+    "source_location": "Crimson Quarry",
+    "drops_from": "War Brute / Ironbound Breaker",
+    "recipe_drop_chance": "2.6",
+    "dropped_recipe": "Recipe: Crimson Ore Gauntlets"
+  },
+  {
+    "recipe_id": "REC_HANDS_NEW_011",
+    "source_location": "Warbound Arena Ruins",
+    "drops_from": "Arena Duelist / Arena Champion Spawn",
+    "recipe_drop_chance": "12.0",
+    "dropped_recipe": "Recipe: Threshold Wargrips"
+  },
+  {
+    "recipe_id": "REC_HANDS_NEW_012",
+    "source_location": "Vaelor's Threshold",
+    "drops_from": "Ash Lord Vaelor / Elite Spawn",
+    "recipe_drop_chance": "12.0",
+    "dropped_recipe": "Recipe: Ash Lord Handguards"
+  },
+  {
+    "recipe_id": "REC_LEGS_NEW_003",
+    "source_location": "Blackfang Forest",
+    "drops_from": "Young Wolf / Fang Stalker",
+    "recipe_drop_chance": "4.5",
+    "dropped_recipe": "Recipe: Blackfang Leather Greaves"
+  },
+  {
+    "recipe_id": "REC_LEGS_NEW_004",
+    "source_location": "Old Watchtower",
+    "drops_from": "Tower Shield Veteran / Iron Guard",
+    "recipe_drop_chance": "4.5",
+    "dropped_recipe": "Recipe: Gatewarden Greaves"
+  },
+  {
+    "recipe_id": "REC_LEGS_NEW_005",
+    "source_location": "Blackfang Gate",
+    "drops_from": "Iron Gate Warden",
+    "recipe_drop_chance": "4.5",
+    "dropped_recipe": "Recipe: Ironmarch Legguards"
+  },
+  {
+    "recipe_id": "REC_LEGS_NEW_006",
+    "source_location": "Ashen Marsh",
+    "drops_from": "Ash Disciple / Ash Blood Priest",
+    "recipe_drop_chance": "2.6",
+    "dropped_recipe": "Recipe: Ashbound Legwraps"
+  },
+  {
+    "recipe_id": "REC_LEGS_NEW_007",
+    "source_location": "Mercenary Crossroads",
+    "drops_from": "Veteran Sellblade / Crossroad Duelist",
+    "recipe_drop_chance": "4.5",
+    "dropped_recipe": "Recipe: Crossroad Duelist Greaves"
+  },
+  {
+    "recipe_id": "REC_LEGS_NEW_008",
+    "source_location": "Execution Grounds",
+    "drops_from": "Executioner / Headsman Veteran",
+    "recipe_drop_chance": "2.6",
+    "dropped_recipe": "Recipe: Pit Crusher Legplates"
+  },
+  {
+    "recipe_id": "REC_LEGS_NEW_009",
+    "source_location": "Raven Hollow",
+    "drops_from": "Raven Fang Stalker / Elite Spawn",
+    "recipe_drop_chance": "2.6",
+    "dropped_recipe": "Recipe: Ravenstep Legguards"
+  },
+  {
+    "recipe_id": "REC_LEGS_NEW_010",
+    "source_location": "Crimson Quarry",
+    "drops_from": "War Brute / Ironbound Breaker",
+    "recipe_drop_chance": "2.6",
+    "dropped_recipe": "Recipe: Crimson Plate Legguards"
+  },
+  {
+    "recipe_id": "REC_LEGS_NEW_011",
+    "source_location": "Warbound Arena Ruins",
+    "drops_from": "Arena Duelist / Arena Champion Spawn",
+    "recipe_drop_chance": "12.0",
+    "dropped_recipe": "Recipe: Warbound Legplates"
+  },
+  {
+    "recipe_id": "REC_LEGS_NEW_012",
+    "source_location": "Vaelor's Threshold",
+    "drops_from": "Ash Lord Vaelor / Elite Spawn",
+    "recipe_drop_chance": "12.0",
+    "dropped_recipe": "Recipe: Vaelor Citadel Greaves"
+  },
+  {
+    "recipe_id": "REC_FEET_NEW_003",
+    "source_location": "Blackfang Forest",
+    "drops_from": "Young Wolf / Fang Stalker",
+    "recipe_drop_chance": "4.5",
+    "dropped_recipe": "Recipe: Blackfang Trail Boots"
+  },
+  {
+    "recipe_id": "REC_FEET_NEW_004",
+    "source_location": "Old Watchtower",
+    "drops_from": "Tower Shield Veteran / Iron Guard",
+    "recipe_drop_chance": "4.5",
+    "dropped_recipe": "Recipe: Watchtower March Boots"
+  },
+  {
+    "recipe_id": "REC_FEET_NEW_005",
+    "source_location": "Blackfang Gate",
+    "drops_from": "Iron Gate Warden",
+    "recipe_drop_chance": "4.5",
+    "dropped_recipe": "Recipe: Ironmarch Boots"
+  },
+  {
+    "recipe_id": "REC_FEET_NEW_006",
+    "source_location": "Ashen Marsh",
+    "drops_from": "Ash Disciple / Ash Blood Priest",
+    "recipe_drop_chance": "2.6",
+    "dropped_recipe": "Recipe: Ashwalk Sandals"
+  },
+  {
+    "recipe_id": "REC_FEET_NEW_007",
+    "source_location": "Mercenary Crossroads",
+    "drops_from": "Veteran Sellblade / Crossroad Duelist",
+    "recipe_drop_chance": "4.5",
+    "dropped_recipe": "Recipe: Sellblade Step Boots"
+  },
+  {
+    "recipe_id": "REC_FEET_NEW_008",
+    "source_location": "Execution Grounds",
+    "drops_from": "Executioner / Headsman Veteran",
+    "recipe_drop_chance": "2.6",
+    "dropped_recipe": "Recipe: Ravenstep Boots"
+  },
+  {
+    "recipe_id": "REC_FEET_NEW_009",
+    "source_location": "Raven Hollow",
+    "drops_from": "Raven Fang Stalker / Elite Spawn",
+    "recipe_drop_chance": "2.6",
+    "dropped_recipe": "Recipe: Sanctuary Blood-Tread Boots"
+  },
+  {
+    "recipe_id": "REC_FEET_NEW_010",
+    "source_location": "Crimson Quarry",
+    "drops_from": "War Brute / Ironbound Breaker",
+    "recipe_drop_chance": "2.6",
+    "dropped_recipe": "Recipe: Quarry Iron Boots"
+  },
+  {
+    "recipe_id": "REC_FEET_NEW_011",
+    "source_location": "Warbound Arena Ruins",
+    "drops_from": "Arena Duelist / Arena Champion Spawn",
+    "recipe_drop_chance": "12.0",
+    "dropped_recipe": "Recipe: Threshold Strider Boots"
+  },
+  {
+    "recipe_id": "REC_FEET_NEW_012",
+    "source_location": "Vaelor's Threshold",
+    "drops_from": "Ash Lord Vaelor / Elite Spawn",
+    "recipe_drop_chance": "12.0",
+    "dropped_recipe": "Recipe: Vaelor Ash-Tread Boots"
+  }
+]

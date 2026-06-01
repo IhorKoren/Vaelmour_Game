@@ -1,0 +1,358 @@
+[
+  {
+    "id": "REC_SHIELD_NEW_001",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Roadwatch Buckler",
+    "result": "shield_001_roadwatch_buckler",
+    "itemType": "Shield",
+    "requiredLevel": 2,
+    "tierRaw": "I",
+    "tier": 1,
+    "rarity": "common",
+    "unlockMethod": "Auto-known",
+    "recipeSource": "Crafting trainer",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_003",
+        "qty": 4
+      },
+      {
+        "id": "MAT_001",
+        "qty": 2
+      }
+    ],
+    "goldCost": 35,
+    "successChance": 1,
+    "outputEffect": "Starter block shield for early road fights."
+  },
+  {
+    "id": "REC_SHIELD_NEW_002",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Splinterhide Guard",
+    "result": "shield_002_splinterhide_guard",
+    "itemType": "Shield",
+    "requiredLevel": 4,
+    "tierRaw": "I",
+    "tier": 1,
+    "rarity": "common",
+    "unlockMethod": "Auto-known",
+    "recipeSource": "Crafting trainer",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_003",
+        "qty": 3
+      },
+      {
+        "id": "MAT_001",
+        "qty": 2
+      }
+    ],
+    "goldCost": 55,
+    "successChance": 1,
+    "outputEffect": "Leather-bound shield for Blackfang beasts."
+  },
+  {
+    "id": "REC_SHIELD_NEW_003",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Blackfang Hide Shield",
+    "result": "shield_003_blackfang_hide_shield",
+    "itemType": "Shield",
+    "requiredLevel": 6,
+    "tierRaw": "I",
+    "tier": 1,
+    "rarity": "uncommon",
+    "unlockMethod": "Blackfang Forest progress",
+    "recipeSource": "Blackfang Forest",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_003",
+        "qty": 4
+      },
+      {
+        "id": "MAT_001",
+        "qty": 2
+      }
+    ],
+    "goldCost": 85,
+    "successChance": 1,
+    "outputEffect": "Early bleed-resistant shield for forest progression."
+  },
+  {
+    "id": "REC_SHIELD_NEW_004",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Watchtower Kite Shield",
+    "result": "shield_004_watchtower_kite_shield",
+    "itemType": "Shield",
+    "requiredLevel": 8,
+    "tierRaw": "II",
+    "tier": 2,
+    "rarity": "uncommon",
+    "unlockMethod": "Old Watchtower progress",
+    "recipeSource": "Old Watchtower",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_008",
+        "qty": 6
+      }
+    ],
+    "goldCost": 175,
+    "successChance": 1,
+    "outputEffect": "Guard shield with reliable block value."
+  },
+  {
+    "id": "REC_SHIELD_NEW_005",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Gatewarden Bastion",
+    "result": "shield_005_gatewarden_bastion",
+    "itemType": "Shield",
+    "requiredLevel": 11,
+    "tierRaw": "II",
+    "tier": 2,
+    "rarity": "uncommon",
+    "unlockMethod": "Zone progress / enemy drop",
+    "recipeSource": "Iron Gate Warden",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_008",
+        "qty": 8
+      }
+    ],
+    "goldCost": 210,
+    "successChance": 1,
+    "outputEffect": "Heavy bastion shield for poise and HP."
+  },
+  {
+    "id": "REC_SHIELD_NEW_006",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Ash-Riveted Bulwark",
+    "result": "shield_006_ash_riveted_bulwark",
+    "itemType": "Shield",
+    "requiredLevel": 14,
+    "tierRaw": "III",
+    "tier": 3,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "Ash Disciple / Ash Blood Priest",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_013",
+        "qty": 7
+      },
+      {
+        "id": "MAT_022",
+        "qty": 2
+      },
+      {
+        "id": "MAT_014",
+        "qty": 1
+      }
+    ],
+    "goldCost": 425,
+    "successChance": 1,
+    "outputEffect": "Ash-treated shield with stagger resistance."
+  },
+  {
+    "id": "REC_SHIELD_NEW_007",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Duelist Parry Shield",
+    "result": "shield_007_duelist_parry_shield",
+    "itemType": "Shield",
+    "requiredLevel": 17,
+    "tierRaw": "III",
+    "tier": 3,
+    "rarity": "uncommon",
+    "unlockMethod": "Zone progress / enemy drop",
+    "recipeSource": "Veteran Sellblade / Crossroad Duelist",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_013",
+        "qty": 9
+      },
+      {
+        "id": "MAT_022",
+        "qty": 2
+      }
+    ],
+    "goldCost": 360,
+    "successChance": 1,
+    "outputEffect": "Light shield for block chance and counter setups."
+  },
+  {
+    "id": "REC_SHIELD_NEW_008",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Ravenwall Guard",
+    "result": "shield_008_ravenwall_guard",
+    "itemType": "Shield",
+    "requiredLevel": 20,
+    "tierRaw": "IV",
+    "tier": 4,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "Executioner / Headsman Veteran",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_016",
+        "qty": 9
+      },
+      {
+        "id": "MAT_024",
+        "qty": 2
+      },
+      {
+        "id": "MAT_023",
+        "qty": 1
+      }
+    ],
+    "goldCost": 705,
+    "successChance": 1,
+    "outputEffect": "Rare shield against rapid critical attackers."
+  },
+  {
+    "id": "REC_SHIELD_NEW_009",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Sanctuary Ward Shield",
+    "result": "shield_009_sanctuary_ward_shield",
+    "itemType": "Shield",
+    "requiredLevel": 23,
+    "tierRaw": "IV",
+    "tier": 4,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "Raven Fang Stalker / Elite Spawn",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_016",
+        "qty": 8
+      },
+      {
+        "id": "MAT_024",
+        "qty": 3
+      },
+      {
+        "id": "MAT_023",
+        "qty": 2
+      }
+    ],
+    "goldCost": 745,
+    "successChance": 1,
+    "outputEffect": "Defensive ward shield for blood/ash encounters."
+  },
+  {
+    "id": "REC_SHIELD_NEW_010",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Crimson Quarry Tower",
+    "result": "shield_010_crimson_quarry_tower",
+    "itemType": "Shield",
+    "requiredLevel": 26,
+    "tierRaw": "V",
+    "tier": 5,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "War Brute / Ironbound Breaker",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_019",
+        "qty": 6
+      },
+      {
+        "id": "MAT_016",
+        "qty": 5
+      },
+      {
+        "id": "MAT_024",
+        "qty": 4
+      }
+    ],
+    "goldCost": 1080,
+    "successChance": 1,
+    "outputEffect": "Massive tower shield forged from quarry ore."
+  },
+  {
+    "id": "REC_SHIELD_NEW_011",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Vaelor Threshold Aegis",
+    "result": "shield_011_vaelor_threshold_aegis",
+    "itemType": "Shield",
+    "requiredLevel": 28,
+    "tierRaw": "V",
+    "tier": 5,
+    "rarity": "epic",
+    "unlockMethod": "Boss / elite milestone recipe",
+    "recipeSource": "Arena Duelist / Arena Champion Spawn",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_019",
+        "qty": 7
+      },
+      {
+        "id": "MAT_016",
+        "qty": 6
+      },
+      {
+        "id": "MAT_024",
+        "qty": 5
+      },
+      {
+        "id": "MAT_020",
+        "qty": 3
+      },
+      {
+        "id": "MAT_017",
+        "qty": 3
+      }
+    ],
+    "goldCost": 1540,
+    "successChance": 1,
+    "outputEffect": "Epic gate shield for pre-boss survival."
+  },
+  {
+    "id": "REC_SHIELD_NEW_012",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Citadel Aegis",
+    "result": "shield_012_citadel_aegis",
+    "itemType": "Shield",
+    "requiredLevel": 30,
+    "tierRaw": "V",
+    "tier": 5,
+    "rarity": "epic",
+    "unlockMethod": "Boss / elite milestone recipe",
+    "recipeSource": "Ash Lord Vaelor / Elite Spawn",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_019",
+        "qty": 8
+      },
+      {
+        "id": "MAT_016",
+        "qty": 4
+      },
+      {
+        "id": "MAT_024",
+        "qty": 3
+      },
+      {
+        "id": "MAT_020",
+        "qty": 1
+      },
+      {
+        "id": "MAT_017",
+        "qty": 2
+      }
+    ],
+    "goldCost": 1580,
+    "successChance": 1,
+    "outputEffect": "End-arc epic shield with maximum block identity."
+  }
+]

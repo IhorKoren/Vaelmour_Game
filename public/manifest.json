@@ -1,0 +1,10 @@
+{
+  "name": "Vaelmour",
+  "short_name": "Vaelmour",
+  "description": "Mobile-first Telegram WebApp fantasy RPG",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7efe1",
+  "theme_color": "#d8b676",
+  "icons": []
+}

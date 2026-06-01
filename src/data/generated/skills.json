@@ -1,0 +1,242 @@
+[
+  {
+    "id": "skill_03_axe_cleave",
+    "sourceSheet": "LVL Skills",
+    "level": 3,
+    "name": "Cleave",
+    "weaponType": "axe",
+    "weaponTypes": [
+      "axe"
+    ],
+    "rageCost": 20,
+    "cost": 20,
+    "cooldownSeconds": 4,
+    "cooldown": 4,
+    "effect": "Deals damage and applies Bleed",
+    "scaling": "identity-based; see 07_Balance and LVL Skills",
+    "tags": [
+      "Deals damage and applies Bleed"
+    ],
+    "description": "Deals damage and applies Bleed"
+  },
+  {
+    "id": "skill_08_axe_frenzied_swings",
+    "sourceSheet": "LVL Skills",
+    "level": 8,
+    "name": "Frenzied Swings",
+    "weaponType": "axe",
+    "weaponTypes": [
+      "axe"
+    ],
+    "rageCost": 35,
+    "cost": 35,
+    "cooldownSeconds": 10,
+    "cooldown": 10,
+    "effect": "Increases attack speed",
+    "scaling": "identity-based; see 07_Balance and LVL Skills",
+    "tags": [
+      "Increases attack speed"
+    ],
+    "description": "Increases attack speed"
+  },
+  {
+    "id": "skill_15_axe_executioner_strike",
+    "sourceSheet": "LVL Skills",
+    "level": 15,
+    "name": "Executioner Strike",
+    "weaponType": "axe",
+    "weaponTypes": [
+      "axe"
+    ],
+    "rageCost": 40,
+    "cost": 40,
+    "cooldownSeconds": 12,
+    "cooldown": 12,
+    "effect": "Bonus damage to bleeding targets",
+    "scaling": "identity-based; see 07_Balance and LVL Skills",
+    "tags": [
+      "Bonus damage to bleeding targets"
+    ],
+    "description": "Bonus damage to bleeding targets"
+  },
+  {
+    "id": "skill_25_axe_bloodstorm",
+    "sourceSheet": "LVL Skills",
+    "level": 25,
+    "name": "Bloodstorm",
+    "weaponType": "axe",
+    "weaponTypes": [
+      "axe"
+    ],
+    "rageCost": 80,
+    "cost": 80,
+    "cooldownSeconds": 25,
+    "cooldown": 25,
+    "effect": "Massive bleed ultimate",
+    "scaling": "identity-based; see 07_Balance and LVL Skills",
+    "tags": [
+      "Massive bleed ultimate"
+    ],
+    "description": "Massive bleed ultimate"
+  },
+  {
+    "id": "skill_03_sword_quick_slash",
+    "sourceSheet": "LVL Skills",
+    "level": 3,
+    "name": "Quick Slash",
+    "weaponType": "sword",
+    "weaponTypes": [
+      "sword"
+    ],
+    "rageCost": 15,
+    "cost": 15,
+    "cooldownSeconds": 3,
+    "cooldown": 3,
+    "effect": "Fast precision strike",
+    "scaling": "identity-based; see 07_Balance and LVL Skills",
+    "tags": [
+      "Fast precision strike"
+    ],
+    "description": "Fast precision strike"
+  },
+  {
+    "id": "skill_08_sword_guard_counter",
+    "sourceSheet": "LVL Skills",
+    "level": 8,
+    "name": "Guard Counter",
+    "weaponType": "sword",
+    "weaponTypes": [
+      "sword"
+    ],
+    "rageCost": 25,
+    "cost": 25,
+    "cooldownSeconds": 8,
+    "cooldown": 8,
+    "effect": "Counter after taking damage",
+    "scaling": "identity-based; see 07_Balance and LVL Skills",
+    "tags": [
+      "Counter after taking damage"
+    ],
+    "description": "Counter after taking damage"
+  },
+  {
+    "id": "skill_15_sword_piercing_strike",
+    "sourceSheet": "LVL Skills",
+    "level": 15,
+    "name": "Piercing Strike",
+    "weaponType": "sword",
+    "weaponTypes": [
+      "sword"
+    ],
+    "rageCost": 40,
+    "cost": 40,
+    "cooldownSeconds": 10,
+    "cooldown": 10,
+    "effect": "Ignores armor",
+    "scaling": "identity-based; see 07_Balance and LVL Skills",
+    "tags": [
+      "Ignores armor"
+    ],
+    "description": "Ignores armor"
+  },
+  {
+    "id": "skill_25_sword_blade_flurry",
+    "sourceSheet": "LVL Skills",
+    "level": 25,
+    "name": "Blade Flurry",
+    "weaponType": "sword",
+    "weaponTypes": [
+      "sword"
+    ],
+    "rageCost": 75,
+    "cost": 75,
+    "cooldownSeconds": 20,
+    "cooldown": 20,
+    "effect": "Multiple rapid attacks",
+    "scaling": "identity-based; see 07_Balance and LVL Skills",
+    "tags": [
+      "Multiple rapid attacks"
+    ],
+    "description": "Multiple rapid attacks"
+  },
+  {
+    "id": "skill_03_hammer_crushing_blow",
+    "sourceSheet": "LVL Skills",
+    "level": 3,
+    "name": "Crushing Blow",
+    "weaponType": "hammer",
+    "weaponTypes": [
+      "hammer"
+    ],
+    "rageCost": 25,
+    "cost": 25,
+    "cooldownSeconds": 5,
+    "cooldown": 5,
+    "effect": "Heavy stagger attack",
+    "scaling": "identity-based; see 07_Balance and LVL Skills",
+    "tags": [
+      "Heavy stagger attack"
+    ],
+    "description": "Heavy stagger attack"
+  },
+  {
+    "id": "skill_08_hammer_iron_impact",
+    "sourceSheet": "LVL Skills",
+    "level": 8,
+    "name": "Iron Impact",
+    "weaponType": "hammer",
+    "weaponTypes": [
+      "hammer"
+    ],
+    "rageCost": 40,
+    "cost": 40,
+    "cooldownSeconds": 10,
+    "cooldown": 10,
+    "effect": "Area smash",
+    "scaling": "identity-based; see 07_Balance and LVL Skills",
+    "tags": [
+      "Area smash"
+    ],
+    "description": "Area smash"
+  },
+  {
+    "id": "skill_15_hammer_earthbreaker",
+    "sourceSheet": "LVL Skills",
+    "level": 15,
+    "name": "Earthbreaker",
+    "weaponType": "hammer",
+    "weaponTypes": [
+      "hammer"
+    ],
+    "rageCost": 50,
+    "cost": 50,
+    "cooldownSeconds": 14,
+    "cooldown": 14,
+    "effect": "Reduces enemy poise",
+    "scaling": "identity-based; see 07_Balance and LVL Skills",
+    "tags": [
+      "Reduces enemy poise"
+    ],
+    "description": "Reduces enemy poise"
+  },
+  {
+    "id": "skill_25_hammer_skullcrusher",
+    "sourceSheet": "LVL Skills",
+    "level": 25,
+    "name": "Skullcrusher",
+    "weaponType": "hammer",
+    "weaponTypes": [
+      "hammer"
+    ],
+    "rageCost": 85,
+    "cost": 85,
+    "cooldownSeconds": 28,
+    "cooldown": 28,
+    "effect": "Massive execute hit",
+    "scaling": "identity-based; see 07_Balance and LVL Skills",
+    "tags": [
+      "Massive execute hit"
+    ],
+    "description": "Massive execute hit"
+  }
+]

@@ -1,0 +1,432 @@
+[
+  {
+    "location_id": "LOC_001",
+    "required_level": "1",
+    "item_name": "Torn Road Vest",
+    "item_type": "Chest",
+    "rarity": "Common",
+    "unique_effect_identity": "Starter armor",
+    "drops_from": "Common enemies",
+    "drop_chance": "18"
+  },
+  {
+    "location_id": "LOC_001",
+    "required_level": "2",
+    "item_name": "Cracked Hatchet",
+    "item_type": "Axe",
+    "rarity": "Common",
+    "unique_effect_identity": "Starter axe",
+    "drops_from": "Road Thug",
+    "drop_chance": "12"
+  },
+  {
+    "location_id": "LOC_001",
+    "required_level": "3",
+    "item_name": "Traveler's Ring",
+    "item_type": "Ring",
+    "rarity": "Uncommon",
+    "unique_effect_identity": "+minor HP",
+    "drops_from": "Starved Stalker",
+    "drop_chance": "4"
+  },
+  {
+    "location_id": "LOC_002",
+    "required_level": "3",
+    "item_name": "Blackfang Strap Vest",
+    "item_type": "Chest",
+    "rarity": "Uncommon",
+    "unique_effect_identity": "+Bleed Resist",
+    "drops_from": "Fang Stalker",
+    "drop_chance": "8"
+  },
+  {
+    "location_id": "LOC_002",
+    "required_level": "5",
+    "item_name": "Wolfbite Hatchet",
+    "item_type": "Axe",
+    "rarity": "Rare",
+    "unique_effect_identity": "+Bleed Chance",
+    "drops_from": "Blackfang Alpha Spawn",
+    "drop_chance": "3"
+  },
+  {
+    "location_id": "LOC_002",
+    "required_level": "6",
+    "item_name": "Fang Charm",
+    "item_type": "Talisman",
+    "rarity": "Rare",
+    "unique_effect_identity": "Bleeds deal faster ticks",
+    "drops_from": "Elite Spawn",
+    "drop_chance": "2"
+  },
+  {
+    "location_id": "LOC_003",
+    "required_level": "5",
+    "item_name": "Raider Cleaver",
+    "item_type": "Axe",
+    "rarity": "Uncommon",
+    "unique_effect_identity": "+Rage from attacks",
+    "drops_from": "Wild Raider",
+    "drop_chance": "8"
+  },
+  {
+    "location_id": "LOC_003",
+    "required_level": "6",
+    "item_name": "Blood Raider Chestguard",
+    "item_type": "Chest",
+    "rarity": "Rare",
+    "unique_effect_identity": "+Execute Damage",
+    "drops_from": "Blood Raider",
+    "drop_chance": "3.5"
+  },
+  {
+    "location_id": "LOC_003",
+    "required_level": "8",
+    "item_name": "Marauder's Iron Band",
+    "item_type": "Ring",
+    "rarity": "Rare",
+    "unique_effect_identity": "Critical hits grant Rage",
+    "drops_from": "Savage Marauder",
+    "drop_chance": "2.5"
+  },
+  {
+    "location_id": "LOC_004",
+    "required_level": "7",
+    "item_name": "Watchtower Longsword",
+    "item_type": "Sword",
+    "rarity": "Uncommon",
+    "unique_effect_identity": "+Block Efficiency",
+    "drops_from": "Iron Guard",
+    "drop_chance": "7.5"
+  },
+  {
+    "location_id": "LOC_004",
+    "required_level": "8",
+    "item_name": "Shield Veteran Mail",
+    "item_type": "Chest",
+    "rarity": "Rare",
+    "unique_effect_identity": "+Poise",
+    "drops_from": "Tower Shield Veteran",
+    "drop_chance": "3.5"
+  },
+  {
+    "location_id": "LOC_004",
+    "required_level": "10",
+    "item_name": "Countermark Ring",
+    "item_type": "Ring",
+    "rarity": "Rare",
+    "unique_effect_identity": "Counter attacks deal more damage",
+    "drops_from": "Crossroad Duelist",
+    "drop_chance": "2.5"
+  },
+  {
+    "location_id": "LOC_005",
+    "required_level": "9",
+    "item_name": "Ironbound Hammer",
+    "item_type": "Hammer",
+    "rarity": "Uncommon",
+    "unique_effect_identity": "+Stagger Power",
+    "drops_from": "Gate Hammerman",
+    "drop_chance": "7"
+  },
+  {
+    "location_id": "LOC_005",
+    "required_level": "10",
+    "item_name": "Gate Warden Cuirass",
+    "item_type": "Chest",
+    "rarity": "Rare",
+    "unique_effect_identity": "+Armor and Poise",
+    "drops_from": "Iron Gate Warden",
+    "drop_chance": "3"
+  },
+  {
+    "location_id": "LOC_005",
+    "required_level": "12",
+    "item_name": "Iron Sigil",
+    "item_type": "Talisman",
+    "rarity": "Rare",
+    "unique_effect_identity": "Reduced stagger duration",
+    "drops_from": "Elite Spawn",
+    "drop_chance": "2.5"
+  },
+  {
+    "location_id": "LOC_006",
+    "required_level": "11",
+    "item_name": "Ash-Touched Charm",
+    "item_type": "Talisman",
+    "rarity": "Uncommon",
+    "unique_effect_identity": "+Bleed Resistance",
+    "drops_from": "Ash Disciple",
+    "drop_chance": "7"
+  },
+  {
+    "location_id": "LOC_006",
+    "required_level": "12",
+    "item_name": "Blood Priest's Dagger Charm",
+    "item_type": "Talisman",
+    "rarity": "Rare",
+    "unique_effect_identity": "+Bleed Damage",
+    "drops_from": "Blood Priest",
+    "drop_chance": "3"
+  },
+  {
+    "location_id": "LOC_006",
+    "required_level": "14",
+    "item_name": "Ashbound Vest",
+    "item_type": "Chest",
+    "rarity": "Rare",
+    "unique_effect_identity": "Bleeding enemies deal less damage",
+    "drops_from": "Ash Blood Priest",
+    "drop_chance": "2.5"
+  },
+  {
+    "location_id": "LOC_007",
+    "required_level": "13",
+    "item_name": "Sellblade Longsword",
+    "item_type": "Sword",
+    "rarity": "Uncommon",
+    "unique_effect_identity": "+Attack Speed",
+    "drops_from": "Mercenary Swordsman",
+    "drop_chance": "7"
+  },
+  {
+    "location_id": "LOC_007",
+    "required_level": "14",
+    "item_name": "Crossroad Duelist Mail",
+    "item_type": "Chest",
+    "rarity": "Rare",
+    "unique_effect_identity": "+Counter Chance",
+    "drops_from": "Crossroad Duelist",
+    "drop_chance": "3"
+  },
+  {
+    "location_id": "LOC_007",
+    "required_level": "16",
+    "item_name": "Balanced Iron Ring",
+    "item_type": "Ring",
+    "rarity": "Rare",
+    "unique_effect_identity": "+Rage from attacks",
+    "drops_from": "Veteran Sellblade",
+    "drop_chance": "2.5"
+  },
+  {
+    "location_id": "LOC_008",
+    "required_level": "15",
+    "item_name": "Headsman's Maul",
+    "item_type": "Hammer",
+    "rarity": "Uncommon",
+    "unique_effect_identity": "+Execute Damage",
+    "drops_from": "Executioner",
+    "drop_chance": "7"
+  },
+  {
+    "location_id": "LOC_008",
+    "required_level": "16",
+    "item_name": "Pit Crusher Plate",
+    "item_type": "Chest",
+    "rarity": "Rare",
+    "unique_effect_identity": "+Stagger Resistance",
+    "drops_from": "Pit Crusher",
+    "drop_chance": "3"
+  },
+  {
+    "location_id": "LOC_008",
+    "required_level": "18",
+    "item_name": "Executioner's Mark",
+    "item_type": "Talisman",
+    "rarity": "Rare",
+    "unique_effect_identity": "+Damage below 30% enemy HP",
+    "drops_from": "Headsman Veteran",
+    "drop_chance": "2.5"
+  },
+  {
+    "location_id": "LOC_009",
+    "required_level": "17",
+    "item_name": "Ravenfang Harness",
+    "item_type": "Chest",
+    "rarity": "Uncommon",
+    "unique_effect_identity": "+Crit Chance",
+    "drops_from": "Raven Fang Stalker",
+    "drop_chance": "6.5"
+  },
+  {
+    "location_id": "LOC_009",
+    "required_level": "18",
+    "item_name": "Blackfang Edge",
+    "item_type": "Axe",
+    "rarity": "Rare",
+    "unique_effect_identity": "+Bleed Damage",
+    "drops_from": "Blackfang Alpha Spawn",
+    "drop_chance": "3"
+  },
+  {
+    "location_id": "LOC_009",
+    "required_level": "20",
+    "item_name": "Raven Eye Ring",
+    "item_type": "Ring",
+    "rarity": "Epic",
+    "unique_effect_identity": "Critical hits extend Bleed",
+    "drops_from": "Elite Spawn",
+    "drop_chance": "1.2"
+  },
+  {
+    "location_id": "LOC_010",
+    "required_level": "19",
+    "item_name": "Legion Protector Plate",
+    "item_type": "Chest",
+    "rarity": "Uncommon",
+    "unique_effect_identity": "+Poise",
+    "drops_from": "Legion Protector",
+    "drop_chance": "6.5"
+  },
+  {
+    "location_id": "LOC_010",
+    "required_level": "20",
+    "item_name": "Tyrant Guard Hammer",
+    "item_type": "Hammer",
+    "rarity": "Rare",
+    "unique_effect_identity": "+Stagger Power",
+    "drops_from": "Iron Tyrant Guard",
+    "drop_chance": "3"
+  },
+  {
+    "location_id": "LOC_010",
+    "required_level": "22",
+    "item_name": "Iron Tyrant Seal",
+    "item_type": "Talisman",
+    "rarity": "Epic",
+    "unique_effect_identity": "Taking damage may grant Fortified",
+    "drops_from": "Elite Spawn",
+    "drop_chance": "1.2"
+  },
+  {
+    "location_id": "LOC_011",
+    "required_level": "21",
+    "item_name": "Zealot's Ash Charm",
+    "item_type": "Talisman",
+    "rarity": "Uncommon",
+    "unique_effect_identity": "+Bleed Damage",
+    "drops_from": "Ash Fang Zealot",
+    "drop_chance": "6.5"
+  },
+  {
+    "location_id": "LOC_011",
+    "required_level": "22",
+    "item_name": "Ash-Cursed Vest",
+    "item_type": "Chest",
+    "rarity": "Rare",
+    "unique_effect_identity": "Bleeds tick faster",
+    "drops_from": "Ash-Cursed Champion",
+    "drop_chance": "3"
+  },
+  {
+    "location_id": "LOC_011",
+    "required_level": "24",
+    "item_name": "Sanctuary Blood Ring",
+    "item_type": "Ring",
+    "rarity": "Epic",
+    "unique_effect_identity": "Rage generation below 30% HP",
+    "drops_from": "Elite Spawn",
+    "drop_chance": "1.2"
+  },
+  {
+    "location_id": "LOC_012",
+    "required_level": "23",
+    "item_name": "Arena Longsword",
+    "item_type": "Sword",
+    "rarity": "Uncommon",
+    "unique_effect_identity": "+Counter Damage",
+    "drops_from": "Arena Duelist",
+    "drop_chance": "6.5"
+  },
+  {
+    "location_id": "LOC_012",
+    "required_level": "24",
+    "item_name": "Champion's Mail",
+    "item_type": "Chest",
+    "rarity": "Rare",
+    "unique_effect_identity": "+Attack Speed",
+    "drops_from": "Arena Champion Spawn",
+    "drop_chance": "3"
+  },
+  {
+    "location_id": "LOC_012",
+    "required_level": "26",
+    "item_name": "Morcant's Ring",
+    "item_type": "Ring",
+    "rarity": "Epic",
+    "unique_effect_identity": "Counter attacks generate Rage",
+    "drops_from": "Elite Spawn",
+    "drop_chance": "1.2"
+  },
+  {
+    "location_id": "LOC_013",
+    "required_level": "25",
+    "item_name": "Quarry Breaker Maul",
+    "item_type": "Hammer",
+    "rarity": "Uncommon",
+    "unique_effect_identity": "+Stagger Power",
+    "drops_from": "War Brute",
+    "drop_chance": "6.5"
+  },
+  {
+    "location_id": "LOC_013",
+    "required_level": "26",
+    "item_name": "Crimson Plate",
+    "item_type": "Chest",
+    "rarity": "Rare",
+    "unique_effect_identity": "+Damage reduction above 70% HP",
+    "drops_from": "Ironbound Breaker",
+    "drop_chance": "3"
+  },
+  {
+    "location_id": "LOC_013",
+    "required_level": "28",
+    "item_name": "Breaker Sigil",
+    "item_type": "Talisman",
+    "rarity": "Epic",
+    "unique_effect_identity": "Heavy attacks reduce enemy Poise",
+    "drops_from": "Quarry Breaker Spawn",
+    "drop_chance": "1.2"
+  },
+  {
+    "location_id": "LOC_014",
+    "required_level": "27",
+    "item_name": "Vaelor Threshold Blade",
+    "item_type": "Sword",
+    "rarity": "Rare",
+    "unique_effect_identity": "+Crit and Rage",
+    "drops_from": "Raven Fang Stalker",
+    "drop_chance": "3.5"
+  },
+  {
+    "location_id": "LOC_014",
+    "required_level": "28",
+    "item_name": "Ash Lord's Executioner Axe",
+    "item_type": "Axe",
+    "rarity": "Epic",
+    "unique_effect_identity": "Bleeds trigger bonus Rage",
+    "drops_from": "Ash Fang Zealot",
+    "drop_chance": "1.5"
+  },
+  {
+    "location_id": "LOC_014",
+    "required_level": "29",
+    "item_name": "Warbound Citadel Plate",
+    "item_type": "Chest",
+    "rarity": "Epic",
+    "unique_effect_identity": "Fortified at low HP",
+    "drops_from": "Iron Tyrant Guard",
+    "drop_chance": "1.5"
+  },
+  {
+    "location_id": "LOC_014",
+    "required_level": "30",
+    "item_name": "Three Ash Sigils",
+    "item_type": "Key Item",
+    "rarity": "Epic",
+    "unique_effect_identity": "Unlocks Ash Lord Vaelor",
+    "drops_from": "Elite Spawn / zone progress",
+    "drop_chance": "4"
+  }
+]

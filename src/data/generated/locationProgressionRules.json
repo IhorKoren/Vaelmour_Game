@@ -1,0 +1,47 @@
+[
+  {
+    "rule_field": "Core loop",
+    "value": "Enter Location → Search → Encounter → Combat → Loot → Upgrade",
+    "design_notes": "Локації не мають пересування; Search миттєво запускає encounter."
+  },
+  {
+    "rule_field": "Normal fight duration",
+    "value": "15–30 sec",
+    "design_notes": "Підходить для Telegram/browser session gameplay."
+  },
+  {
+    "rule_field": "Elite fight duration",
+    "value": "45–90 sec",
+    "design_notes": "Elite має бути помітною подією, а не звичайним мобом."
+  },
+  {
+    "rule_field": "Boss fight duration",
+    "value": "2–5 min",
+    "design_notes": "Boss не спавниться випадково; відкривається через прогрес."
+  },
+  {
+    "rule_field": "Spawn pool total",
+    "value": "100%",
+    "design_notes": "Сума шансів у кожній локації має дорівнювати 100%."
+  },
+  {
+    "rule_field": "Elite logic",
+    "value": "Spawn Roll → Apply Elite Affix → Improve Loot",
+    "design_notes": "Elite Spawn Roll замінюється ворогом із пулу локації + affix."
+  },
+  {
+    "rule_field": "Boss unlock",
+    "value": "Quest / Key / Reputation / Zone Progress",
+    "design_notes": "Не випадковий спавн, щоб boss був milestone."
+  },
+  {
+    "rule_field": "Loot identity",
+    "value": "Each zone has a distinct loot theme",
+    "design_notes": "Це змушує гравця фармити різні локації під різні builds."
+  },
+  {
+    "rule_field": "Level overlap",
+    "value": "Zones overlap by 2–3 levels",
+    "design_notes": "Дає гравцю вибір: безпечніша зона або ризикована зона з кращим лутом."
+  }
+]

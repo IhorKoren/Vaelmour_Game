@@ -1,0 +1,38 @@
+[
+  {
+    "id": "boss_10_blackfang_alpha",
+    "sourceSheet": "ENEMY Bosses",
+    "level": 10,
+    "name": "Blackfang Alpha",
+    "phaseMechanics": "Enrage below 40% HP",
+    "hp": 1200,
+    "damageMin": 35,
+    "damageMax": -50,
+    "specialAbility": "Rapid Bleed Attacks",
+    "uniqueLoot": "Blackfang Vest"
+  },
+  {
+    "id": "boss_20_iron_tyrant",
+    "sourceSheet": "ENEMY Bosses",
+    "level": 20,
+    "name": "Iron Tyrant",
+    "phaseMechanics": "Poise shield phases",
+    "hp": 3500,
+    "damageMin": 55,
+    "damageMax": -75,
+    "specialAbility": "Massive Stagger Slam",
+    "uniqueLoot": "Iron Vanguard Plate"
+  },
+  {
+    "id": "boss_30_ash_lord_vaelor",
+    "sourceSheet": "ENEMY Bosses",
+    "level": 30,
+    "name": "Ash Lord Vaelor",
+    "phaseMechanics": "Alternates between Rage phases",
+    "hp": 7000,
+    "damageMin": 85,
+    "damageMax": -120,
+    "specialAbility": "Burning Bleed Curse",
+    "uniqueLoot": "Ashbound Executioner Axe"
+  }
+]

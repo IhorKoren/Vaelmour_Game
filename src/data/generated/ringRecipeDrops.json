@@ -1,0 +1,72 @@
+[
+  {
+    "recipe_id": "REC_RING_NEW_003",
+    "source_location": "Blackfang Forest",
+    "drops_from": "Young Wolf / Fang Stalker",
+    "recipe_drop_chance": "4.5",
+    "dropped_recipe": "Recipe: Marauder's Iron Band"
+  },
+  {
+    "recipe_id": "REC_RING_NEW_004",
+    "source_location": "Old Watchtower",
+    "drops_from": "Tower Shield Veteran / Iron Guard",
+    "recipe_drop_chance": "4.5",
+    "dropped_recipe": "Recipe: Countermark Ring"
+  },
+  {
+    "recipe_id": "REC_RING_NEW_005",
+    "source_location": "Blackfang Gate",
+    "drops_from": "Iron Gate Warden",
+    "recipe_drop_chance": "4.5",
+    "dropped_recipe": "Recipe: Balanced Iron Ring"
+  },
+  {
+    "recipe_id": "REC_RING_NEW_006",
+    "source_location": "Ashen Marsh",
+    "drops_from": "Ash Disciple / Ash Blood Priest",
+    "recipe_drop_chance": "2.6",
+    "dropped_recipe": "Recipe: Ash Resin Signet"
+  },
+  {
+    "recipe_id": "REC_RING_NEW_007",
+    "source_location": "Mercenary Crossroads",
+    "drops_from": "Veteran Sellblade / Crossroad Duelist",
+    "recipe_drop_chance": "4.5",
+    "dropped_recipe": "Recipe: Sellblade Oath Ring"
+  },
+  {
+    "recipe_id": "REC_RING_NEW_008",
+    "source_location": "Execution Grounds",
+    "drops_from": "Executioner / Headsman Veteran",
+    "recipe_drop_chance": "2.6",
+    "dropped_recipe": "Recipe: Raven Eye Ring"
+  },
+  {
+    "recipe_id": "REC_RING_NEW_009",
+    "source_location": "Raven Hollow",
+    "drops_from": "Raven Fang Stalker / Elite Spawn",
+    "recipe_drop_chance": "2.6",
+    "dropped_recipe": "Recipe: Sanctuary Blood Ring"
+  },
+  {
+    "recipe_id": "REC_RING_NEW_010",
+    "source_location": "Crimson Quarry",
+    "drops_from": "War Brute / Ironbound Breaker",
+    "recipe_drop_chance": "2.6",
+    "dropped_recipe": "Recipe: Crimson Ore Band"
+  },
+  {
+    "recipe_id": "REC_RING_NEW_011",
+    "source_location": "Warbound Arena Ruins",
+    "drops_from": "Arena Duelist / Arena Champion Spawn",
+    "recipe_drop_chance": "12.0",
+    "dropped_recipe": "Recipe: Morcant's Ring"
+  },
+  {
+    "recipe_id": "REC_RING_NEW_012",
+    "source_location": "Vaelor's Threshold",
+    "drops_from": "Ash Lord Vaelor / Elite Spawn",
+    "recipe_drop_chance": "12.0",
+    "dropped_recipe": "Recipe: Vaelor Ash Signet"
+  }
+]

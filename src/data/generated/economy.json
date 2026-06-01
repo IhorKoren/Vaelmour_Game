@@ -1,0 +1,2098 @@
+{
+  "assumptions": [
+    {
+      "assumption": "Base XP to reach level 2",
+      "value": "100",
+      "notes": "XP curve base. Level 1 starts at 0 XP."
+    },
+    {
+      "assumption": "XP Growth Factor",
+      "value": "1.155",
+      "notes": "Moderate MMORPG curve to level 30."
+    },
+    {
+      "assumption": "Base Enemy XP",
+      "value": "16",
+      "notes": "Common enemy XP at level 1 before rarity modifier."
+    },
+    {
+      "assumption": "Enemy XP Level Growth",
+      "value": "0.145",
+      "notes": "Enemy XP scales with enemy level."
+    },
+    {
+      "assumption": "Common XP Multiplier",
+      "value": "1",
+      "notes": "Common enemy reward multiplier."
+    },
+    {
+      "assumption": "Uncommon XP Multiplier",
+      "value": "1.22",
+      "notes": "Uncommon enemy reward multiplier."
+    },
+    {
+      "assumption": "Rare XP Multiplier",
+      "value": "1.65",
+      "notes": "Rare enemy reward multiplier."
+    },
+    {
+      "assumption": "Elite XP Multiplier",
+      "value": "2.75",
+      "notes": "Elite enemy reward multiplier."
+    },
+    {
+      "assumption": "Boss XP Multiplier",
+      "value": "7.5",
+      "notes": "Boss enemy reward multiplier."
+    },
+    {
+      "assumption": "Base Gold Reward",
+      "value": "5",
+      "notes": "Common enemy gold at level 1."
+    },
+    {
+      "assumption": "Gold Level Growth",
+      "value": "0.115",
+      "notes": "Gold reward scaling."
+    },
+    {
+      "assumption": "Uncommon Gold Multiplier",
+      "value": "1.25",
+      "notes": "Uncommon gold reward multiplier."
+    },
+    {
+      "assumption": "Rare Gold Multiplier",
+      "value": "1.75",
+      "notes": "Rare gold reward multiplier."
+    },
+    {
+      "assumption": "Elite Gold Multiplier",
+      "value": "3",
+      "notes": "Elite gold reward multiplier."
+    },
+    {
+      "assumption": "Boss Gold Multiplier",
+      "value": "9",
+      "notes": "Boss gold reward multiplier."
+    },
+    {
+      "assumption": "Vendor Buy Price Multiplier",
+      "value": "1",
+      "notes": "Base item price formula multiplier."
+    },
+    {
+      "assumption": "Vendor Sell Multiplier",
+      "value": "0.28",
+      "notes": "Players sell items for 28% of base value."
+    },
+    {
+      "assumption": "Repair Cost Multiplier",
+      "value": "0.18",
+      "notes": "Full repair costs 18% of base item value."
+    },
+    {
+      "assumption": "Upgrade Base Cost Multiplier",
+      "value": "0.55",
+      "notes": "Upgrade cost uses item base value × this factor × upgrade level curve."
+    },
+    {
+      "assumption": "Shop Markup",
+      "value": "1.25",
+      "notes": "Shop prices are 25% above base item value."
+    },
+    {
+      "assumption": "Daily Quest Gold Multiplier",
+      "value": "10",
+      "notes": "Daily quest gold roughly equals 10 normal kills at zone level."
+    },
+    {
+      "assumption": "Target Normal Fights Per Level",
+      "value": "18",
+      "notes": "Approximate fights needed if killing level-appropriate common enemies."
+    }
+  ],
+  "expProgression": [
+    {
+      "level": 1,
+      "xp_required_to_next_level": 215,
+      "total_xp_required": 0,
+      "target_normal_fights": 12,
+      "expected_normal_fights_from_previous_level": null,
+      "design_notes": "Controlled onboarding"
+    },
+    {
+      "level": 2,
+      "xp_required_to_next_level": 270,
+      "total_xp_required": 215,
+      "target_normal_fights": 13.5,
+      "expected_normal_fights_from_previous_level": 10.8,
+      "design_notes": "Controlled onboarding"
+    },
+    {
+      "level": 3,
+      "xp_required_to_next_level": 345,
+      "total_xp_required": 485,
+      "target_normal_fights": 15,
+      "expected_normal_fights_from_previous_level": 11.7,
+      "design_notes": "Controlled onboarding"
+    },
+    {
+      "level": 4,
+      "xp_required_to_next_level": 430,
+      "total_xp_required": 830,
+      "target_normal_fights": 16.5,
+      "expected_normal_fights_from_previous_level": 13.3,
+      "design_notes": "Controlled onboarding"
+    },
+    {
+      "level": 5,
+      "xp_required_to_next_level": 520,
+      "total_xp_required": 1260,
+      "target_normal_fights": 18,
+      "expected_normal_fights_from_previous_level": 14.8,
+      "design_notes": "Controlled onboarding"
+    },
+    {
+      "level": 6,
+      "xp_required_to_next_level": 660,
+      "total_xp_required": 1780,
+      "target_normal_fights": 20,
+      "expected_normal_fights_from_previous_level": 15.8,
+      "design_notes": "Extended 1–30 progression"
+    },
+    {
+      "level": 7,
+      "xp_required_to_next_level": 845,
+      "total_xp_required": 2440,
+      "target_normal_fights": 23.5,
+      "expected_normal_fights_from_previous_level": 18.3,
+      "design_notes": "Extended 1–30 progression"
+    },
+    {
+      "level": 8,
+      "xp_required_to_next_level": 1055,
+      "total_xp_required": 3285,
+      "target_normal_fights": 27,
+      "expected_normal_fights_from_previous_level": 21.7,
+      "design_notes": "Extended 1–30 progression"
+    },
+    {
+      "level": 9,
+      "xp_required_to_next_level": 1280,
+      "total_xp_required": 4340,
+      "target_normal_fights": 30.5,
+      "expected_normal_fights_from_previous_level": 25.1,
+      "design_notes": "Extended 1–30 progression"
+    },
+    {
+      "level": 10,
+      "xp_required_to_next_level": 1565,
+      "total_xp_required": 5620,
+      "target_normal_fights": 34,
+      "expected_normal_fights_from_previous_level": 27.8,
+      "design_notes": "Extended 1–30 progression"
+    },
+    {
+      "level": 11,
+      "xp_required_to_next_level": 2000,
+      "total_xp_required": 7185,
+      "target_normal_fights": 40,
+      "expected_normal_fights_from_previous_level": 31.3,
+      "design_notes": "Extended 1–30 progression"
+    },
+    {
+      "level": 12,
+      "xp_required_to_next_level": 2375,
+      "total_xp_required": 9185,
+      "target_normal_fights": 44.8,
+      "expected_normal_fights_from_previous_level": 37.7,
+      "design_notes": "Extended 1–30 progression"
+    },
+    {
+      "level": 13,
+      "xp_required_to_next_level": 2825,
+      "total_xp_required": 11560,
+      "target_normal_fights": 49.6,
+      "expected_normal_fights_from_previous_level": 41.7,
+      "design_notes": "Extended 1–30 progression"
+    },
+    {
+      "level": 14,
+      "xp_required_to_next_level": 3320,
+      "total_xp_required": 14385,
+      "target_normal_fights": 54.4,
+      "expected_normal_fights_from_previous_level": 46.3,
+      "design_notes": "Extended 1–30 progression"
+    },
+    {
+      "level": 15,
+      "xp_required_to_next_level": 3850,
+      "total_xp_required": 17705,
+      "target_normal_fights": 59.2,
+      "expected_normal_fights_from_previous_level": 51.1,
+      "design_notes": "Extended 1–30 progression"
+    },
+    {
+      "level": 16,
+      "xp_required_to_next_level": 4415,
+      "total_xp_required": 21555,
+      "target_normal_fights": 64,
+      "expected_normal_fights_from_previous_level": 55.8,
+      "design_notes": "Extended 1–30 progression"
+    },
+    {
+      "level": 17,
+      "xp_required_to_next_level": 5020,
+      "total_xp_required": 25970,
+      "target_normal_fights": 68.8,
+      "expected_normal_fights_from_previous_level": 60.5,
+      "design_notes": "Extended 1–30 progression"
+    },
+    {
+      "level": 18,
+      "xp_required_to_next_level": 5665,
+      "total_xp_required": 30990,
+      "target_normal_fights": 73.6,
+      "expected_normal_fights_from_previous_level": 65.2,
+      "design_notes": "Extended 1–30 progression"
+    },
+    {
+      "level": 19,
+      "xp_required_to_next_level": 6430,
+      "total_xp_required": 36655,
+      "target_normal_fights": 78.4,
+      "expected_normal_fights_from_previous_level": 69.1,
+      "design_notes": "Extended 1–30 progression"
+    },
+    {
+      "level": 20,
+      "xp_required_to_next_level": 7155,
+      "total_xp_required": 43085,
+      "target_normal_fights": 83.2,
+      "expected_normal_fights_from_previous_level": 74.8,
+      "design_notes": "Extended 1–30 progression"
+    },
+    {
+      "level": 21,
+      "xp_required_to_next_level": 8100,
+      "total_xp_required": 50240,
+      "target_normal_fights": 90,
+      "expected_normal_fights_from_previous_level": 79.5,
+      "design_notes": "Slow anti-week-cap progression"
+    },
+    {
+      "level": 22,
+      "xp_required_to_next_level": 9120,
+      "total_xp_required": 58340,
+      "target_normal_fights": 96,
+      "expected_normal_fights_from_previous_level": 85.3,
+      "design_notes": "Slow anti-week-cap progression"
+    },
+    {
+      "level": 23,
+      "xp_required_to_next_level": 10200,
+      "total_xp_required": 67460,
+      "target_normal_fights": 102,
+      "expected_normal_fights_from_previous_level": 91.2,
+      "design_notes": "Slow anti-week-cap progression"
+    },
+    {
+      "level": 24,
+      "xp_required_to_next_level": 11340,
+      "total_xp_required": 77660,
+      "target_normal_fights": 108,
+      "expected_normal_fights_from_previous_level": 97.1,
+      "design_notes": "Slow anti-week-cap progression"
+    },
+    {
+      "level": 25,
+      "xp_required_to_next_level": 12425,
+      "total_xp_required": 89000,
+      "target_normal_fights": 114,
+      "expected_normal_fights_from_previous_level": 104,
+      "design_notes": "Slow anti-week-cap progression"
+    },
+    {
+      "level": 26,
+      "xp_required_to_next_level": 13680,
+      "total_xp_required": 101425,
+      "target_normal_fights": 120,
+      "expected_normal_fights_from_previous_level": 109,
+      "design_notes": "Slow anti-week-cap progression"
+    },
+    {
+      "level": 27,
+      "xp_required_to_next_level": 14995,
+      "total_xp_required": 115105,
+      "target_normal_fights": 126,
+      "expected_normal_fights_from_previous_level": 115,
+      "design_notes": "Slow anti-week-cap progression"
+    },
+    {
+      "level": 28,
+      "xp_required_to_next_level": 16370,
+      "total_xp_required": 130100,
+      "target_normal_fights": 132,
+      "expected_normal_fights_from_previous_level": 120.9,
+      "design_notes": "Slow anti-week-cap progression"
+    },
+    {
+      "level": 29,
+      "xp_required_to_next_level": 17940,
+      "total_xp_required": 146470,
+      "target_normal_fights": 138,
+      "expected_normal_fights_from_previous_level": 125.9,
+      "design_notes": "Slow anti-week-cap progression"
+    },
+    {
+      "level": 30,
+      "xp_required_to_next_level": "MAX LEVEL",
+      "total_xp_required": 164410,
+      "target_normal_fights": null,
+      "expected_normal_fights_from_previous_level": null,
+      "design_notes": "Cap level for current 1–30 database"
+    }
+  ],
+  "enemyXpRewards": [
+    {
+      "enemy_level": 1,
+      "common_xp": 18,
+      "uncommon_xp": 22,
+      "rare_xp": 30,
+      "elite_xp": 50,
+      "boss_xp": 135,
+      "notes": "Boss XP is milestone-only; normal leveling is intentionally slower."
+    },
+    {
+      "enemy_level": 2,
+      "common_xp": 20,
+      "uncommon_xp": 24,
+      "rare_xp": 33,
+      "elite_xp": 55,
+      "boss_xp": 150,
+      "notes": "Boss XP is milestone-only; normal leveling is intentionally slower."
+    },
+    {
+      "enemy_level": 3,
+      "common_xp": 23,
+      "uncommon_xp": 28,
+      "rare_xp": 38,
+      "elite_xp": 63,
+      "boss_xp": 172,
+      "notes": "Boss XP is milestone-only; normal leveling is intentionally slower."
+    },
+    {
+      "enemy_level": 4,
+      "common_xp": 26,
+      "uncommon_xp": 32,
+      "rare_xp": 43,
+      "elite_xp": 72,
+      "boss_xp": 195,
+      "notes": "Boss XP is milestone-only; normal leveling is intentionally slower."
+    },
+    {
+      "enemy_level": 5,
+      "common_xp": 29,
+      "uncommon_xp": 35,
+      "rare_xp": 48,
+      "elite_xp": 80,
+      "boss_xp": 218,
+      "notes": "Boss XP is milestone-only; normal leveling is intentionally slower."
+    },
+    {
+      "enemy_level": 6,
+      "common_xp": 33,
+      "uncommon_xp": 40,
+      "rare_xp": 54,
+      "elite_xp": 91,
+      "boss_xp": 248,
+      "notes": "Boss XP is milestone-only; normal leveling is intentionally slower."
+    },
+    {
+      "enemy_level": 7,
+      "common_xp": 36,
+      "uncommon_xp": 44,
+      "rare_xp": 59,
+      "elite_xp": 99,
+      "boss_xp": 270,
+      "notes": "Boss XP is milestone-only; normal leveling is intentionally slower."
+    },
+    {
+      "enemy_level": 8,
+      "common_xp": 39,
+      "uncommon_xp": 48,
+      "rare_xp": 64,
+      "elite_xp": 107,
+      "boss_xp": 292,
+      "notes": "Boss XP is milestone-only; normal leveling is intentionally slower."
+    },
+    {
+      "enemy_level": 9,
+      "common_xp": 42,
+      "uncommon_xp": 51,
+      "rare_xp": 69,
+      "elite_xp": 116,
+      "boss_xp": 315,
+      "notes": "Boss XP is milestone-only; normal leveling is intentionally slower."
+    },
+    {
+      "enemy_level": 10,
+      "common_xp": 46,
+      "uncommon_xp": 56,
+      "rare_xp": 76,
+      "elite_xp": 126,
+      "boss_xp": 345,
+      "notes": "Boss XP is milestone-only; normal leveling is intentionally slower."
+    },
+    {
+      "enemy_level": 11,
+      "common_xp": 50,
+      "uncommon_xp": 61,
+      "rare_xp": 82,
+      "elite_xp": 138,
+      "boss_xp": 375,
+      "notes": "Boss XP is milestone-only; normal leveling is intentionally slower."
+    },
+    {
+      "enemy_level": 12,
+      "common_xp": 53,
+      "uncommon_xp": 65,
+      "rare_xp": 87,
+      "elite_xp": 146,
+      "boss_xp": 398,
+      "notes": "Boss XP is milestone-only; normal leveling is intentionally slower."
+    },
+    {
+      "enemy_level": 13,
+      "common_xp": 57,
+      "uncommon_xp": 70,
+      "rare_xp": 94,
+      "elite_xp": 157,
+      "boss_xp": 428,
+      "notes": "Boss XP is milestone-only; normal leveling is intentionally slower."
+    },
+    {
+      "enemy_level": 14,
+      "common_xp": 61,
+      "uncommon_xp": 74,
+      "rare_xp": 101,
+      "elite_xp": 168,
+      "boss_xp": 458,
+      "notes": "Boss XP is milestone-only; normal leveling is intentionally slower."
+    },
+    {
+      "enemy_level": 15,
+      "common_xp": 65,
+      "uncommon_xp": 79,
+      "rare_xp": 107,
+      "elite_xp": 179,
+      "boss_xp": 488,
+      "notes": "Boss XP is milestone-only; normal leveling is intentionally slower."
+    },
+    {
+      "enemy_level": 16,
+      "common_xp": 69,
+      "uncommon_xp": 84,
+      "rare_xp": 114,
+      "elite_xp": 190,
+      "boss_xp": 518,
+      "notes": "Boss XP is milestone-only; normal leveling is intentionally slower."
+    },
+    {
+      "enemy_level": 17,
+      "common_xp": 73,
+      "uncommon_xp": 89,
+      "rare_xp": 120,
+      "elite_xp": 201,
+      "boss_xp": 548,
+      "notes": "Boss XP is milestone-only; normal leveling is intentionally slower."
+    },
+    {
+      "enemy_level": 18,
+      "common_xp": 77,
+      "uncommon_xp": 94,
+      "rare_xp": 127,
+      "elite_xp": 212,
+      "boss_xp": 578,
+      "notes": "Boss XP is milestone-only; normal leveling is intentionally slower."
+    },
+    {
+      "enemy_level": 19,
+      "common_xp": 82,
+      "uncommon_xp": 100,
+      "rare_xp": 135,
+      "elite_xp": 226,
+      "boss_xp": 615,
+      "notes": "Boss XP is milestone-only; normal leveling is intentionally slower."
+    },
+    {
+      "enemy_level": 20,
+      "common_xp": 86,
+      "uncommon_xp": 105,
+      "rare_xp": 142,
+      "elite_xp": 236,
+      "boss_xp": 645,
+      "notes": "Boss XP is milestone-only; normal leveling is intentionally slower."
+    },
+    {
+      "enemy_level": 21,
+      "common_xp": 90,
+      "uncommon_xp": 110,
+      "rare_xp": 148,
+      "elite_xp": 248,
+      "boss_xp": 675,
+      "notes": "Boss XP is milestone-only; normal leveling is intentionally slower."
+    },
+    {
+      "enemy_level": 22,
+      "common_xp": 95,
+      "uncommon_xp": 116,
+      "rare_xp": 157,
+      "elite_xp": 261,
+      "boss_xp": 712,
+      "notes": "Boss XP is milestone-only; normal leveling is intentionally slower."
+    },
+    {
+      "enemy_level": 23,
+      "common_xp": 100,
+      "uncommon_xp": 122,
+      "rare_xp": 165,
+      "elite_xp": 275,
+      "boss_xp": 750,
+      "notes": "Boss XP is milestone-only; normal leveling is intentionally slower."
+    },
+    {
+      "enemy_level": 24,
+      "common_xp": 105,
+      "uncommon_xp": 128,
+      "rare_xp": 173,
+      "elite_xp": 289,
+      "boss_xp": 788,
+      "notes": "Boss XP is milestone-only; normal leveling is intentionally slower."
+    },
+    {
+      "enemy_level": 25,
+      "common_xp": 109,
+      "uncommon_xp": 133,
+      "rare_xp": 180,
+      "elite_xp": 300,
+      "boss_xp": 818,
+      "notes": "Boss XP is milestone-only; normal leveling is intentionally slower."
+    },
+    {
+      "enemy_level": 26,
+      "common_xp": 114,
+      "uncommon_xp": 139,
+      "rare_xp": 188,
+      "elite_xp": 314,
+      "boss_xp": 855,
+      "notes": "Boss XP is milestone-only; normal leveling is intentionally slower."
+    },
+    {
+      "enemy_level": 27,
+      "common_xp": 119,
+      "uncommon_xp": 145,
+      "rare_xp": 196,
+      "elite_xp": 327,
+      "boss_xp": 892,
+      "notes": "Boss XP is milestone-only; normal leveling is intentionally slower."
+    },
+    {
+      "enemy_level": 28,
+      "common_xp": 124,
+      "uncommon_xp": 151,
+      "rare_xp": 205,
+      "elite_xp": 341,
+      "boss_xp": 930,
+      "notes": "Boss XP is milestone-only; normal leveling is intentionally slower."
+    },
+    {
+      "enemy_level": 29,
+      "common_xp": 130,
+      "uncommon_xp": 159,
+      "rare_xp": 214,
+      "elite_xp": 358,
+      "boss_xp": 975,
+      "notes": "Boss XP is milestone-only; normal leveling is intentionally slower."
+    },
+    {
+      "enemy_level": 30,
+      "common_xp": 135,
+      "uncommon_xp": 165,
+      "rare_xp": 223,
+      "elite_xp": 371,
+      "boss_xp": 1012,
+      "notes": "Boss XP is milestone-only; normal leveling is intentionally slower."
+    }
+  ],
+  "goldRewards": [
+    {
+      "enemy_level": 1,
+      "common_gold": 6,
+      "uncommon_gold": 8,
+      "rare_gold": 11,
+      "elite_gold": 18,
+      "boss_gold": 54,
+      "daily_quest_gold_target": 57,
+      "notes": "Reduced for slower progression; daily gold supports repairs, not full gearing."
+    },
+    {
+      "enemy_level": 2,
+      "common_gold": 7,
+      "uncommon_gold": 9,
+      "rare_gold": 13,
+      "elite_gold": 21,
+      "boss_gold": 63,
+      "daily_quest_gold_target": 66,
+      "notes": "Reduced for slower progression; daily gold supports repairs, not full gearing."
+    },
+    {
+      "enemy_level": 3,
+      "common_gold": 8,
+      "uncommon_gold": 10,
+      "rare_gold": 15,
+      "elite_gold": 24,
+      "boss_gold": 72,
+      "daily_quest_gold_target": 76,
+      "notes": "Reduced for slower progression; daily gold supports repairs, not full gearing."
+    },
+    {
+      "enemy_level": 4,
+      "common_gold": 9,
+      "uncommon_gold": 12,
+      "rare_gold": 17,
+      "elite_gold": 27,
+      "boss_gold": 81,
+      "daily_quest_gold_target": 86,
+      "notes": "Reduced for slower progression; daily gold supports repairs, not full gearing."
+    },
+    {
+      "enemy_level": 5,
+      "common_gold": 10,
+      "uncommon_gold": 13,
+      "rare_gold": 19,
+      "elite_gold": 30,
+      "boss_gold": 90,
+      "daily_quest_gold_target": 95,
+      "notes": "Reduced for slower progression; daily gold supports repairs, not full gearing."
+    },
+    {
+      "enemy_level": 6,
+      "common_gold": 11,
+      "uncommon_gold": 14,
+      "rare_gold": 21,
+      "elite_gold": 33,
+      "boss_gold": 99,
+      "daily_quest_gold_target": 104,
+      "notes": "Reduced for slower progression; daily gold supports repairs, not full gearing."
+    },
+    {
+      "enemy_level": 7,
+      "common_gold": 12,
+      "uncommon_gold": 16,
+      "rare_gold": 23,
+      "elite_gold": 36,
+      "boss_gold": 108,
+      "daily_quest_gold_target": 114,
+      "notes": "Reduced for slower progression; daily gold supports repairs, not full gearing."
+    },
+    {
+      "enemy_level": 8,
+      "common_gold": 13,
+      "uncommon_gold": 17,
+      "rare_gold": 25,
+      "elite_gold": 39,
+      "boss_gold": 117,
+      "daily_quest_gold_target": 124,
+      "notes": "Reduced for slower progression; daily gold supports repairs, not full gearing."
+    },
+    {
+      "enemy_level": 9,
+      "common_gold": 14,
+      "uncommon_gold": 18,
+      "rare_gold": 27,
+      "elite_gold": 42,
+      "boss_gold": 126,
+      "daily_quest_gold_target": 133,
+      "notes": "Reduced for slower progression; daily gold supports repairs, not full gearing."
+    },
+    {
+      "enemy_level": 10,
+      "common_gold": 15,
+      "uncommon_gold": 20,
+      "rare_gold": 28,
+      "elite_gold": 45,
+      "boss_gold": 135,
+      "daily_quest_gold_target": 142,
+      "notes": "Reduced for slower progression; daily gold supports repairs, not full gearing."
+    },
+    {
+      "enemy_level": 11,
+      "common_gold": 16,
+      "uncommon_gold": 21,
+      "rare_gold": 30,
+      "elite_gold": 48,
+      "boss_gold": 144,
+      "daily_quest_gold_target": 152,
+      "notes": "Reduced for slower progression; daily gold supports repairs, not full gearing."
+    },
+    {
+      "enemy_level": 12,
+      "common_gold": 17,
+      "uncommon_gold": 22,
+      "rare_gold": 32,
+      "elite_gold": 51,
+      "boss_gold": 153,
+      "daily_quest_gold_target": 162,
+      "notes": "Reduced for slower progression; daily gold supports repairs, not full gearing."
+    },
+    {
+      "enemy_level": 13,
+      "common_gold": 18,
+      "uncommon_gold": 23,
+      "rare_gold": 34,
+      "elite_gold": 54,
+      "boss_gold": 162,
+      "daily_quest_gold_target": 171,
+      "notes": "Reduced for slower progression; daily gold supports repairs, not full gearing."
+    },
+    {
+      "enemy_level": 14,
+      "common_gold": 19,
+      "uncommon_gold": 25,
+      "rare_gold": 36,
+      "elite_gold": 57,
+      "boss_gold": 171,
+      "daily_quest_gold_target": 180,
+      "notes": "Reduced for slower progression; daily gold supports repairs, not full gearing."
+    },
+    {
+      "enemy_level": 15,
+      "common_gold": 20,
+      "uncommon_gold": 26,
+      "rare_gold": 38,
+      "elite_gold": 60,
+      "boss_gold": 180,
+      "daily_quest_gold_target": 190,
+      "notes": "Reduced for slower progression; daily gold supports repairs, not full gearing."
+    },
+    {
+      "enemy_level": 16,
+      "common_gold": 22,
+      "uncommon_gold": 29,
+      "rare_gold": 42,
+      "elite_gold": 66,
+      "boss_gold": 198,
+      "daily_quest_gold_target": 209,
+      "notes": "Reduced for slower progression; daily gold supports repairs, not full gearing."
+    },
+    {
+      "enemy_level": 17,
+      "common_gold": 23,
+      "uncommon_gold": 30,
+      "rare_gold": 44,
+      "elite_gold": 69,
+      "boss_gold": 207,
+      "daily_quest_gold_target": 218,
+      "notes": "Reduced for slower progression; daily gold supports repairs, not full gearing."
+    },
+    {
+      "enemy_level": 18,
+      "common_gold": 24,
+      "uncommon_gold": 31,
+      "rare_gold": 46,
+      "elite_gold": 72,
+      "boss_gold": 216,
+      "daily_quest_gold_target": 228,
+      "notes": "Reduced for slower progression; daily gold supports repairs, not full gearing."
+    },
+    {
+      "enemy_level": 19,
+      "common_gold": 25,
+      "uncommon_gold": 32,
+      "rare_gold": 48,
+      "elite_gold": 75,
+      "boss_gold": 225,
+      "daily_quest_gold_target": 238,
+      "notes": "Reduced for slower progression; daily gold supports repairs, not full gearing."
+    },
+    {
+      "enemy_level": 20,
+      "common_gold": 27,
+      "uncommon_gold": 35,
+      "rare_gold": 51,
+      "elite_gold": 81,
+      "boss_gold": 243,
+      "daily_quest_gold_target": 256,
+      "notes": "Reduced for slower progression; daily gold supports repairs, not full gearing."
+    },
+    {
+      "enemy_level": 21,
+      "common_gold": 28,
+      "uncommon_gold": 36,
+      "rare_gold": 53,
+      "elite_gold": 84,
+      "boss_gold": 252,
+      "daily_quest_gold_target": 266,
+      "notes": "Reduced for slower progression; daily gold supports repairs, not full gearing."
+    },
+    {
+      "enemy_level": 22,
+      "common_gold": 30,
+      "uncommon_gold": 39,
+      "rare_gold": 57,
+      "elite_gold": 90,
+      "boss_gold": 270,
+      "daily_quest_gold_target": 285,
+      "notes": "Reduced for slower progression; daily gold supports repairs, not full gearing."
+    },
+    {
+      "enemy_level": 23,
+      "common_gold": 31,
+      "uncommon_gold": 40,
+      "rare_gold": 59,
+      "elite_gold": 93,
+      "boss_gold": 279,
+      "daily_quest_gold_target": 294,
+      "notes": "Reduced for slower progression; daily gold supports repairs, not full gearing."
+    },
+    {
+      "enemy_level": 24,
+      "common_gold": 32,
+      "uncommon_gold": 42,
+      "rare_gold": 61,
+      "elite_gold": 96,
+      "boss_gold": 288,
+      "daily_quest_gold_target": 304,
+      "notes": "Reduced for slower progression; daily gold supports repairs, not full gearing."
+    },
+    {
+      "enemy_level": 25,
+      "common_gold": 34,
+      "uncommon_gold": 44,
+      "rare_gold": 65,
+      "elite_gold": 102,
+      "boss_gold": 306,
+      "daily_quest_gold_target": 323,
+      "notes": "Reduced for slower progression; daily gold supports repairs, not full gearing."
+    },
+    {
+      "enemy_level": 26,
+      "common_gold": 35,
+      "uncommon_gold": 46,
+      "rare_gold": 66,
+      "elite_gold": 105,
+      "boss_gold": 315,
+      "daily_quest_gold_target": 332,
+      "notes": "Reduced for slower progression; daily gold supports repairs, not full gearing."
+    },
+    {
+      "enemy_level": 27,
+      "common_gold": 37,
+      "uncommon_gold": 48,
+      "rare_gold": 70,
+      "elite_gold": 111,
+      "boss_gold": 333,
+      "daily_quest_gold_target": 352,
+      "notes": "Reduced for slower progression; daily gold supports repairs, not full gearing."
+    },
+    {
+      "enemy_level": 28,
+      "common_gold": 38,
+      "uncommon_gold": 49,
+      "rare_gold": 72,
+      "elite_gold": 114,
+      "boss_gold": 342,
+      "daily_quest_gold_target": 361,
+      "notes": "Reduced for slower progression; daily gold supports repairs, not full gearing."
+    },
+    {
+      "enemy_level": 29,
+      "common_gold": 40,
+      "uncommon_gold": 52,
+      "rare_gold": 76,
+      "elite_gold": 120,
+      "boss_gold": 360,
+      "daily_quest_gold_target": 380,
+      "notes": "Reduced for slower progression; daily gold supports repairs, not full gearing."
+    },
+    {
+      "enemy_level": 30,
+      "common_gold": 41,
+      "uncommon_gold": 53,
+      "rare_gold": 78,
+      "elite_gold": 123,
+      "boss_gold": 369,
+      "daily_quest_gold_target": 390,
+      "notes": "Reduced for slower progression; daily gold supports repairs, not full gearing."
+    }
+  ],
+  "itemPrices": [
+    {
+      "level": 1,
+      "common": 20,
+      "uncommon": 29,
+      "rare": 47,
+      "epic": 84,
+      "legendary_placeholder": 150,
+      "design_notes": "Prices completed for slower 1–30 progression; Legendary remains event/boss-level only."
+    },
+    {
+      "level": 2,
+      "common": 31,
+      "uncommon": 45,
+      "rare": 73,
+      "epic": 130,
+      "legendary_placeholder": 232,
+      "design_notes": "Prices completed for slower 1–30 progression; Legendary remains event/boss-level only."
+    },
+    {
+      "level": 3,
+      "common": 43,
+      "uncommon": 62,
+      "rare": 101,
+      "epic": 181,
+      "legendary_placeholder": 322,
+      "design_notes": "Prices completed for slower 1–30 progression; Legendary remains event/boss-level only."
+    },
+    {
+      "level": 4,
+      "common": 57,
+      "uncommon": 83,
+      "rare": 134,
+      "epic": 239,
+      "legendary_placeholder": 428,
+      "design_notes": "Prices completed for slower 1–30 progression; Legendary remains event/boss-level only."
+    },
+    {
+      "level": 5,
+      "common": 73,
+      "uncommon": 106,
+      "rare": 172,
+      "epic": 307,
+      "legendary_placeholder": 548,
+      "design_notes": "Prices completed for slower 1–30 progression; Legendary remains event/boss-level only."
+    },
+    {
+      "level": 6,
+      "common": 91,
+      "uncommon": 132,
+      "rare": 214,
+      "epic": 382,
+      "legendary_placeholder": 682,
+      "design_notes": "Prices completed for slower 1–30 progression; Legendary remains event/boss-level only."
+    },
+    {
+      "level": 7,
+      "common": 111,
+      "uncommon": 161,
+      "rare": 261,
+      "epic": 466,
+      "legendary_placeholder": 832,
+      "design_notes": "Prices completed for slower 1–30 progression; Legendary remains event/boss-level only."
+    },
+    {
+      "level": 8,
+      "common": 133,
+      "uncommon": 193,
+      "rare": 313,
+      "epic": 559,
+      "legendary_placeholder": 998,
+      "design_notes": "Prices completed for slower 1–30 progression; Legendary remains event/boss-level only."
+    },
+    {
+      "level": 9,
+      "common": 156,
+      "uncommon": 226,
+      "rare": 367,
+      "epic": 655,
+      "legendary_placeholder": 1170,
+      "design_notes": "Prices completed for slower 1–30 progression; Legendary remains event/boss-level only."
+    },
+    {
+      "level": 10,
+      "common": 182,
+      "uncommon": 264,
+      "rare": 428,
+      "epic": 764,
+      "legendary_placeholder": 1365,
+      "design_notes": "Prices completed for slower 1–30 progression; Legendary remains event/boss-level only."
+    },
+    {
+      "level": 11,
+      "common": 209,
+      "uncommon": 303,
+      "rare": 491,
+      "epic": 878,
+      "legendary_placeholder": 1568,
+      "design_notes": "Prices completed for slower 1–30 progression; Legendary remains event/boss-level only."
+    },
+    {
+      "level": 12,
+      "common": 239,
+      "uncommon": 347,
+      "rare": 562,
+      "epic": 1004,
+      "legendary_placeholder": 1792,
+      "design_notes": "Prices completed for slower 1–30 progression; Legendary remains event/boss-level only."
+    },
+    {
+      "level": 13,
+      "common": 270,
+      "uncommon": 392,
+      "rare": 634,
+      "epic": 1134,
+      "legendary_placeholder": 2025,
+      "design_notes": "Prices completed for slower 1–30 progression; Legendary remains event/boss-level only."
+    },
+    {
+      "level": 14,
+      "common": 303,
+      "uncommon": 439,
+      "rare": 712,
+      "epic": 1273,
+      "legendary_placeholder": 2272,
+      "design_notes": "Prices completed for slower 1–30 progression; Legendary remains event/boss-level only."
+    },
+    {
+      "level": 15,
+      "common": 338,
+      "uncommon": 490,
+      "rare": 794,
+      "epic": 1420,
+      "legendary_placeholder": 2535,
+      "design_notes": "Prices completed for slower 1–30 progression; Legendary remains event/boss-level only."
+    },
+    {
+      "level": 16,
+      "common": 375,
+      "uncommon": 544,
+      "rare": 881,
+      "epic": 1575,
+      "legendary_placeholder": 2812,
+      "design_notes": "Prices completed for slower 1–30 progression; Legendary remains event/boss-level only."
+    },
+    {
+      "level": 17,
+      "common": 414,
+      "uncommon": 600,
+      "rare": 973,
+      "epic": 1739,
+      "legendary_placeholder": 3105,
+      "design_notes": "Prices completed for slower 1–30 progression; Legendary remains event/boss-level only."
+    },
+    {
+      "level": 18,
+      "common": 455,
+      "uncommon": 660,
+      "rare": 1069,
+      "epic": 1911,
+      "legendary_placeholder": 3412,
+      "design_notes": "Prices completed for slower 1–30 progression; Legendary remains event/boss-level only."
+    },
+    {
+      "level": 19,
+      "common": 497,
+      "uncommon": 721,
+      "rare": 1168,
+      "epic": 2087,
+      "legendary_placeholder": 3728,
+      "design_notes": "Prices completed for slower 1–30 progression; Legendary remains event/boss-level only."
+    },
+    {
+      "level": 20,
+      "common": 542,
+      "uncommon": 786,
+      "rare": 1274,
+      "epic": 2276,
+      "legendary_placeholder": 4065,
+      "design_notes": "Prices completed for slower 1–30 progression; Legendary remains event/boss-level only."
+    },
+    {
+      "level": 21,
+      "common": 588,
+      "uncommon": 853,
+      "rare": 1382,
+      "epic": 2470,
+      "legendary_placeholder": 4410,
+      "design_notes": "Prices completed for slower 1–30 progression; Legendary remains event/boss-level only."
+    },
+    {
+      "level": 22,
+      "common": 637,
+      "uncommon": 924,
+      "rare": 1497,
+      "epic": 2675,
+      "legendary_placeholder": 4778,
+      "design_notes": "Prices completed for slower 1–30 progression; Legendary remains event/boss-level only."
+    },
+    {
+      "level": 23,
+      "common": 687,
+      "uncommon": 996,
+      "rare": 1614,
+      "epic": 2885,
+      "legendary_placeholder": 5152,
+      "design_notes": "Prices completed for slower 1–30 progression; Legendary remains event/boss-level only."
+    },
+    {
+      "level": 24,
+      "common": 739,
+      "uncommon": 1072,
+      "rare": 1737,
+      "epic": 3104,
+      "legendary_placeholder": 5542,
+      "design_notes": "Prices completed for slower 1–30 progression; Legendary remains event/boss-level only."
+    },
+    {
+      "level": 25,
+      "common": 793,
+      "uncommon": 1150,
+      "rare": 1864,
+      "epic": 3331,
+      "legendary_placeholder": 5948,
+      "design_notes": "Prices completed for slower 1–30 progression; Legendary remains event/boss-level only."
+    },
+    {
+      "level": 26,
+      "common": 849,
+      "uncommon": 1231,
+      "rare": 1995,
+      "epic": 3566,
+      "legendary_placeholder": 6368,
+      "design_notes": "Prices completed for slower 1–30 progression; Legendary remains event/boss-level only."
+    },
+    {
+      "level": 27,
+      "common": 907,
+      "uncommon": 1315,
+      "rare": 2131,
+      "epic": 3809,
+      "legendary_placeholder": 6802,
+      "design_notes": "Prices completed for slower 1–30 progression; Legendary remains event/boss-level only."
+    },
+    {
+      "level": 28,
+      "common": 967,
+      "uncommon": 1402,
+      "rare": 2272,
+      "epic": 4061,
+      "legendary_placeholder": 7252,
+      "design_notes": "Prices completed for slower 1–30 progression; Legendary remains event/boss-level only."
+    },
+    {
+      "level": 29,
+      "common": 1028,
+      "uncommon": 1491,
+      "rare": 2416,
+      "epic": 4318,
+      "legendary_placeholder": 7710,
+      "design_notes": "Prices completed for slower 1–30 progression; Legendary remains event/boss-level only."
+    },
+    {
+      "level": 30,
+      "common": 1092,
+      "uncommon": 1583,
+      "rare": 2566,
+      "epic": 4586,
+      "legendary_placeholder": 8190,
+      "design_notes": "Prices completed for slower 1–30 progression; Legendary remains event/boss-level only."
+    }
+  ],
+  "repairSell": [
+    {
+      "level": 1,
+      "common_sell": 4,
+      "uncommon_sell": 7,
+      "rare_sell": 13,
+      "epic_sell": 25,
+      "common_repair": 2,
+      "uncommon_repair": 3,
+      "rare_repair": 5,
+      "epic_repair": 9,
+      "notes": "Sell values prevent gold inflation; repair is a recurring gold sink."
+    },
+    {
+      "level": 2,
+      "common_sell": 7,
+      "uncommon_sell": 11,
+      "rare_sell": 20,
+      "epic_sell": 39,
+      "common_repair": 2,
+      "uncommon_repair": 4,
+      "rare_repair": 7,
+      "epic_repair": 14,
+      "notes": "Sell values prevent gold inflation; repair is a recurring gold sink."
+    },
+    {
+      "level": 3,
+      "common_sell": 9,
+      "uncommon_sell": 16,
+      "rare_sell": 28,
+      "epic_sell": 54,
+      "common_repair": 3,
+      "uncommon_repair": 6,
+      "rare_repair": 10,
+      "epic_repair": 20,
+      "notes": "Sell values prevent gold inflation; repair is a recurring gold sink."
+    },
+    {
+      "level": 4,
+      "common_sell": 13,
+      "uncommon_sell": 21,
+      "rare_sell": 38,
+      "epic_sell": 72,
+      "common_repair": 5,
+      "uncommon_repair": 7,
+      "rare_repair": 13,
+      "epic_repair": 26,
+      "notes": "Sell values prevent gold inflation; repair is a recurring gold sink."
+    },
+    {
+      "level": 5,
+      "common_sell": 16,
+      "uncommon_sell": 26,
+      "rare_sell": 48,
+      "epic_sell": 92,
+      "common_repair": 6,
+      "uncommon_repair": 10,
+      "rare_repair": 17,
+      "epic_repair": 34,
+      "notes": "Sell values prevent gold inflation; repair is a recurring gold sink."
+    },
+    {
+      "level": 6,
+      "common_sell": 20,
+      "uncommon_sell": 33,
+      "rare_sell": 60,
+      "epic_sell": 115,
+      "common_repair": 7,
+      "uncommon_repair": 12,
+      "rare_repair": 21,
+      "epic_repair": 42,
+      "notes": "Sell values prevent gold inflation; repair is a recurring gold sink."
+    },
+    {
+      "level": 7,
+      "common_sell": 24,
+      "uncommon_sell": 40,
+      "rare_sell": 73,
+      "epic_sell": 140,
+      "common_repair": 9,
+      "uncommon_repair": 14,
+      "rare_repair": 26,
+      "epic_repair": 51,
+      "notes": "Sell values prevent gold inflation; repair is a recurring gold sink."
+    },
+    {
+      "level": 8,
+      "common_sell": 29,
+      "uncommon_sell": 48,
+      "rare_sell": 88,
+      "epic_sell": 168,
+      "common_repair": 11,
+      "uncommon_repair": 17,
+      "rare_repair": 31,
+      "epic_repair": 61,
+      "notes": "Sell values prevent gold inflation; repair is a recurring gold sink."
+    },
+    {
+      "level": 9,
+      "common_sell": 34,
+      "uncommon_sell": 56,
+      "rare_sell": 103,
+      "epic_sell": 196,
+      "common_repair": 12,
+      "uncommon_repair": 20,
+      "rare_repair": 37,
+      "epic_repair": 72,
+      "notes": "Sell values prevent gold inflation; repair is a recurring gold sink."
+    },
+    {
+      "level": 10,
+      "common_sell": 40,
+      "uncommon_sell": 66,
+      "rare_sell": 120,
+      "epic_sell": 229,
+      "common_repair": 15,
+      "uncommon_repair": 24,
+      "rare_repair": 43,
+      "epic_repair": 84,
+      "notes": "Sell values prevent gold inflation; repair is a recurring gold sink."
+    },
+    {
+      "level": 11,
+      "common_sell": 46,
+      "uncommon_sell": 76,
+      "rare_sell": 137,
+      "epic_sell": 263,
+      "common_repair": 17,
+      "uncommon_repair": 27,
+      "rare_repair": 49,
+      "epic_repair": 97,
+      "notes": "Sell values prevent gold inflation; repair is a recurring gold sink."
+    },
+    {
+      "level": 12,
+      "common_sell": 53,
+      "uncommon_sell": 87,
+      "rare_sell": 157,
+      "epic_sell": 301,
+      "common_repair": 19,
+      "uncommon_repair": 31,
+      "rare_repair": 56,
+      "epic_repair": 110,
+      "notes": "Sell values prevent gold inflation; repair is a recurring gold sink."
+    },
+    {
+      "level": 13,
+      "common_sell": 59,
+      "uncommon_sell": 98,
+      "rare_sell": 178,
+      "epic_sell": 340,
+      "common_repair": 22,
+      "uncommon_repair": 35,
+      "rare_repair": 63,
+      "epic_repair": 125,
+      "notes": "Sell values prevent gold inflation; repair is a recurring gold sink."
+    },
+    {
+      "level": 14,
+      "common_sell": 67,
+      "uncommon_sell": 110,
+      "rare_sell": 199,
+      "epic_sell": 382,
+      "common_repair": 24,
+      "uncommon_repair": 40,
+      "rare_repair": 71,
+      "epic_repair": 140,
+      "notes": "Sell values prevent gold inflation; repair is a recurring gold sink."
+    },
+    {
+      "level": 15,
+      "common_sell": 74,
+      "uncommon_sell": 122,
+      "rare_sell": 222,
+      "epic_sell": 426,
+      "common_repair": 27,
+      "uncommon_repair": 44,
+      "rare_repair": 79,
+      "epic_repair": 156,
+      "notes": "Sell values prevent gold inflation; repair is a recurring gold sink."
+    },
+    {
+      "level": 16,
+      "common_sell": 82,
+      "uncommon_sell": 136,
+      "rare_sell": 247,
+      "epic_sell": 472,
+      "common_repair": 30,
+      "uncommon_repair": 49,
+      "rare_repair": 88,
+      "epic_repair": 173,
+      "notes": "Sell values prevent gold inflation; repair is a recurring gold sink."
+    },
+    {
+      "level": 17,
+      "common_sell": 91,
+      "uncommon_sell": 150,
+      "rare_sell": 272,
+      "epic_sell": 522,
+      "common_repair": 33,
+      "uncommon_repair": 54,
+      "rare_repair": 97,
+      "epic_repair": 191,
+      "notes": "Sell values prevent gold inflation; repair is a recurring gold sink."
+    },
+    {
+      "level": 18,
+      "common_sell": 100,
+      "uncommon_sell": 165,
+      "rare_sell": 299,
+      "epic_sell": 573,
+      "common_repair": 36,
+      "uncommon_repair": 59,
+      "rare_repair": 107,
+      "epic_repair": 210,
+      "notes": "Sell values prevent gold inflation; repair is a recurring gold sink."
+    },
+    {
+      "level": 19,
+      "common_sell": 109,
+      "uncommon_sell": 180,
+      "rare_sell": 327,
+      "epic_sell": 626,
+      "common_repair": 40,
+      "uncommon_repair": 65,
+      "rare_repair": 117,
+      "epic_repair": 230,
+      "notes": "Sell values prevent gold inflation; repair is a recurring gold sink."
+    },
+    {
+      "level": 20,
+      "common_sell": 119,
+      "uncommon_sell": 196,
+      "rare_sell": 357,
+      "epic_sell": 683,
+      "common_repair": 43,
+      "uncommon_repair": 71,
+      "rare_repair": 127,
+      "epic_repair": 250,
+      "notes": "Sell values prevent gold inflation; repair is a recurring gold sink."
+    },
+    {
+      "level": 21,
+      "common_sell": 129,
+      "uncommon_sell": 213,
+      "rare_sell": 387,
+      "epic_sell": 741,
+      "common_repair": 47,
+      "uncommon_repair": 77,
+      "rare_repair": 138,
+      "epic_repair": 272,
+      "notes": "Sell values prevent gold inflation; repair is a recurring gold sink."
+    },
+    {
+      "level": 22,
+      "common_sell": 140,
+      "uncommon_sell": 231,
+      "rare_sell": 419,
+      "epic_sell": 802,
+      "common_repair": 51,
+      "uncommon_repair": 83,
+      "rare_repair": 150,
+      "epic_repair": 294,
+      "notes": "Sell values prevent gold inflation; repair is a recurring gold sink."
+    },
+    {
+      "level": 23,
+      "common_sell": 151,
+      "uncommon_sell": 249,
+      "rare_sell": 452,
+      "epic_sell": 866,
+      "common_repair": 55,
+      "uncommon_repair": 90,
+      "rare_repair": 161,
+      "epic_repair": 317,
+      "notes": "Sell values prevent gold inflation; repair is a recurring gold sink."
+    },
+    {
+      "level": 24,
+      "common_sell": 163,
+      "uncommon_sell": 268,
+      "rare_sell": 486,
+      "epic_sell": 931,
+      "common_repair": 59,
+      "uncommon_repair": 96,
+      "rare_repair": 174,
+      "epic_repair": 341,
+      "notes": "Sell values prevent gold inflation; repair is a recurring gold sink."
+    },
+    {
+      "level": 25,
+      "common_sell": 174,
+      "uncommon_sell": 288,
+      "rare_sell": 522,
+      "epic_sell": 999,
+      "common_repair": 63,
+      "uncommon_repair": 104,
+      "rare_repair": 186,
+      "epic_repair": 366,
+      "notes": "Sell values prevent gold inflation; repair is a recurring gold sink."
+    },
+    {
+      "level": 26,
+      "common_sell": 187,
+      "uncommon_sell": 308,
+      "rare_sell": 559,
+      "epic_sell": 1070,
+      "common_repair": 68,
+      "uncommon_repair": 111,
+      "rare_repair": 200,
+      "epic_repair": 392,
+      "notes": "Sell values prevent gold inflation; repair is a recurring gold sink."
+    },
+    {
+      "level": 27,
+      "common_sell": 200,
+      "uncommon_sell": 329,
+      "rare_sell": 597,
+      "epic_sell": 1143,
+      "common_repair": 73,
+      "uncommon_repair": 118,
+      "rare_repair": 213,
+      "epic_repair": 419,
+      "notes": "Sell values prevent gold inflation; repair is a recurring gold sink."
+    },
+    {
+      "level": 28,
+      "common_sell": 213,
+      "uncommon_sell": 350,
+      "rare_sell": 636,
+      "epic_sell": 1218,
+      "common_repair": 77,
+      "uncommon_repair": 126,
+      "rare_repair": 227,
+      "epic_repair": 447,
+      "notes": "Sell values prevent gold inflation; repair is a recurring gold sink."
+    },
+    {
+      "level": 29,
+      "common_sell": 226,
+      "uncommon_sell": 373,
+      "rare_sell": 676,
+      "epic_sell": 1295,
+      "common_repair": 82,
+      "uncommon_repair": 134,
+      "rare_repair": 242,
+      "epic_repair": 475,
+      "notes": "Sell values prevent gold inflation; repair is a recurring gold sink."
+    },
+    {
+      "level": 30,
+      "common_sell": 240,
+      "uncommon_sell": 396,
+      "rare_sell": 718,
+      "epic_sell": 1376,
+      "common_repair": 87,
+      "uncommon_repair": 142,
+      "rare_repair": 257,
+      "epic_repair": 504,
+      "notes": "Sell values prevent gold inflation; repair is a recurring gold sink."
+    }
+  ],
+  "upgradeCosts": [
+    {
+      "level": 1,
+      "upgrade_1": 12,
+      "upgrade_2": 21,
+      "upgrade_3": 33,
+      "upgrade_4": 51,
+      "upgrade_5": 77,
+      "full_5_cost": 194,
+      "recommended_cap": "+3 max recommended",
+      "design_notes": "+4 should require uncommon/rare materials; +5 should require rare/boss materials."
+    },
+    {
+      "level": 2,
+      "upgrade_1": 19,
+      "upgrade_2": 32,
+      "upgrade_3": 52,
+      "upgrade_4": 79,
+      "upgrade_5": 119,
+      "full_5_cost": 301,
+      "recommended_cap": "+3 max recommended",
+      "design_notes": "+4 should require uncommon/rare materials; +5 should require rare/boss materials."
+    },
+    {
+      "level": 3,
+      "upgrade_1": 26,
+      "upgrade_2": 45,
+      "upgrade_3": 71,
+      "upgrade_4": 108,
+      "upgrade_5": 164,
+      "full_5_cost": 414,
+      "recommended_cap": "+3 max recommended",
+      "design_notes": "+4 should require uncommon/rare materials; +5 should require rare/boss materials."
+    },
+    {
+      "level": 4,
+      "upgrade_1": 35,
+      "upgrade_2": 60,
+      "upgrade_3": 95,
+      "upgrade_4": 145,
+      "upgrade_5": 220,
+      "full_5_cost": 555,
+      "recommended_cap": "+3 max recommended",
+      "design_notes": "+4 should require uncommon/rare materials; +5 should require rare/boss materials."
+    },
+    {
+      "level": 5,
+      "upgrade_1": 45,
+      "upgrade_2": 76,
+      "upgrade_3": 122,
+      "upgrade_4": 186,
+      "upgrade_5": 281,
+      "full_5_cost": 710,
+      "recommended_cap": "+3 max recommended",
+      "design_notes": "+4 should require uncommon/rare materials; +5 should require rare/boss materials."
+    },
+    {
+      "level": 6,
+      "upgrade_1": 55,
+      "upgrade_2": 95,
+      "upgrade_3": 152,
+      "upgrade_4": 231,
+      "upgrade_5": 350,
+      "full_5_cost": 883,
+      "recommended_cap": "+3 max recommended",
+      "design_notes": "+4 should require uncommon/rare materials; +5 should require rare/boss materials."
+    },
+    {
+      "level": 7,
+      "upgrade_1": 68,
+      "upgrade_2": 116,
+      "upgrade_3": 185,
+      "upgrade_4": 282,
+      "upgrade_5": 427,
+      "full_5_cost": 1078,
+      "recommended_cap": "+3 max recommended",
+      "design_notes": "+4 should require uncommon/rare materials; +5 should require rare/boss materials."
+    },
+    {
+      "level": 8,
+      "upgrade_1": 81,
+      "upgrade_2": 139,
+      "upgrade_3": 222,
+      "upgrade_4": 338,
+      "upgrade_5": 511,
+      "full_5_cost": 1291,
+      "recommended_cap": "+3 max recommended",
+      "design_notes": "+4 should require uncommon/rare materials; +5 should require rare/boss materials."
+    },
+    {
+      "level": 9,
+      "upgrade_1": 95,
+      "upgrade_2": 163,
+      "upgrade_3": 260,
+      "upgrade_4": 396,
+      "upgrade_5": 599,
+      "full_5_cost": 1513,
+      "recommended_cap": "+3 max recommended",
+      "design_notes": "+4 should require uncommon/rare materials; +5 should require rare/boss materials."
+    },
+    {
+      "level": 10,
+      "upgrade_1": 111,
+      "upgrade_2": 190,
+      "upgrade_3": 304,
+      "upgrade_4": 462,
+      "upgrade_5": 700,
+      "full_5_cost": 1767,
+      "recommended_cap": "+3 max recommended",
+      "design_notes": "+4 should require uncommon/rare materials; +5 should require rare/boss materials."
+    },
+    {
+      "level": 11,
+      "upgrade_1": 127,
+      "upgrade_2": 218,
+      "upgrade_3": 348,
+      "upgrade_4": 530,
+      "upgrade_5": 803,
+      "full_5_cost": 2026,
+      "recommended_cap": "+4 max recommended",
+      "design_notes": "+4 should require uncommon/rare materials; +5 should require rare/boss materials."
+    },
+    {
+      "level": 12,
+      "upgrade_1": 146,
+      "upgrade_2": 250,
+      "upgrade_3": 399,
+      "upgrade_4": 607,
+      "upgrade_5": 920,
+      "full_5_cost": 2322,
+      "recommended_cap": "+4 max recommended",
+      "design_notes": "+4 should require uncommon/rare materials; +5 should require rare/boss materials."
+    },
+    {
+      "level": 13,
+      "upgrade_1": 165,
+      "upgrade_2": 282,
+      "upgrade_3": 451,
+      "upgrade_4": 686,
+      "upgrade_5": 1039,
+      "full_5_cost": 2623,
+      "recommended_cap": "+4 max recommended",
+      "design_notes": "+4 should require uncommon/rare materials; +5 should require rare/boss materials."
+    },
+    {
+      "level": 14,
+      "upgrade_1": 184,
+      "upgrade_2": 316,
+      "upgrade_3": 505,
+      "upgrade_4": 768,
+      "upgrade_5": 1163,
+      "full_5_cost": 2936,
+      "recommended_cap": "+4 max recommended",
+      "design_notes": "+4 should require uncommon/rare materials; +5 should require rare/boss materials."
+    },
+    {
+      "level": 15,
+      "upgrade_1": 206,
+      "upgrade_2": 353,
+      "upgrade_3": 564,
+      "upgrade_4": 858,
+      "upgrade_5": 1298,
+      "full_5_cost": 3279,
+      "recommended_cap": "+4 max recommended",
+      "design_notes": "+4 should require uncommon/rare materials; +5 should require rare/boss materials."
+    },
+    {
+      "level": 16,
+      "upgrade_1": 228,
+      "upgrade_2": 392,
+      "upgrade_3": 626,
+      "upgrade_4": 952,
+      "upgrade_5": 1442,
+      "full_5_cost": 3640,
+      "recommended_cap": "+4 max recommended",
+      "design_notes": "+4 should require uncommon/rare materials; +5 should require rare/boss materials."
+    },
+    {
+      "level": 17,
+      "upgrade_1": 252,
+      "upgrade_2": 432,
+      "upgrade_3": 690,
+      "upgrade_4": 1050,
+      "upgrade_5": 1590,
+      "full_5_cost": 4014,
+      "recommended_cap": "+4 max recommended",
+      "design_notes": "+4 should require uncommon/rare materials; +5 should require rare/boss materials."
+    },
+    {
+      "level": 18,
+      "upgrade_1": 277,
+      "upgrade_2": 475,
+      "upgrade_3": 759,
+      "upgrade_4": 1155,
+      "upgrade_5": 1749,
+      "full_5_cost": 4415,
+      "recommended_cap": "+4 max recommended",
+      "design_notes": "+4 should require uncommon/rare materials; +5 should require rare/boss materials."
+    },
+    {
+      "level": 19,
+      "upgrade_1": 303,
+      "upgrade_2": 519,
+      "upgrade_3": 829,
+      "upgrade_4": 1262,
+      "upgrade_5": 1911,
+      "full_5_cost": 4824,
+      "recommended_cap": "+4 max recommended",
+      "design_notes": "+4 should require uncommon/rare materials; +5 should require rare/boss materials."
+    },
+    {
+      "level": 20,
+      "upgrade_1": 330,
+      "upgrade_2": 566,
+      "upgrade_3": 904,
+      "upgrade_4": 1376,
+      "upgrade_5": 2083,
+      "full_5_cost": 5259,
+      "recommended_cap": "+4 max recommended",
+      "design_notes": "+4 should require uncommon/rare materials; +5 should require rare/boss materials."
+    },
+    {
+      "level": 21,
+      "upgrade_1": 358,
+      "upgrade_2": 614,
+      "upgrade_3": 981,
+      "upgrade_4": 1493,
+      "upgrade_5": 2260,
+      "full_5_cost": 5706,
+      "recommended_cap": "+5 allowed; requires rare/boss materials",
+      "design_notes": "+4 should require uncommon/rare materials; +5 should require rare/boss materials."
+    },
+    {
+      "level": 22,
+      "upgrade_1": 388,
+      "upgrade_2": 665,
+      "upgrade_3": 1063,
+      "upgrade_4": 1617,
+      "upgrade_5": 2449,
+      "full_5_cost": 6182,
+      "recommended_cap": "+5 allowed; requires rare/boss materials",
+      "design_notes": "+4 should require uncommon/rare materials; +5 should require rare/boss materials."
+    },
+    {
+      "level": 23,
+      "upgrade_1": 418,
+      "upgrade_2": 717,
+      "upgrade_3": 1145,
+      "upgrade_4": 1743,
+      "upgrade_5": 2639,
+      "full_5_cost": 6662,
+      "recommended_cap": "+5 allowed; requires rare/boss materials",
+      "design_notes": "+4 should require uncommon/rare materials; +5 should require rare/boss materials."
+    },
+    {
+      "level": 24,
+      "upgrade_1": 450,
+      "upgrade_2": 772,
+      "upgrade_3": 1233,
+      "upgrade_4": 1876,
+      "upgrade_5": 2841,
+      "full_5_cost": 7172,
+      "recommended_cap": "+5 allowed; requires rare/boss materials",
+      "design_notes": "+4 should require uncommon/rare materials; +5 should require rare/boss materials."
+    },
+    {
+      "level": 25,
+      "upgrade_1": 483,
+      "upgrade_2": 828,
+      "upgrade_3": 1322,
+      "upgrade_4": 2012,
+      "upgrade_5": 3048,
+      "full_5_cost": 7693,
+      "recommended_cap": "+5 allowed; requires rare/boss materials",
+      "design_notes": "+4 should require uncommon/rare materials; +5 should require rare/boss materials."
+    },
+    {
+      "level": 26,
+      "upgrade_1": 517,
+      "upgrade_2": 886,
+      "upgrade_3": 1416,
+      "upgrade_4": 2154,
+      "upgrade_5": 3262,
+      "full_5_cost": 8235,
+      "recommended_cap": "+5 allowed; requires rare/boss materials",
+      "design_notes": "+4 should require uncommon/rare materials; +5 should require rare/boss materials."
+    },
+    {
+      "level": 27,
+      "upgrade_1": 552,
+      "upgrade_2": 947,
+      "upgrade_3": 1512,
+      "upgrade_4": 2301,
+      "upgrade_5": 3485,
+      "full_5_cost": 8797,
+      "recommended_cap": "+5 allowed; requires rare/boss materials",
+      "design_notes": "+4 should require uncommon/rare materials; +5 should require rare/boss materials."
+    },
+    {
+      "level": 28,
+      "upgrade_1": 589,
+      "upgrade_2": 1009,
+      "upgrade_3": 1612,
+      "upgrade_4": 2454,
+      "upgrade_5": 3715,
+      "full_5_cost": 9379,
+      "recommended_cap": "+5 allowed; requires rare/boss materials",
+      "design_notes": "+4 should require uncommon/rare materials; +5 should require rare/boss materials."
+    },
+    {
+      "level": 29,
+      "upgrade_1": 626,
+      "upgrade_2": 1074,
+      "upgrade_3": 1715,
+      "upgrade_4": 2609,
+      "upgrade_5": 3951,
+      "full_5_cost": 9975,
+      "recommended_cap": "+5 allowed; requires rare/boss materials",
+      "design_notes": "+4 should require uncommon/rare materials; +5 should require rare/boss materials."
+    },
+    {
+      "level": 30,
+      "upgrade_1": 665,
+      "upgrade_2": 1140,
+      "upgrade_3": 1820,
+      "upgrade_4": 2770,
+      "upgrade_5": 4195,
+      "full_5_cost": 10590,
+      "recommended_cap": "+5 allowed; requires rare/boss materials",
+      "design_notes": "+4 should require uncommon/rare materials; +5 should require rare/boss materials."
+    }
+  ],
+  "shopPrices": [
+    {
+      "level_band": "1–5",
+      "shop_item": "Basic Weapon Crate",
+      "item_type": "Weapon",
+      "price_gold": "80",
+      "stock_rule": "Daily 1",
+      "purpose": "Starter catch-up",
+      "notes": "Contains common weapon near player level."
+    },
+    {
+      "level_band": "1–5",
+      "shop_item": "Padded Armor Pack",
+      "item_type": "Armor",
+      "price_gold": "70",
+      "stock_rule": "Daily 1",
+      "purpose": "Starter defense",
+      "notes": "Contains common chest near player level."
+    },
+    {
+      "level_band": "1–10",
+      "shop_item": "Minor Repair Kit",
+      "item_type": "Consumable",
+      "price_gold": "45",
+      "stock_rule": "Daily 3",
+      "purpose": "Repair sink control",
+      "notes": "Restores 25% durability."
+    },
+    {
+      "level_band": "3–10",
+      "shop_item": "Hunter's Material Pouch",
+      "item_type": "Materials",
+      "price_gold": "120",
+      "stock_rule": "Daily 2",
+      "purpose": "Skirmisher crafting support",
+      "notes": "Contains leather/cloth/wolf materials."
+    },
+    {
+      "level_band": "5–12",
+      "shop_item": "Raider Material Pouch",
+      "item_type": "Materials",
+      "price_gold": "160",
+      "stock_rule": "Daily 2",
+      "purpose": "Axe/rage crafting support",
+      "notes": "Contains raider tokens and metal."
+    },
+    {
+      "level_band": "7–14",
+      "shop_item": "Iron Material Pouch",
+      "item_type": "Materials",
+      "price_gold": "190",
+      "stock_rule": "Daily 2",
+      "purpose": "Vanguard/fighter support",
+      "notes": "Contains rivets, chain links, guard insignia chance."
+    },
+    {
+      "level_band": "10–20",
+      "shop_item": "Common Recipe Scroll",
+      "item_type": "Recipe",
+      "price_gold": "300",
+      "stock_rule": "Weekly 2",
+      "purpose": "Bad luck protection",
+      "notes": "Random missing uncommon recipe."
+    },
+    {
+      "level_band": "10–20",
+      "shop_item": "Uncommon Upgrade Stone",
+      "item_type": "Upgrade",
+      "price_gold": "220",
+      "stock_rule": "Daily 2",
+      "purpose": "Upgrade economy",
+      "notes": "Required for +2/+3 upgrades if implemented."
+    },
+    {
+      "level_band": "15–24",
+      "shop_item": "Rare Material Cache",
+      "item_type": "Materials",
+      "price_gold": "600",
+      "stock_rule": "Weekly 2",
+      "purpose": "Rare crafting support",
+      "notes": "Small chance for rare material."
+    },
+    {
+      "level_band": "20–30",
+      "shop_item": "Elite Hunter Contract",
+      "item_type": "Ticket",
+      "price_gold": "900",
+      "stock_rule": "Weekly 1",
+      "purpose": "Elite access",
+      "notes": "Guarantees next encounter has elite roll bonus."
+    },
+    {
+      "level_band": "25–30",
+      "shop_item": "Masterwork Catalyst",
+      "item_type": "Crafting",
+      "price_gold": "1200",
+      "stock_rule": "Weekly 1",
+      "purpose": "Late crafting chase",
+      "notes": "Increases Fine/Masterwork chance."
+    },
+    {
+      "level_band": "27–30",
+      "shop_item": "Ash Sigil Fragment Cache",
+      "item_type": "Key Materials",
+      "price_gold": "1500",
+      "stock_rule": "Weekly 1",
+      "purpose": "Boss unlock support",
+      "notes": "Expensive bad luck protection."
+    }
+  ],
+  "progressionPace": [
+    {
+      "level_range": "1–5",
+      "target_time": "30–60 min",
+      "normal_fights_per_level": "10–14",
+      "elite_impact": "Not required",
+      "boss_impact": "No boss required",
+      "design_intent": "Fast onboarding and early dopamine."
+    },
+    {
+      "level_range": "6–10",
+      "target_time": "1.5–3 hours",
+      "normal_fights_per_level": "14–18",
+      "elite_impact": "Helpful but optional",
+      "boss_impact": "First boss around level 10",
+      "design_intent": "Build identity starts."
+    },
+    {
+      "level_range": "11–15",
+      "target_time": "3–5 hours",
+      "normal_fights_per_level": "16–20",
+      "elite_impact": "Useful for recipes/materials",
+      "boss_impact": "Optional zone bosses",
+      "design_intent": "Crafting becomes meaningful."
+    },
+    {
+      "level_range": "16–20",
+      "target_time": "5–8 hours",
+      "normal_fights_per_level": "18–22",
+      "elite_impact": "Important for rare recipes",
+      "boss_impact": "Milestone boss at 20",
+      "design_intent": "Midgame specialization."
+    },
+    {
+      "level_range": "21–25",
+      "target_time": "8–12 hours",
+      "normal_fights_per_level": "20–24",
+      "elite_impact": "Strongly valuable",
+      "boss_impact": "Progress bosses",
+      "design_intent": "Rare/epic chase starts."
+    },
+    {
+      "level_range": "26–30",
+      "target_time": "12–20 hours",
+      "normal_fights_per_level": "22–28",
+      "elite_impact": "Core farming loop",
+      "boss_impact": "Ash Lord Vaelor capstone",
+      "design_intent": "End of first progression arc."
+    }
+  ],
+  "economyRules": [
+    {
+      "rule": "Gold should not be the main blocker before level 10",
+      "value": "Low repair and upgrade costs",
+      "why_it_exists": "Early game should teach systems, not punish experimentation."
+    },
+    {
+      "rule": "Rare items sell for meaningful gold, but not enough to buy all upgrades",
+      "value": "Sell value = 28% base",
+      "why_it_exists": "Prevents infinite vendor farming."
+    },
+    {
+      "rule": "Repair is a soft gold sink",
+      "value": "Full repair = 18% item value",
+      "why_it_exists": "Creates maintenance pressure without stopping play."
+    },
+    {
+      "rule": "Shop is catch-up, not best-in-slot",
+      "value": "Shop markup = 125%",
+      "why_it_exists": "Player should still prefer drops/crafting."
+    },
+    {
+      "rule": "Crafting is bad-luck protection",
+      "value": "Crafted gear ≈ 85–95% rare drop power",
+      "why_it_exists": "Prevents frustration while preserving loot chase."
+    },
+    {
+      "rule": "Upgrades should not replace item progression",
+      "value": "+3 early, +4 mid, +5 late",
+      "why_it_exists": "Prevents low-level item from being optimal forever."
+    },
+    {
+      "rule": "Boss rewards should feel large",
+      "value": "Boss gold ≈ 9x common",
+      "why_it_exists": "Milestone reward should be memorable."
+    },
+    {
+      "rule": "Elite rewards drive dopamine",
+      "value": "Elite gold ≈ 3x common; elite XP ≈ 2.75x common",
+      "why_it_exists": "Makes rare spawns exciting."
+    }
+  ]
+}

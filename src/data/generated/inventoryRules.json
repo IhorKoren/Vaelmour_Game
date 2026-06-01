@@ -1,0 +1,449 @@
+{
+  "questRules": [
+    {
+      "rule": "Daily Quest Reset",
+      "value": "Once per day",
+      "design_notes": "Reset at server daily reset time. Player receives 3 daily quest slots by defa..."
+    },
+    {
+      "rule": "Daily Quest Slots",
+      "value": "3 active daily quests",
+      "design_notes": "Keeps routine short and mobile-friendly."
+    },
+    {
+      "rule": "Daily Reroll",
+      "value": "1 free reroll/day",
+      "design_notes": "Optional paid rerolls can be added later."
+    },
+    {
+      "rule": "Zone Quest Purpose",
+      "value": "Guide progression",
+      "design_notes": "Each zone has a short chain that introduces enemy families and loot identity."
+    },
+    {
+      "rule": "Kill Quest Purpose",
+      "value": "Repeatable grind structure",
+      "design_notes": "Gives controlled XP/gold/material targets without forcing story."
+    },
+    {
+      "rule": "Boss Unlock Purpose",
+      "value": "Milestone gate",
+      "design_notes": "Bosses are not random spawns; unlock via quest, key, reputation or zone progr..."
+    },
+    {
+      "rule": "Quest Difficulty",
+      "value": "Normal / Hard / Elite / Boss",
+      "design_notes": "Used for reward scaling."
+    },
+    {
+      "rule": "Quest Reward Types",
+      "value": "XP / Gold / Materials / Recipe / Key Item / Reputation",
+      "design_notes": "Mix rewards to support crafting and progression."
+    },
+    {
+      "rule": "Quest Tracking",
+      "value": "Max 5 normal active quests + 3 dailies",
+      "design_notes": "Avoids overloaded UI."
+    },
+    {
+      "rule": "Quest Completion",
+      "value": "Claim manually",
+      "design_notes": "Manual claim creates reward moment and prevents invisible progression."
+    },
+    {
+      "rule": "Quest Sharing",
+      "value": "No party system yet",
+      "design_notes": "Can be added later for guild/group content."
+    }
+  ],
+  "inventoryRules": [
+    {
+      "rule": "Base Inventory Slots",
+      "value": "30",
+      "design_notes": "Enough for Telegram RPG without inventory stress."
+    },
+    {
+      "rule": "Premium/Upgrade Expansion",
+      "value": "+10 slots per upgrade, max 80",
+      "design_notes": "Can be monetized later but should not be mandatory."
+    },
+    {
+      "rule": "Equipment does not occupy inventory",
+      "value": "Equipped items separate",
+      "design_notes": "Cleaner UX."
+    },
+    {
+      "rule": "Quest Items",
+      "value": "Separate quest inventory",
+      "design_notes": "Prevents quest blockers from filling bags."
+    },
+    {
+      "rule": "Materials",
+      "value": "Stackable",
+      "design_notes": "Core crafting materials stack by rarity."
+    },
+    {
+      "rule": "Weapons/Armor",
+      "value": "Non-stackable",
+      "design_notes": "Each item can have rarity/affix/quality."
+    },
+    {
+      "rule": "Rings/Talismans",
+      "value": "Non-stackable",
+      "design_notes": "Build-defining items."
+    },
+    {
+      "rule": "Auto-loot",
+      "value": "Enabled by default",
+      "design_notes": "But if inventory full, send to temporary loot box."
+    },
+    {
+      "rule": "Temporary Loot Box",
+      "value": "24h claim window",
+      "design_notes": "Prevents losing rare drops due to full inventory."
+    },
+    {
+      "rule": "Sort Options",
+      "value": "By rarity / level / type / newest",
+      "design_notes": "Required for mobile UX."
+    },
+    {
+      "rule": "Filters",
+      "value": "Weapons / Armor / Materials / Quest / Crafting",
+      "design_notes": "Simple category tabs."
+    },
+    {
+      "rule": "Destroy Item",
+      "value": "Allowed for Common+",
+      "design_notes": "Confirm for Rare+."
+    }
+  ],
+  "equipSlots": [
+    {
+      "slot_id": "SLOT_WEAPON",
+      "slot_name": "Weapon",
+      "max_equipped": "1",
+      "allowed_item_types": "Axe / Sword / Hammer",
+      "gameplay_function": "Determines active weapon skills",
+      "design_notes": "Highest impact slot."
+    },
+    {
+      "slot_id": "SLOT_CHEST",
+      "slot_name": "Chest",
+      "max_equipped": "1",
+      "allowed_item_types": "Skirmisher / Fighter / Vanguard",
+      "gameplay_function": "Main armor slot",
+      "design_notes": "Defines armor archetype feel early."
+    },
+    {
+      "slot_id": "SLOT_HEAD",
+      "slot_name": "Helmet",
+      "max_equipped": "1",
+      "allowed_item_types": "Light / Medium / Heavy",
+      "gameplay_function": "Defensive minor slot",
+      "design_notes": "Can be added visually later."
+    },
+    {
+      "slot_id": "SLOT_GLOVES",
+      "slot_name": "Gloves",
+      "max_equipped": "1",
+      "allowed_item_types": "Light / Medium / Heavy",
+      "gameplay_function": "Offensive/utility minor slot",
+      "design_notes": "Good place for crit/block bonuses."
+    },
+    {
+      "slot_id": "SLOT_BOOTS",
+      "slot_name": "Boots",
+      "max_equipped": "1",
+      "allowed_item_types": "Light / Medium / Heavy",
+      "gameplay_function": "Dodge/poise/utility",
+      "design_notes": "No movement, so use combat tempo bonuses."
+    },
+    {
+      "slot_id": "SLOT_RING_1",
+      "slot_name": "Ring 1",
+      "max_equipped": "1",
+      "allowed_item_types": "Any Ring",
+      "gameplay_function": "Build modifier",
+      "design_notes": "Rings can stack only if not same unique."
+    },
+    {
+      "slot_id": "SLOT_RING_2",
+      "slot_name": "Ring 2",
+      "max_equipped": "1",
+      "allowed_item_types": "Any Ring",
+      "gameplay_function": "Build modifier",
+      "design_notes": "Prevents too many accessory slots."
+    },
+    {
+      "slot_id": "SLOT_TALISMAN",
+      "slot_name": "Talisman",
+      "max_equipped": "1",
+      "allowed_item_types": "Any Talisman",
+      "gameplay_function": "Strong identity modifier",
+      "design_notes": "Usually rare/epic effects."
+    }
+  ],
+  "stackRules": [
+    {
+      "item_category": "Common Material",
+      "item_type": "Material",
+      "rarity": "Common",
+      "max_stack": "99",
+      "examples": "Torn Cloth, Cracked Leather, Bent Iron Scrap",
+      "design_notes": "Large stack to reduce clutter."
+    },
+    {
+      "item_category": "Uncommon Material",
+      "item_type": "Material",
+      "rarity": "Uncommon",
+      "max_stack": "50",
+      "examples": "Wolf Fang, Raider Emblem, Ash Resin",
+      "design_notes": "Still frequent."
+    },
+    {
+      "item_category": "Rare Material",
+      "item_type": "Material",
+      "rarity": "Rare",
+      "max_stack": "25",
+      "examples": "Blackfang Pelt, Blood Ash, Arena Medal",
+      "design_notes": "Rare but craft-relevant."
+    },
+    {
+      "item_category": "Epic Material",
+      "item_type": "Material",
+      "rarity": "Epic",
+      "max_stack": "10",
+      "examples": "Vaelor Ash Core",
+      "design_notes": "Keep stack small and valuable."
+    },
+    {
+      "item_category": "Recipe Scroll",
+      "item_type": "Recipe",
+      "rarity": "Any",
+      "max_stack": "1",
+      "examples": "Recipe: Wolfbite Hatchet",
+      "design_notes": "Consumed on learn."
+    },
+    {
+      "item_category": "Quest Item",
+      "item_type": "Quest",
+      "rarity": "Any",
+      "max_stack": "99",
+      "examples": "Ash Sigil Fragment",
+      "design_notes": "Stored in quest inventory."
+    },
+    {
+      "item_category": "Weapon",
+      "item_type": "Equipment",
+      "rarity": "Any",
+      "max_stack": "1",
+      "examples": "Axe/Sword/Hammer",
+      "design_notes": "Non-stackable due to affixes."
+    },
+    {
+      "item_category": "Armor",
+      "item_type": "Equipment",
+      "rarity": "Any",
+      "max_stack": "1",
+      "examples": "Chest/Helmet/Gloves/Boots",
+      "design_notes": "Non-stackable."
+    },
+    {
+      "item_category": "Ring",
+      "item_type": "Accessory",
+      "rarity": "Any",
+      "max_stack": "1",
+      "examples": "Countermark Ring",
+      "design_notes": "Non-stackable."
+    },
+    {
+      "item_category": "Talisman",
+      "item_type": "Accessory",
+      "rarity": "Any",
+      "max_stack": "1",
+      "examples": "Iron Sigil",
+      "design_notes": "Non-stackable."
+    },
+    {
+      "item_category": "Gold",
+      "item_type": "Currency",
+      "rarity": "Currency",
+      "max_stack": "Unlimited",
+      "examples": "Gold",
+      "design_notes": "Not inventory item."
+    }
+  ],
+  "sellDisenchant": [
+    {
+      "item_class": "Common Equipment",
+      "allowed_action": "Sell",
+      "sell_rule": "100% base sell value",
+      "disenchant_rule": "No disenchant recommended",
+      "design_notes": "Common items should be quick to clear."
+    },
+    {
+      "item_class": "Uncommon Equipment",
+      "allowed_action": "Sell or Disenchant",
+      "sell_rule": "100% base sell value",
+      "disenchant_rule": "1–2 related common/uncommon materials",
+      "design_notes": "Player choice starts here."
+    },
+    {
+      "item_class": "Rare Equipment",
+      "allowed_action": "Sell or Disenchant",
+      "sell_rule": "150% base sell value",
+      "disenchant_rule": "2–4 materials + 15% rare material chance",
+      "design_notes": "Confirmation required."
+    },
+    {
+      "item_class": "Epic Equipment",
+      "allowed_action": "Disenchant recommended",
+      "sell_rule": "200% base sell value",
+      "disenchant_rule": "4–8 materials + 1 guaranteed rare + 20% epic material chance",
+      "design_notes": "Strong confirmation required."
+    },
+    {
+      "item_class": "Recipe Duplicate",
+      "allowed_action": "Convert",
+      "sell_rule": "Small gold",
+      "disenchant_rule": "Recipe Dust / material cache",
+      "design_notes": "Prevents dead duplicate recipe drops."
+    },
+    {
+      "item_class": "Quest Item",
+      "allowed_action": "Cannot sell",
+      "sell_rule": "N/A",
+      "disenchant_rule": "N/A",
+      "design_notes": "Avoid soft-lock."
+    },
+    {
+      "item_class": "Material",
+      "allowed_action": "Sell",
+      "sell_rule": "Sell value by material table",
+      "disenchant_rule": "Cannot disenchant",
+      "design_notes": "Materials are already crafting resources."
+    },
+    {
+      "item_class": "Unique Boss Item",
+      "allowed_action": "Sell locked by default",
+      "sell_rule": "Manual unlock required",
+      "disenchant_rule": "Disenchant gives unique essence",
+      "design_notes": "Prevents accidental loss."
+    }
+  ],
+  "itemComparison": [
+    {
+      "comparison_field": "Compare Level",
+      "applies_to": "Show item required level",
+      "ui_behavior": "Informational only",
+      "design_notes": "Do not use item score as main decision."
+    },
+    {
+      "comparison_field": "Compare Damage",
+      "applies_to": "Weapons only",
+      "ui_behavior": "Show min-max damage and attack speed",
+      "design_notes": "Weapon skills depend on weapon type."
+    },
+    {
+      "comparison_field": "Compare Armor",
+      "applies_to": "Armor pieces",
+      "ui_behavior": "Show armor difference",
+      "design_notes": "But do not auto-label higher armor as better."
+    },
+    {
+      "comparison_field": "Compare Archetype",
+      "applies_to": "Skirmisher / Fighter / Vanguard",
+      "ui_behavior": "Show current vs new archetype",
+      "design_notes": "Important for build identity."
+    },
+    {
+      "comparison_field": "Compare Bonuses",
+      "applies_to": "List primary/secondary bonuses",
+      "ui_behavior": "Highlight gained/lost bonuses",
+      "design_notes": "Core of decision-making."
+    },
+    {
+      "comparison_field": "Compare Skill Compatibility",
+      "applies_to": "Weapon slot",
+      "ui_behavior": "Warn if changing weapon changes active skills",
+      "design_notes": "Prevents surprise loss of skills."
+    },
+    {
+      "comparison_field": "Compare Rage Impact",
+      "applies_to": "All combat items",
+      "ui_behavior": "Estimate +/− Rage generation",
+      "design_notes": "Very important because Rage replaces mana/stamina."
+    },
+    {
+      "comparison_field": "Compare Survivability",
+      "applies_to": "Armor/accessories",
+      "ui_behavior": "Estimate HP/armor/avoidance impact",
+      "design_notes": "Simple text: Higher/Lower/Similar."
+    },
+    {
+      "comparison_field": "Compare Damage Profile",
+      "applies_to": "Weapons/accessories",
+      "ui_behavior": "Estimate burst/sustain/bleed/execute",
+      "design_notes": "Avoid one total power score."
+    },
+    {
+      "comparison_field": "Recommendation Text",
+      "applies_to": "Contextual",
+      "ui_behavior": "Example: Better for bleed build, worse for Vanguard sustain",
+      "design_notes": "Useful for mobile players."
+    }
+  ],
+  "inventoryUI": [
+    {
+      "ui_element": "Inventory Tabs",
+      "behavior": "All / Equipment / Materials / Recipes / Quest / Trash",
+      "design_notes": "Keeps mobile screen clean."
+    },
+    {
+      "ui_element": "Item Card Header",
+      "behavior": "Name + rarity color + required level",
+      "design_notes": "Immediate identification."
+    },
+    {
+      "ui_element": "Item Card Body",
+      "behavior": "Type, archetype, stats, bonuses",
+      "design_notes": "No long paragraphs in inventory view."
+    },
+    {
+      "ui_element": "Item Actions",
+      "behavior": "Equip / Compare / Sell / Disenchant / Lock / Favorite",
+      "design_notes": "Action buttons under item card."
+    },
+    {
+      "ui_element": "Lock Item",
+      "behavior": "Prevents sell/disenchant",
+      "design_notes": "Critical for rare/epic drops."
+    },
+    {
+      "ui_element": "Favorite Item",
+      "behavior": "Pins item to top",
+      "design_notes": "Useful for build experiments."
+    },
+    {
+      "ui_element": "Quick Sell",
+      "behavior": "Only Common unlocked items",
+      "design_notes": "Avoids accidental rare loss."
+    },
+    {
+      "ui_element": "Bulk Disenchant",
+      "behavior": "Uncommon and below by default",
+      "design_notes": "Rare+ excluded unless manually selected."
+    },
+    {
+      "ui_element": "Full Inventory Warning",
+      "behavior": "At 90% capacity",
+      "design_notes": "Warn before player loses flow."
+    },
+    {
+      "ui_element": "Loot Box Overflow",
+      "behavior": "Rare+ always preserved for 24h",
+      "design_notes": "Protects player from frustration."
+    }
+  ]
+}

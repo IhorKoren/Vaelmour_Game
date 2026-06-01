@@ -1,0 +1,72 @@
+[
+  {
+    "recipe_id": "REC_AMULET_NEW_003",
+    "source_location": "Blackfang Forest",
+    "drops_from": "Young Wolf / Fang Stalker",
+    "recipe_drop_chance": "4.5",
+    "dropped_recipe": "Recipe: Iron Sigil"
+  },
+  {
+    "recipe_id": "REC_AMULET_NEW_004",
+    "source_location": "Old Watchtower",
+    "drops_from": "Tower Shield Veteran / Iron Guard",
+    "recipe_drop_chance": "4.5",
+    "dropped_recipe": "Recipe: Ash-Touched Charm"
+  },
+  {
+    "recipe_id": "REC_AMULET_NEW_005",
+    "source_location": "Blackfang Gate",
+    "drops_from": "Iron Gate Warden",
+    "recipe_drop_chance": "4.5",
+    "dropped_recipe": "Recipe: Blood Priest's Charm"
+  },
+  {
+    "recipe_id": "REC_AMULET_NEW_006",
+    "source_location": "Ashen Marsh",
+    "drops_from": "Ash Disciple / Ash Blood Priest",
+    "recipe_drop_chance": "2.6",
+    "dropped_recipe": "Recipe: Mercenary Luck Talisman"
+  },
+  {
+    "recipe_id": "REC_AMULET_NEW_007",
+    "source_location": "Mercenary Crossroads",
+    "drops_from": "Veteran Sellblade / Crossroad Duelist",
+    "recipe_drop_chance": "4.5",
+    "dropped_recipe": "Recipe: Executioner's Mark"
+  },
+  {
+    "recipe_id": "REC_AMULET_NEW_008",
+    "source_location": "Execution Grounds",
+    "drops_from": "Executioner / Headsman Veteran",
+    "recipe_drop_chance": "2.6",
+    "dropped_recipe": "Recipe: Ravenfeather Talisman"
+  },
+  {
+    "recipe_id": "REC_AMULET_NEW_009",
+    "source_location": "Raven Hollow",
+    "drops_from": "Raven Fang Stalker / Elite Spawn",
+    "recipe_drop_chance": "2.6",
+    "dropped_recipe": "Recipe: Zealot's Ash Charm"
+  },
+  {
+    "recipe_id": "REC_AMULET_NEW_010",
+    "source_location": "Crimson Quarry",
+    "drops_from": "War Brute / Ironbound Breaker",
+    "recipe_drop_chance": "2.6",
+    "dropped_recipe": "Recipe: Breaker Sigil"
+  },
+  {
+    "recipe_id": "REC_AMULET_NEW_011",
+    "source_location": "Warbound Arena Ruins",
+    "drops_from": "Arena Duelist / Arena Champion Spawn",
+    "recipe_drop_chance": "12.0",
+    "dropped_recipe": "Recipe: Three Ash Sigils Pendant"
+  },
+  {
+    "recipe_id": "REC_AMULET_NEW_012",
+    "source_location": "Vaelor's Threshold",
+    "drops_from": "Ash Lord Vaelor / Elite Spawn",
+    "recipe_drop_chance": "12.0",
+    "dropped_recipe": "Recipe: Vaelor Core Amulet"
+  }
+]

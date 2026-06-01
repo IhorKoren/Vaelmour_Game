@@ -1,0 +1,358 @@
+[
+  {
+    "id": "REC_RING_NEW_001",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Traveler's Ring",
+    "result": "ring_001_traveler_s_ring",
+    "itemType": "Ring",
+    "requiredLevel": 2,
+    "tierRaw": "I",
+    "tier": 1,
+    "rarity": "common",
+    "unlockMethod": "Auto-known",
+    "recipeSource": "Crafting trainer",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_005",
+        "qty": 3
+      },
+      {
+        "id": "MAT_001",
+        "qty": 2
+      }
+    ],
+    "goldCost": 35,
+    "successChance": 1,
+    "outputEffect": "Starter ring with HP and regen."
+  },
+  {
+    "id": "REC_RING_NEW_002",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Wolfbite Band",
+    "result": "ring_002_wolfbite_band",
+    "itemType": "Ring",
+    "requiredLevel": 4,
+    "tierRaw": "I",
+    "tier": 1,
+    "rarity": "common",
+    "unlockMethod": "Auto-known",
+    "recipeSource": "Crafting trainer",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_005",
+        "qty": 2
+      },
+      {
+        "id": "MAT_001",
+        "qty": 2
+      }
+    ],
+    "goldCost": 55,
+    "successChance": 1,
+    "outputEffect": "Early offensive beast ring."
+  },
+  {
+    "id": "REC_RING_NEW_003",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Marauder's Iron Band",
+    "result": "ring_003_marauder_s_iron_band",
+    "itemType": "Ring",
+    "requiredLevel": 6,
+    "tierRaw": "I",
+    "tier": 1,
+    "rarity": "uncommon",
+    "unlockMethod": "Blackfang Forest progress",
+    "recipeSource": "Blackfang Forest",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_005",
+        "qty": 3
+      },
+      {
+        "id": "MAT_001",
+        "qty": 2
+      }
+    ],
+    "goldCost": 85,
+    "successChance": 1,
+    "outputEffect": "Rage/offense ring from raiders."
+  },
+  {
+    "id": "REC_RING_NEW_004",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Countermark Ring",
+    "result": "ring_004_countermark_ring",
+    "itemType": "Ring",
+    "requiredLevel": 8,
+    "tierRaw": "II",
+    "tier": 2,
+    "rarity": "uncommon",
+    "unlockMethod": "Old Watchtower progress",
+    "recipeSource": "Old Watchtower",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_009",
+        "qty": 4
+      },
+      {
+        "id": "MAT_008",
+        "qty": 2
+      }
+    ],
+    "goldCost": 175,
+    "successChance": 1,
+    "outputEffect": "Duelist ring for counter identity."
+  },
+  {
+    "id": "REC_RING_NEW_005",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Balanced Iron Ring",
+    "result": "ring_005_balanced_iron_ring",
+    "itemType": "Ring",
+    "requiredLevel": 11,
+    "tierRaw": "II",
+    "tier": 2,
+    "rarity": "uncommon",
+    "unlockMethod": "Zone progress / enemy drop",
+    "recipeSource": "Iron Gate Warden",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_009",
+        "qty": 5
+      },
+      {
+        "id": "MAT_008",
+        "qty": 3
+      }
+    ],
+    "goldCost": 210,
+    "successChance": 1,
+    "outputEffect": "Balanced ring with damage and regen."
+  },
+  {
+    "id": "REC_RING_NEW_006",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Ash Resin Signet",
+    "result": "ring_006_ash_resin_signet",
+    "itemType": "Ring",
+    "requiredLevel": 14,
+    "tierRaw": "III",
+    "tier": 3,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "Ash Disciple / Ash Blood Priest",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_012",
+        "qty": 6
+      },
+      {
+        "id": "MAT_013",
+        "qty": 3
+      },
+      {
+        "id": "MAT_011",
+        "qty": 1
+      }
+    ],
+    "goldCost": 425,
+    "successChance": 1,
+    "outputEffect": "Ash-zone ring with recovery."
+  },
+  {
+    "id": "REC_RING_NEW_007",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Sellblade Oath Ring",
+    "result": "ring_007_sellblade_oath_ring",
+    "itemType": "Ring",
+    "requiredLevel": 17,
+    "tierRaw": "III",
+    "tier": 3,
+    "rarity": "uncommon",
+    "unlockMethod": "Zone progress / enemy drop",
+    "recipeSource": "Veteran Sellblade / Crossroad Duelist",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_012",
+        "qty": 7
+      },
+      {
+        "id": "MAT_013",
+        "qty": 4
+      }
+    ],
+    "goldCost": 360,
+    "successChance": 1,
+    "outputEffect": "Offensive mercenary ring."
+  },
+  {
+    "id": "REC_RING_NEW_008",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Raven Eye Ring",
+    "result": "ring_008_raven_eye_ring",
+    "itemType": "Ring",
+    "requiredLevel": 20,
+    "tierRaw": "IV",
+    "tier": 4,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "Executioner / Headsman Veteran",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_018",
+        "qty": 5
+      },
+      {
+        "id": "MAT_016",
+        "qty": 5
+      },
+      {
+        "id": "MAT_017",
+        "qty": 2
+      }
+    ],
+    "goldCost": 705,
+    "successChance": 1,
+    "outputEffect": "Crit/dodge identity ring."
+  },
+  {
+    "id": "REC_RING_NEW_009",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Sanctuary Blood Ring",
+    "result": "ring_009_sanctuary_blood_ring",
+    "itemType": "Ring",
+    "requiredLevel": 23,
+    "tierRaw": "IV",
+    "tier": 4,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "Raven Fang Stalker / Elite Spawn",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_018",
+        "qty": 7
+      },
+      {
+        "id": "MAT_016",
+        "qty": 3
+      },
+      {
+        "id": "MAT_017",
+        "qty": 3
+      }
+    ],
+    "goldCost": 745,
+    "successChance": 1,
+    "outputEffect": "Rare blood/ash ring."
+  },
+  {
+    "id": "REC_RING_NEW_010",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Crimson Ore Band",
+    "result": "ring_010_crimson_ore_band",
+    "itemType": "Ring",
+    "requiredLevel": 26,
+    "tierRaw": "V",
+    "tier": 5,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "War Brute / Ironbound Breaker",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_020",
+        "qty": 7
+      },
+      {
+        "id": "MAT_019",
+        "qty": 6
+      },
+      {
+        "id": "MAT_024",
+        "qty": 4
+      }
+    ],
+    "goldCost": 1080,
+    "successChance": 1,
+    "outputEffect": "Late-game durable ring."
+  },
+  {
+    "id": "REC_RING_NEW_011",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Morcant's Ring",
+    "result": "ring_011_morcant_s_ring",
+    "itemType": "Ring",
+    "requiredLevel": 28,
+    "tierRaw": "V",
+    "tier": 5,
+    "rarity": "epic",
+    "unlockMethod": "Boss / elite milestone recipe",
+    "recipeSource": "Arena Duelist / Arena Champion Spawn",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_020",
+        "qty": 11
+      },
+      {
+        "id": "MAT_019",
+        "qty": 7
+      },
+      {
+        "id": "MAT_024",
+        "qty": 5
+      },
+      {
+        "id": "MAT_023",
+        "qty": 3
+      }
+    ],
+    "goldCost": 1540,
+    "successChance": 1,
+    "outputEffect": "Epic arena/counter ring."
+  },
+  {
+    "id": "REC_RING_NEW_012",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Vaelor Ash Signet",
+    "result": "ring_012_vaelor_ash_signet",
+    "itemType": "Ring",
+    "requiredLevel": 30,
+    "tierRaw": "V",
+    "tier": 5,
+    "rarity": "epic",
+    "unlockMethod": "Boss / elite milestone recipe",
+    "recipeSource": "Ash Lord Vaelor / Elite Spawn",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_020",
+        "qty": 6
+      },
+      {
+        "id": "MAT_019",
+        "qty": 5
+      },
+      {
+        "id": "MAT_024",
+        "qty": 3
+      },
+      {
+        "id": "MAT_023",
+        "qty": 2
+      }
+    ],
+    "goldCost": 1580,
+    "successChance": 1,
+    "outputEffect": "End-arc epic ring."
+  }
+]

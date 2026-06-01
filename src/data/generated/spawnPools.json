@@ -1,0 +1,702 @@
+[
+  {
+    "location_id": "LOC_001",
+    "enemy_name": "Young Wolf",
+    "enemy_family": "Blackfang Wolves",
+    "archetype": "Hunter",
+    "enemy_level_band": "1–3",
+    "spawn_chance": 36,
+    "rarity": "Common",
+    "combat_notes": "Fast attacks, low HP"
+  },
+  {
+    "location_id": "LOC_001",
+    "enemy_name": "Road Thug",
+    "enemy_family": "Frontier Raiders",
+    "archetype": "Berserker",
+    "enemy_level_band": "1–3",
+    "spawn_chance": 33,
+    "rarity": "Common",
+    "combat_notes": "Simple rage pressure"
+  },
+  {
+    "location_id": "LOC_001",
+    "enemy_name": "Broken Shield Guard",
+    "enemy_family": "Iron Legion",
+    "archetype": "Defender",
+    "enemy_level_band": "2–3",
+    "spawn_chance": 20,
+    "rarity": "Uncommon",
+    "combat_notes": "Low damage, higher armor"
+  },
+  {
+    "location_id": "LOC_001",
+    "enemy_name": "Starved Stalker",
+    "enemy_family": "Blackfang Wolves",
+    "archetype": "Hunter",
+    "enemy_level_band": "2–3",
+    "spawn_chance": 8,
+    "rarity": "Rare",
+    "combat_notes": "Higher crit chance"
+  },
+  {
+    "location_id": "LOC_001",
+    "enemy_name": "Elite Spawn Roll",
+    "enemy_family": "Any",
+    "archetype": "Elite",
+    "enemy_level_band": "2–3",
+    "spawn_chance": 3,
+    "rarity": "Elite",
+    "combat_notes": "Random elite affix"
+  },
+  {
+    "location_id": "LOC_002",
+    "enemy_name": "Young Wolf",
+    "enemy_family": "Blackfang Wolves",
+    "archetype": "Hunter",
+    "enemy_level_band": "3–5",
+    "spawn_chance": 31,
+    "rarity": "Common",
+    "combat_notes": "Fast attacks"
+  },
+  {
+    "location_id": "LOC_002",
+    "enemy_name": "Fang Stalker",
+    "enemy_family": "Blackfang Wolves",
+    "archetype": "Hunter",
+    "enemy_level_band": "4–6",
+    "spawn_chance": 30,
+    "rarity": "Common",
+    "combat_notes": "Bleed chance"
+  },
+  {
+    "location_id": "LOC_002",
+    "enemy_name": "Forest Raider",
+    "enemy_family": "Frontier Raiders",
+    "archetype": "Berserker",
+    "enemy_level_band": "4–6",
+    "spawn_chance": 24,
+    "rarity": "Common",
+    "combat_notes": "Rage attacks"
+  },
+  {
+    "location_id": "LOC_002",
+    "enemy_name": "Blackfang Alpha Spawn",
+    "enemy_family": "Blackfang Wolves",
+    "archetype": "Hunter",
+    "enemy_level_band": "5–6",
+    "spawn_chance": 9,
+    "rarity": "Rare",
+    "combat_notes": "Mini-boss style rare enemy"
+  },
+  {
+    "location_id": "LOC_002",
+    "enemy_name": "Elite Spawn Roll",
+    "enemy_family": "Any",
+    "archetype": "Elite",
+    "enemy_level_band": "5–6",
+    "spawn_chance": 6,
+    "rarity": "Elite",
+    "combat_notes": "Blood-Starved preferred"
+  },
+  {
+    "location_id": "LOC_003",
+    "enemy_name": "Wild Raider",
+    "enemy_family": "Frontier Raiders",
+    "archetype": "Berserker",
+    "enemy_level_band": "5–8",
+    "spawn_chance": 34,
+    "rarity": "Common",
+    "combat_notes": "Rage from attacks"
+  },
+  {
+    "location_id": "LOC_003",
+    "enemy_name": "Blood Raider",
+    "enemy_family": "Frontier Raiders",
+    "archetype": "Berserker",
+    "enemy_level_band": "6–8",
+    "spawn_chance": 28,
+    "rarity": "Common",
+    "combat_notes": "Execute attacks"
+  },
+  {
+    "location_id": "LOC_003",
+    "enemy_name": "Raider Shieldbearer",
+    "enemy_family": "Iron Legion",
+    "archetype": "Defender",
+    "enemy_level_band": "6–8",
+    "spawn_chance": 21,
+    "rarity": "Uncommon",
+    "combat_notes": "Block stance"
+  },
+  {
+    "location_id": "LOC_003",
+    "enemy_name": "Savage Marauder",
+    "enemy_family": "Frontier Raiders",
+    "archetype": "Berserker",
+    "enemy_level_band": "7–8",
+    "spawn_chance": 11,
+    "rarity": "Rare",
+    "combat_notes": "Crit and rage"
+  },
+  {
+    "location_id": "LOC_003",
+    "enemy_name": "Elite Spawn Roll",
+    "enemy_family": "Any",
+    "archetype": "Elite",
+    "enemy_level_band": "7–8",
+    "spawn_chance": 6,
+    "rarity": "Elite",
+    "combat_notes": "Ravager preferred"
+  },
+  {
+    "location_id": "LOC_004",
+    "enemy_name": "Iron Guard",
+    "enemy_family": "Iron Legion",
+    "archetype": "Defender",
+    "enemy_level_band": "7–10",
+    "spawn_chance": 36,
+    "rarity": "Common",
+    "combat_notes": "High armor"
+  },
+  {
+    "location_id": "LOC_004",
+    "enemy_name": "Shield Veteran",
+    "enemy_family": "Iron Legion",
+    "archetype": "Defender",
+    "enemy_level_band": "8–10",
+    "spawn_chance": 27,
+    "rarity": "Common",
+    "combat_notes": "Block efficiency"
+  },
+  {
+    "location_id": "LOC_004",
+    "enemy_name": "Crossroad Duelist",
+    "enemy_family": "Mercenary",
+    "archetype": "Fighter",
+    "enemy_level_band": "8–10",
+    "spawn_chance": 22,
+    "rarity": "Uncommon",
+    "combat_notes": "Counter attacks"
+  },
+  {
+    "location_id": "LOC_004",
+    "enemy_name": "Tower Shield Veteran",
+    "enemy_family": "Iron Legion",
+    "archetype": "Defender",
+    "enemy_level_band": "9–10",
+    "spawn_chance": 9,
+    "rarity": "Rare",
+    "combat_notes": "High poise"
+  },
+  {
+    "location_id": "LOC_004",
+    "enemy_name": "Elite Spawn Roll",
+    "enemy_family": "Any",
+    "archetype": "Elite",
+    "enemy_level_band": "9–10",
+    "spawn_chance": 6,
+    "rarity": "Elite",
+    "combat_notes": "Ironbound preferred"
+  },
+  {
+    "location_id": "LOC_005",
+    "enemy_name": "Iron Guard",
+    "enemy_family": "Iron Legion",
+    "archetype": "Defender",
+    "enemy_level_band": "9–12",
+    "spawn_chance": 32,
+    "rarity": "Common",
+    "combat_notes": "Armor wall"
+  },
+  {
+    "location_id": "LOC_005",
+    "enemy_name": "Legion Protector",
+    "enemy_family": "Iron Legion",
+    "archetype": "Defender",
+    "enemy_level_band": "10–12",
+    "spawn_chance": 27,
+    "rarity": "Common",
+    "combat_notes": "Poise heavy"
+  },
+  {
+    "location_id": "LOC_005",
+    "enemy_name": "Gate Hammerman",
+    "enemy_family": "Executioners",
+    "archetype": "Brute",
+    "enemy_level_band": "10–12",
+    "spawn_chance": 22,
+    "rarity": "Uncommon",
+    "combat_notes": "Stagger attacks"
+  },
+  {
+    "location_id": "LOC_005",
+    "enemy_name": "Iron Gate Warden",
+    "enemy_family": "Iron Legion",
+    "archetype": "Defender",
+    "enemy_level_band": "11–12",
+    "spawn_chance": 12,
+    "rarity": "Rare",
+    "combat_notes": "Mini-boss defender"
+  },
+  {
+    "location_id": "LOC_005",
+    "enemy_name": "Elite Spawn Roll",
+    "enemy_family": "Any",
+    "archetype": "Elite",
+    "enemy_level_band": "11–12",
+    "spawn_chance": 7,
+    "rarity": "Elite",
+    "combat_notes": "Ironbound preferred"
+  },
+  {
+    "location_id": "LOC_006",
+    "enemy_name": "Ash Disciple",
+    "enemy_family": "Ash Cult",
+    "archetype": "Bleeder",
+    "enemy_level_band": "11–14",
+    "spawn_chance": 36,
+    "rarity": "Common",
+    "combat_notes": "Bleed stacking"
+  },
+  {
+    "location_id": "LOC_006",
+    "enemy_name": "Blood Priest",
+    "enemy_family": "Ash Cult",
+    "archetype": "Bleeder",
+    "enemy_level_band": "12–14",
+    "spawn_chance": 26,
+    "rarity": "Common",
+    "combat_notes": "Bleed pressure"
+  },
+  {
+    "location_id": "LOC_006",
+    "enemy_name": "Marsh Fang",
+    "enemy_family": "Blackfang Wolves",
+    "archetype": "Hunter",
+    "enemy_level_band": "12–14",
+    "spawn_chance": 20,
+    "rarity": "Uncommon",
+    "combat_notes": "Bleed bite"
+  },
+  {
+    "location_id": "LOC_006",
+    "enemy_name": "Ash Blood Priest",
+    "enemy_family": "Ash Cult",
+    "archetype": "Bleeder",
+    "enemy_level_band": "13–14",
+    "spawn_chance": 11,
+    "rarity": "Rare",
+    "combat_notes": "Stronger bleed"
+  },
+  {
+    "location_id": "LOC_006",
+    "enemy_name": "Elite Spawn Roll",
+    "enemy_family": "Any",
+    "archetype": "Elite",
+    "enemy_level_band": "13–14",
+    "spawn_chance": 7,
+    "rarity": "Elite",
+    "combat_notes": "Ash-Cursed preferred"
+  },
+  {
+    "location_id": "LOC_007",
+    "enemy_name": "Mercenary Swordsman",
+    "enemy_family": "Mercenary",
+    "archetype": "Fighter",
+    "enemy_level_band": "13–16",
+    "spawn_chance": 36,
+    "rarity": "Common",
+    "combat_notes": "Balanced stats"
+  },
+  {
+    "location_id": "LOC_007",
+    "enemy_name": "Crossroad Duelist",
+    "enemy_family": "Mercenary",
+    "archetype": "Fighter",
+    "enemy_level_band": "14–16",
+    "spawn_chance": 26,
+    "rarity": "Common",
+    "combat_notes": "Counters"
+  },
+  {
+    "location_id": "LOC_007",
+    "enemy_name": "Wild Raider",
+    "enemy_family": "Frontier Raiders",
+    "archetype": "Berserker",
+    "enemy_level_band": "14–16",
+    "spawn_chance": 20,
+    "rarity": "Uncommon",
+    "combat_notes": "Rage pressure"
+  },
+  {
+    "location_id": "LOC_007",
+    "enemy_name": "Veteran Sellblade",
+    "enemy_family": "Mercenary",
+    "archetype": "Fighter",
+    "enemy_level_band": "15–16",
+    "spawn_chance": 11,
+    "rarity": "Rare",
+    "combat_notes": "Attack speed"
+  },
+  {
+    "location_id": "LOC_007",
+    "enemy_name": "Elite Spawn Roll",
+    "enemy_family": "Any",
+    "archetype": "Elite",
+    "enemy_level_band": "15–16",
+    "spawn_chance": 7,
+    "rarity": "Elite",
+    "combat_notes": "Ravager or Ironbound"
+  },
+  {
+    "location_id": "LOC_008",
+    "enemy_name": "Executioner",
+    "enemy_family": "Executioners",
+    "archetype": "Brute",
+    "enemy_level_band": "15–18",
+    "spawn_chance": 34,
+    "rarity": "Common",
+    "combat_notes": "Slow heavy hits"
+  },
+  {
+    "location_id": "LOC_008",
+    "enemy_name": "Pit Crusher",
+    "enemy_family": "Executioners",
+    "archetype": "Brute",
+    "enemy_level_band": "16–18",
+    "spawn_chance": 26,
+    "rarity": "Common",
+    "combat_notes": "Stagger attack"
+  },
+  {
+    "location_id": "LOC_008",
+    "enemy_name": "Blood Raider",
+    "enemy_family": "Frontier Raiders",
+    "archetype": "Berserker",
+    "enemy_level_band": "16–18",
+    "spawn_chance": 21,
+    "rarity": "Uncommon",
+    "combat_notes": "Execute low HP"
+  },
+  {
+    "location_id": "LOC_008",
+    "enemy_name": "Headsman Veteran",
+    "enemy_family": "Executioners",
+    "archetype": "Brute",
+    "enemy_level_band": "17–18",
+    "spawn_chance": 11,
+    "rarity": "Rare",
+    "combat_notes": "Heavy execute"
+  },
+  {
+    "location_id": "LOC_008",
+    "enemy_name": "Elite Spawn Roll",
+    "enemy_family": "Any",
+    "archetype": "Elite",
+    "enemy_level_band": "17–18",
+    "spawn_chance": 8,
+    "rarity": "Elite",
+    "combat_notes": "Ravager preferred"
+  },
+  {
+    "location_id": "LOC_009",
+    "enemy_name": "Fang Stalker",
+    "enemy_family": "Blackfang Wolves",
+    "archetype": "Hunter",
+    "enemy_level_band": "17–20",
+    "spawn_chance": 32,
+    "rarity": "Common",
+    "combat_notes": "Bleed crits"
+  },
+  {
+    "location_id": "LOC_009",
+    "enemy_name": "Raven Fang Stalker",
+    "enemy_family": "Blackfang Wolves",
+    "archetype": "Hunter",
+    "enemy_level_band": "18–20",
+    "spawn_chance": 27,
+    "rarity": "Common",
+    "combat_notes": "High crit"
+  },
+  {
+    "location_id": "LOC_009",
+    "enemy_name": "Ash Fang Zealot",
+    "enemy_family": "Ash Cult",
+    "archetype": "Bleeder",
+    "enemy_level_band": "18–20",
+    "spawn_chance": 22,
+    "rarity": "Uncommon",
+    "combat_notes": "Bleed stacking"
+  },
+  {
+    "location_id": "LOC_009",
+    "enemy_name": "Blackfang Alpha Spawn",
+    "enemy_family": "Blackfang Wolves",
+    "archetype": "Hunter",
+    "enemy_level_band": "19–20",
+    "spawn_chance": 11,
+    "rarity": "Rare",
+    "combat_notes": "Rare strong wolf"
+  },
+  {
+    "location_id": "LOC_009",
+    "enemy_name": "Elite Spawn Roll",
+    "enemy_family": "Any",
+    "archetype": "Elite",
+    "enemy_level_band": "19–20",
+    "spawn_chance": 8,
+    "rarity": "Elite",
+    "combat_notes": "Blood-Starved preferred"
+  },
+  {
+    "location_id": "LOC_010",
+    "enemy_name": "Legion Protector",
+    "enemy_family": "Iron Legion",
+    "archetype": "Defender",
+    "enemy_level_band": "19–22",
+    "spawn_chance": 34,
+    "rarity": "Common",
+    "combat_notes": "High armor"
+  },
+  {
+    "location_id": "LOC_010",
+    "enemy_name": "Shield Veteran",
+    "enemy_family": "Iron Legion",
+    "archetype": "Defender",
+    "enemy_level_band": "20–22",
+    "spawn_chance": 27,
+    "rarity": "Common",
+    "combat_notes": "Block phases"
+  },
+  {
+    "location_id": "LOC_010",
+    "enemy_name": "Gate Hammerman",
+    "enemy_family": "Executioners",
+    "archetype": "Brute",
+    "enemy_level_band": "20–22",
+    "spawn_chance": 20,
+    "rarity": "Uncommon",
+    "combat_notes": "Stagger"
+  },
+  {
+    "location_id": "LOC_010",
+    "enemy_name": "Iron Tyrant Guard",
+    "enemy_family": "Iron Legion",
+    "archetype": "Defender",
+    "enemy_level_band": "21–22",
+    "spawn_chance": 11,
+    "rarity": "Rare",
+    "combat_notes": "Mini-boss style defender"
+  },
+  {
+    "location_id": "LOC_010",
+    "enemy_name": "Elite Spawn Roll",
+    "enemy_family": "Any",
+    "archetype": "Elite",
+    "enemy_level_band": "21–22",
+    "spawn_chance": 8,
+    "rarity": "Elite",
+    "combat_notes": "Ironbound preferred"
+  },
+  {
+    "location_id": "LOC_011",
+    "enemy_name": "Ash Disciple",
+    "enemy_family": "Ash Cult",
+    "archetype": "Bleeder",
+    "enemy_level_band": "21–24",
+    "spawn_chance": 32,
+    "rarity": "Common",
+    "combat_notes": "Bleed"
+  },
+  {
+    "location_id": "LOC_011",
+    "enemy_name": "Ash Fang Zealot",
+    "enemy_family": "Ash Cult",
+    "archetype": "Bleeder",
+    "enemy_level_band": "22–24",
+    "spawn_chance": 27,
+    "rarity": "Common",
+    "combat_notes": "Stronger bleed"
+  },
+  {
+    "location_id": "LOC_011",
+    "enemy_name": "Blood Priest",
+    "enemy_family": "Ash Cult",
+    "archetype": "Bleeder",
+    "enemy_level_band": "22–24",
+    "spawn_chance": 22,
+    "rarity": "Uncommon",
+    "combat_notes": "Bleed amp"
+  },
+  {
+    "location_id": "LOC_011",
+    "enemy_name": "Ash-Cursed Champion",
+    "enemy_family": "Ash Cult",
+    "archetype": "Bleeder",
+    "enemy_level_band": "23–24",
+    "spawn_chance": 11,
+    "rarity": "Rare",
+    "combat_notes": "Elite-like bleed"
+  },
+  {
+    "location_id": "LOC_011",
+    "enemy_name": "Elite Spawn Roll",
+    "enemy_family": "Any",
+    "archetype": "Elite",
+    "enemy_level_band": "23–24",
+    "spawn_chance": 8,
+    "rarity": "Elite",
+    "combat_notes": "Ash-Cursed preferred"
+  },
+  {
+    "location_id": "LOC_012",
+    "enemy_name": "Mercenary Swordsman",
+    "enemy_family": "Mercenary",
+    "archetype": "Fighter",
+    "enemy_level_band": "23–26",
+    "spawn_chance": 32,
+    "rarity": "Common",
+    "combat_notes": "Balanced"
+  },
+  {
+    "location_id": "LOC_012",
+    "enemy_name": "Arena Duelist",
+    "enemy_family": "Mercenary",
+    "archetype": "Fighter",
+    "enemy_level_band": "24–26",
+    "spawn_chance": 27,
+    "rarity": "Common",
+    "combat_notes": "Counter"
+  },
+  {
+    "location_id": "LOC_012",
+    "enemy_name": "Ravager Sellblade",
+    "enemy_family": "Frontier Raiders",
+    "archetype": "Berserker",
+    "enemy_level_band": "24–26",
+    "spawn_chance": 22,
+    "rarity": "Uncommon",
+    "combat_notes": "Crit rage"
+  },
+  {
+    "location_id": "LOC_012",
+    "enemy_name": "Arena Champion Spawn",
+    "enemy_family": "Mercenary",
+    "archetype": "Fighter",
+    "enemy_level_band": "25–26",
+    "spawn_chance": 11,
+    "rarity": "Rare",
+    "combat_notes": "Mini-boss duel"
+  },
+  {
+    "location_id": "LOC_012",
+    "enemy_name": "Elite Spawn Roll",
+    "enemy_family": "Any",
+    "archetype": "Elite",
+    "enemy_level_band": "25–26",
+    "spawn_chance": 8,
+    "rarity": "Elite",
+    "combat_notes": "Ravager preferred"
+  },
+  {
+    "location_id": "LOC_013",
+    "enemy_name": "Pit Crusher",
+    "enemy_family": "Executioners",
+    "archetype": "Brute",
+    "enemy_level_band": "25–28",
+    "spawn_chance": 32,
+    "rarity": "Common",
+    "combat_notes": "Heavy stagger"
+  },
+  {
+    "location_id": "LOC_013",
+    "enemy_name": "War Brute",
+    "enemy_family": "Executioners",
+    "archetype": "Brute",
+    "enemy_level_band": "26–28",
+    "spawn_chance": 27,
+    "rarity": "Common",
+    "combat_notes": "Slow huge damage"
+  },
+  {
+    "location_id": "LOC_013",
+    "enemy_name": "Ironbound Breaker",
+    "enemy_family": "Iron Legion",
+    "archetype": "Defender",
+    "enemy_level_band": "26–28",
+    "spawn_chance": 22,
+    "rarity": "Uncommon",
+    "combat_notes": "Armor + poise"
+  },
+  {
+    "location_id": "LOC_013",
+    "enemy_name": "Quarry Breaker Spawn",
+    "enemy_family": "Executioners",
+    "archetype": "Brute",
+    "enemy_level_band": "27–28",
+    "spawn_chance": 10,
+    "rarity": "Rare",
+    "combat_notes": "Rare heavy brute"
+  },
+  {
+    "location_id": "LOC_013",
+    "enemy_name": "Elite Spawn Roll",
+    "enemy_family": "Any",
+    "archetype": "Elite",
+    "enemy_level_band": "27–28",
+    "spawn_chance": 9,
+    "rarity": "Elite",
+    "combat_notes": "Ironbound or Ravager"
+  },
+  {
+    "location_id": "LOC_014",
+    "enemy_name": "Ash Fang Zealot",
+    "enemy_family": "Ash Cult",
+    "archetype": "Bleeder",
+    "enemy_level_band": "27–30",
+    "spawn_chance": 28,
+    "rarity": "Common",
+    "combat_notes": "Bleed pressure"
+  },
+  {
+    "location_id": "LOC_014",
+    "enemy_name": "Iron Tyrant Guard",
+    "enemy_family": "Iron Legion",
+    "archetype": "Defender",
+    "enemy_level_band": "28–30",
+    "spawn_chance": 26,
+    "rarity": "Common",
+    "combat_notes": "High poise"
+  },
+  {
+    "location_id": "LOC_014",
+    "enemy_name": "War Brute",
+    "enemy_family": "Executioners",
+    "archetype": "Brute",
+    "enemy_level_band": "28–30",
+    "spawn_chance": 20,
+    "rarity": "Uncommon",
+    "combat_notes": "Stagger hits"
+  },
+  {
+    "location_id": "LOC_014",
+    "enemy_name": "Raven Fang Stalker",
+    "enemy_family": "Blackfang Wolves",
+    "archetype": "Hunter",
+    "enemy_level_band": "28–30",
+    "spawn_chance": 16,
+    "rarity": "Uncommon",
+    "combat_notes": "Crit bleed"
+  },
+  {
+    "location_id": "LOC_014",
+    "enemy_name": "Elite Spawn Roll",
+    "enemy_family": "Any",
+    "archetype": "Elite",
+    "enemy_level_band": "29–30",
+    "spawn_chance": 10,
+    "rarity": "Elite",
+    "combat_notes": "Any elite affix"
+  }
+]

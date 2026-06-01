@@ -1,0 +1,121 @@
+[
+  {
+    "recipe_id": "REC_004",
+    "source_location": "Raider Camp",
+    "drops_from": "Wild Raider",
+    "recipe_drop_chance": "6",
+    "dropped_recipe": "Recipe: Raider Cleaver"
+  },
+  {
+    "recipe_id": "REC_005",
+    "source_location": "Blackfang Forest",
+    "drops_from": "Fang Stalker",
+    "recipe_drop_chance": "5",
+    "dropped_recipe": "Recipe: Blackfang Strap Vest"
+  },
+  {
+    "recipe_id": "REC_006",
+    "source_location": "Blackfang Forest",
+    "drops_from": "Blackfang Alpha Spawn",
+    "recipe_drop_chance": "3",
+    "dropped_recipe": "Recipe: Wolfbite Hatchet"
+  },
+  {
+    "recipe_id": "REC_008",
+    "source_location": "Old Watchtower",
+    "drops_from": "Tower Shield Veteran",
+    "recipe_drop_chance": "3.5",
+    "dropped_recipe": "Recipe: Shield Veteran Mail"
+  },
+  {
+    "recipe_id": "REC_010",
+    "source_location": "Any Level 10+ Elite",
+    "drops_from": "Elite Spawn",
+    "recipe_drop_chance": "2.5",
+    "dropped_recipe": "Recipe: Iron Sigil"
+  },
+  {
+    "recipe_id": "REC_012",
+    "source_location": "Ashen Marsh",
+    "drops_from": "Ash Blood Priest",
+    "recipe_drop_chance": "3",
+    "dropped_recipe": "Recipe: Blood Priest's Dagger Charm"
+  },
+  {
+    "recipe_id": "REC_014",
+    "source_location": "Mercenary Crossroads",
+    "drops_from": "Crossroad Duelist",
+    "recipe_drop_chance": "3",
+    "dropped_recipe": "Recipe: Crossroad Duelist Mail"
+  },
+  {
+    "recipe_id": "REC_016",
+    "source_location": "Execution Grounds",
+    "drops_from": "Pit Crusher",
+    "recipe_drop_chance": "3",
+    "dropped_recipe": "Recipe: Pit Crusher Plate"
+  },
+  {
+    "recipe_id": "REC_018",
+    "source_location": "Raven Hollow",
+    "drops_from": "Blackfang Alpha Spawn",
+    "recipe_drop_chance": "2.5",
+    "dropped_recipe": "Recipe: Blackfang Edge"
+  },
+  {
+    "recipe_id": "REC_020",
+    "source_location": "Iron Bastion Inner Yard",
+    "drops_from": "Iron Tyrant Guard",
+    "recipe_drop_chance": "2.5",
+    "dropped_recipe": "Recipe: Tyrant Guard Hammer"
+  },
+  {
+    "recipe_id": "REC_022",
+    "source_location": "Ash Cult Sanctuary",
+    "drops_from": "Ash-Cursed Champion",
+    "recipe_drop_chance": "2.5",
+    "dropped_recipe": "Recipe: Ash-Cursed Vest"
+  },
+  {
+    "recipe_id": "REC_024",
+    "source_location": "Warbound Arena Ruins",
+    "drops_from": "Arena Champion Spawn",
+    "recipe_drop_chance": "2.5",
+    "dropped_recipe": "Recipe: Champion's Mail"
+  },
+  {
+    "recipe_id": "REC_026",
+    "source_location": "Crimson Quarry",
+    "drops_from": "Ironbound Breaker",
+    "recipe_drop_chance": "2.3",
+    "dropped_recipe": "Recipe: Crimson Plate"
+  },
+  {
+    "recipe_id": "REC_027",
+    "source_location": "Vaelor's Threshold",
+    "drops_from": "Elite Spawn",
+    "recipe_drop_chance": "2",
+    "dropped_recipe": "Recipe: Vaelor Threshold Blade"
+  },
+  {
+    "recipe_id": "REC_028",
+    "source_location": "Vaelor's Threshold",
+    "drops_from": "Ash Lord Vaelor",
+    "recipe_drop_chance": "18",
+    "dropped_recipe": "Recipe: Ash Lord's Executioner Axe"
+  },
+  {
+    "recipe_id": "REC_029",
+    "source_location": "Vaelor's Threshold",
+    "drops_from": "Ash Lord Vaelor",
+    "recipe_drop_chance": "18",
+    "dropped_recipe": "Recipe: Warbound Citadel Plate"
+  },
+  {
+    "recipe_id": "REC_030",
+    "source_location": "Vaelor's Threshold",
+    "drops_from": "Zone milestone",
+    "recipe_drop_chance": "100",
+    "dropped_recipe": "Recipe: Three Ash Sigils"
+  }
+]

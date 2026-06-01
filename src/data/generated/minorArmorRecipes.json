@@ -1,0 +1,1454 @@
+[
+  {
+    "id": "REC_HEAD_NEW_001",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Roadside Hood",
+    "result": "head_001_roadside_hood",
+    "itemType": "Helmet",
+    "requiredLevel": 2,
+    "tierRaw": "I",
+    "tier": 1,
+    "rarity": "common",
+    "unlockMethod": "Auto-known",
+    "recipeSource": "Crafting trainer",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_001",
+        "qty": 3
+      },
+      {
+        "id": "MAT_002",
+        "qty": 2
+      }
+    ],
+    "goldCost": 35,
+    "successChance": 1,
+    "outputEffect": "Starter light head slot with dodge."
+  },
+  {
+    "id": "REC_HEAD_NEW_002",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Scout Hood",
+    "result": "head_002_scout_hood",
+    "itemType": "Helmet",
+    "requiredLevel": 4,
+    "tierRaw": "I",
+    "tier": 1,
+    "rarity": "common",
+    "unlockMethod": "Auto-known",
+    "recipeSource": "Crafting trainer",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_001",
+        "qty": 2
+      },
+      {
+        "id": "MAT_002",
+        "qty": 2
+      }
+    ],
+    "goldCost": 55,
+    "successChance": 1,
+    "outputEffect": "Blackfang path hood with mobility."
+  },
+  {
+    "id": "REC_HEAD_NEW_003",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Raider Iron Cap",
+    "result": "head_003_raider_iron_cap",
+    "itemType": "Helmet",
+    "requiredLevel": 6,
+    "tierRaw": "I",
+    "tier": 1,
+    "rarity": "uncommon",
+    "unlockMethod": "Blackfang Forest progress",
+    "recipeSource": "Blackfang Forest",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_001",
+        "qty": 3
+      },
+      {
+        "id": "MAT_002",
+        "qty": 2
+      }
+    ],
+    "goldCost": 85,
+    "successChance": 1,
+    "outputEffect": "Early offensive cap from raider scraps."
+  },
+  {
+    "id": "REC_HEAD_NEW_004",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Watch Captain Helm",
+    "result": "head_004_watch_captain_helm",
+    "itemType": "Helmet",
+    "requiredLevel": 8,
+    "tierRaw": "II",
+    "tier": 2,
+    "rarity": "uncommon",
+    "unlockMethod": "Old Watchtower progress",
+    "recipeSource": "Old Watchtower",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_007",
+        "qty": 4
+      },
+      {
+        "id": "MAT_021",
+        "qty": 2
+      }
+    ],
+    "goldCost": 175,
+    "successChance": 1,
+    "outputEffect": "Guard helmet with HP and defense."
+  },
+  {
+    "id": "REC_HEAD_NEW_005",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Ironmarch Visor",
+    "result": "head_005_ironmarch_visor",
+    "itemType": "Helmet",
+    "requiredLevel": 11,
+    "tierRaw": "II",
+    "tier": 2,
+    "rarity": "uncommon",
+    "unlockMethod": "Zone progress / enemy drop",
+    "recipeSource": "Iron Gate Warden",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_007",
+        "qty": 5
+      },
+      {
+        "id": "MAT_021",
+        "qty": 3
+      }
+    ],
+    "goldCost": 210,
+    "successChance": 1,
+    "outputEffect": "Medium helm for poise and survival."
+  },
+  {
+    "id": "REC_HEAD_NEW_006",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Ashen Veil Hood",
+    "result": "head_006_ashen_veil_hood",
+    "itemType": "Helmet",
+    "requiredLevel": 14,
+    "tierRaw": "III",
+    "tier": 3,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "Ash Disciple / Ash Blood Priest",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_013",
+        "qty": 7
+      },
+      {
+        "id": "MAT_012",
+        "qty": 2
+      },
+      {
+        "id": "MAT_011",
+        "qty": 1
+      }
+    ],
+    "goldCost": 425,
+    "successChance": 1,
+    "outputEffect": "Ash-treated hood with regen identity."
+  },
+  {
+    "id": "REC_HEAD_NEW_007",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Sellblade Duel Helm",
+    "result": "head_007_sellblade_duel_helm",
+    "itemType": "Helmet",
+    "requiredLevel": 17,
+    "tierRaw": "III",
+    "tier": 3,
+    "rarity": "uncommon",
+    "unlockMethod": "Zone progress / enemy drop",
+    "recipeSource": "Veteran Sellblade / Crossroad Duelist",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_013",
+        "qty": 9
+      },
+      {
+        "id": "MAT_012",
+        "qty": 2
+      }
+    ],
+    "goldCost": 360,
+    "successChance": 1,
+    "outputEffect": "Duelist helm for aggressive builds."
+  },
+  {
+    "id": "REC_HEAD_NEW_008",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Raven Eye Cowl",
+    "result": "head_008_raven_eye_cowl",
+    "itemType": "Helmet",
+    "requiredLevel": 20,
+    "tierRaw": "IV",
+    "tier": 4,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "Executioner / Headsman Veteran",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_017",
+        "qty": 6
+      },
+      {
+        "id": "MAT_016",
+        "qty": 5
+      },
+      {
+        "id": "MAT_023",
+        "qty": 1
+      }
+    ],
+    "goldCost": 705,
+    "successChance": 1,
+    "outputEffect": "Precision hood for crit/dodge builds."
+  },
+  {
+    "id": "REC_HEAD_NEW_009",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Sanctuary Ash Visor",
+    "result": "head_009_sanctuary_ash_visor",
+    "itemType": "Helmet",
+    "requiredLevel": 23,
+    "tierRaw": "IV",
+    "tier": 4,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "Raven Fang Stalker / Elite Spawn",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_017",
+        "qty": 8
+      },
+      {
+        "id": "MAT_016",
+        "qty": 3
+      },
+      {
+        "id": "MAT_023",
+        "qty": 2
+      }
+    ],
+    "goldCost": 745,
+    "successChance": 1,
+    "outputEffect": "Blood-ash defensive visor."
+  },
+  {
+    "id": "REC_HEAD_NEW_010",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Crimson Plate Helm",
+    "result": "head_010_crimson_plate_helm",
+    "itemType": "Helmet",
+    "requiredLevel": 26,
+    "tierRaw": "V",
+    "tier": 5,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "War Brute / Ironbound Breaker",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_017",
+        "qty": 7
+      },
+      {
+        "id": "MAT_019",
+        "qty": 6
+      },
+      {
+        "id": "MAT_024",
+        "qty": 4
+      }
+    ],
+    "goldCost": 1080,
+    "successChance": 1,
+    "outputEffect": "Heavy high-level helmet."
+  },
+  {
+    "id": "REC_HEAD_NEW_011",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Threshold Crown-Helm",
+    "result": "head_011_threshold_crown_helm",
+    "itemType": "Helmet",
+    "requiredLevel": 28,
+    "tierRaw": "V",
+    "tier": 5,
+    "rarity": "epic",
+    "unlockMethod": "Boss / elite milestone recipe",
+    "recipeSource": "Arena Duelist / Arena Champion Spawn",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_017",
+        "qty": 11
+      },
+      {
+        "id": "MAT_019",
+        "qty": 7
+      },
+      {
+        "id": "MAT_024",
+        "qty": 5
+      },
+      {
+        "id": "MAT_020",
+        "qty": 3
+      }
+    ],
+    "goldCost": 1540,
+    "successChance": 1,
+    "outputEffect": "Epic pre-boss headpiece."
+  },
+  {
+    "id": "REC_HEAD_NEW_012",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Vaelor Ash Crown",
+    "result": "head_012_vaelor_ash_crown",
+    "itemType": "Helmet",
+    "requiredLevel": 30,
+    "tierRaw": "V",
+    "tier": 5,
+    "rarity": "epic",
+    "unlockMethod": "Boss / elite milestone recipe",
+    "recipeSource": "Ash Lord Vaelor / Elite Spawn",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_017",
+        "qty": 7
+      },
+      {
+        "id": "MAT_019",
+        "qty": 5
+      },
+      {
+        "id": "MAT_024",
+        "qty": 3
+      },
+      {
+        "id": "MAT_020",
+        "qty": 1
+      }
+    ],
+    "goldCost": 1580,
+    "successChance": 1,
+    "outputEffect": "End-arc epic head slot."
+  },
+  {
+    "id": "REC_HANDS_NEW_001",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Torn Road Wraps",
+    "result": "hands_001_torn_road_wraps",
+    "itemType": "Gloves",
+    "requiredLevel": 2,
+    "tierRaw": "I",
+    "tier": 1,
+    "rarity": "common",
+    "unlockMethod": "Auto-known",
+    "recipeSource": "Crafting trainer",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_001",
+        "qty": 3
+      },
+      {
+        "id": "MAT_002",
+        "qty": 2
+      }
+    ],
+    "goldCost": 35,
+    "successChance": 1,
+    "outputEffect": "Starter gloves with minor attack utility."
+  },
+  {
+    "id": "REC_HANDS_NEW_002",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Raider Grips",
+    "result": "hands_002_raider_grips",
+    "itemType": "Gloves",
+    "requiredLevel": 4,
+    "tierRaw": "I",
+    "tier": 1,
+    "rarity": "common",
+    "unlockMethod": "Auto-known",
+    "recipeSource": "Crafting trainer",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_001",
+        "qty": 2
+      },
+      {
+        "id": "MAT_002",
+        "qty": 2
+      }
+    ],
+    "goldCost": 55,
+    "successChance": 1,
+    "outputEffect": "Rage-themed early gloves."
+  },
+  {
+    "id": "REC_HANDS_NEW_003",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Blackfang Claws",
+    "result": "hands_003_blackfang_claws",
+    "itemType": "Gloves",
+    "requiredLevel": 6,
+    "tierRaw": "I",
+    "tier": 1,
+    "rarity": "uncommon",
+    "unlockMethod": "Blackfang Forest progress",
+    "recipeSource": "Blackfang Forest",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_001",
+        "qty": 3
+      },
+      {
+        "id": "MAT_002",
+        "qty": 2
+      }
+    ],
+    "goldCost": 85,
+    "successChance": 1,
+    "outputEffect": "Bleed/crit style gloves."
+  },
+  {
+    "id": "REC_HANDS_NEW_004",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Watchtower Bracers",
+    "result": "hands_004_watchtower_bracers",
+    "itemType": "Gloves",
+    "requiredLevel": 8,
+    "tierRaw": "II",
+    "tier": 2,
+    "rarity": "uncommon",
+    "unlockMethod": "Old Watchtower progress",
+    "recipeSource": "Old Watchtower",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_002",
+        "qty": 4
+      },
+      {
+        "id": "MAT_021",
+        "qty": 2
+      }
+    ],
+    "goldCost": 175,
+    "successChance": 1,
+    "outputEffect": "Defensive bracers with stable offense."
+  },
+  {
+    "id": "REC_HANDS_NEW_005",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Ironbound Gauntlets",
+    "result": "hands_005_ironbound_gauntlets",
+    "itemType": "Gloves",
+    "requiredLevel": 11,
+    "tierRaw": "II",
+    "tier": 2,
+    "rarity": "uncommon",
+    "unlockMethod": "Zone progress / enemy drop",
+    "recipeSource": "Iron Gate Warden",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_002",
+        "qty": 5
+      },
+      {
+        "id": "MAT_021",
+        "qty": 3
+      }
+    ],
+    "goldCost": 210,
+    "successChance": 1,
+    "outputEffect": "Heavy gauntlets for stagger builds."
+  },
+  {
+    "id": "REC_HANDS_NEW_006",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Ash-Sealed Handwraps",
+    "result": "hands_006_ash_sealed_handwraps",
+    "itemType": "Gloves",
+    "requiredLevel": 14,
+    "tierRaw": "III",
+    "tier": 3,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "Ash Disciple / Ash Blood Priest",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_023",
+        "qty": 4
+      },
+      {
+        "id": "MAT_013",
+        "qty": 3
+      },
+      {
+        "id": "MAT_022",
+        "qty": 2
+      },
+      {
+        "id": "MAT_014",
+        "qty": 1
+      }
+    ],
+    "goldCost": 425,
+    "successChance": 1,
+    "outputEffect": "Ash cult gloves with regen utility."
+  },
+  {
+    "id": "REC_HANDS_NEW_007",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Sellblade Duelist Gloves",
+    "result": "hands_007_sellblade_duelist_gloves",
+    "itemType": "Gloves",
+    "requiredLevel": 17,
+    "tierRaw": "III",
+    "tier": 3,
+    "rarity": "uncommon",
+    "unlockMethod": "Zone progress / enemy drop",
+    "recipeSource": "Veteran Sellblade / Crossroad Duelist",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_023",
+        "qty": 5
+      },
+      {
+        "id": "MAT_013",
+        "qty": 4
+      },
+      {
+        "id": "MAT_022",
+        "qty": 2
+      }
+    ],
+    "goldCost": 360,
+    "successChance": 1,
+    "outputEffect": "Attack-focused duelist gloves."
+  },
+  {
+    "id": "REC_HANDS_NEW_008",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Executioner's Gauntlets",
+    "result": "hands_008_executioner_s_gauntlets",
+    "itemType": "Gloves",
+    "requiredLevel": 20,
+    "tierRaw": "IV",
+    "tier": 4,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "Executioner / Headsman Veteran",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_012",
+        "qty": 4
+      },
+      {
+        "id": "MAT_016",
+        "qty": 5
+      },
+      {
+        "id": "MAT_017",
+        "qty": 2
+      },
+      {
+        "id": "MAT_018",
+        "qty": 1
+      }
+    ],
+    "goldCost": 705,
+    "successChance": 1,
+    "outputEffect": "Execute-heavy offensive gauntlets."
+  },
+  {
+    "id": "REC_HANDS_NEW_009",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Raven Talon Grips",
+    "result": "hands_009_raven_talon_grips",
+    "itemType": "Gloves",
+    "requiredLevel": 23,
+    "tierRaw": "IV",
+    "tier": 4,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "Raven Fang Stalker / Elite Spawn",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_012",
+        "qty": 5
+      },
+      {
+        "id": "MAT_016",
+        "qty": 3
+      },
+      {
+        "id": "MAT_017",
+        "qty": 3
+      },
+      {
+        "id": "MAT_018",
+        "qty": 2
+      }
+    ],
+    "goldCost": 745,
+    "successChance": 1,
+    "outputEffect": "High agility crit-style gloves."
+  },
+  {
+    "id": "REC_HANDS_NEW_010",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Crimson Ore Gauntlets",
+    "result": "hands_010_crimson_ore_gauntlets",
+    "itemType": "Gloves",
+    "requiredLevel": 26,
+    "tierRaw": "V",
+    "tier": 5,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "War Brute / Ironbound Breaker",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_023",
+        "qty": 7
+      },
+      {
+        "id": "MAT_019",
+        "qty": 6
+      },
+      {
+        "id": "MAT_024",
+        "qty": 4
+      }
+    ],
+    "goldCost": 1080,
+    "successChance": 1,
+    "outputEffect": "Heavy late-game gauntlets."
+  },
+  {
+    "id": "REC_HANDS_NEW_011",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Threshold Wargrips",
+    "result": "hands_011_threshold_wargrips",
+    "itemType": "Gloves",
+    "requiredLevel": 28,
+    "tierRaw": "V",
+    "tier": 5,
+    "rarity": "epic",
+    "unlockMethod": "Boss / elite milestone recipe",
+    "recipeSource": "Arena Duelist / Arena Champion Spawn",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_023",
+        "qty": 11
+      },
+      {
+        "id": "MAT_019",
+        "qty": 7
+      },
+      {
+        "id": "MAT_024",
+        "qty": 5
+      },
+      {
+        "id": "MAT_020",
+        "qty": 3
+      }
+    ],
+    "goldCost": 1540,
+    "successChance": 1,
+    "outputEffect": "Epic pre-boss offensive gloves."
+  },
+  {
+    "id": "REC_HANDS_NEW_012",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Ash Lord Handguards",
+    "result": "hands_012_ash_lord_handguards",
+    "itemType": "Gloves",
+    "requiredLevel": 30,
+    "tierRaw": "V",
+    "tier": 5,
+    "rarity": "epic",
+    "unlockMethod": "Boss / elite milestone recipe",
+    "recipeSource": "Ash Lord Vaelor / Elite Spawn",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_023",
+        "qty": 7
+      },
+      {
+        "id": "MAT_019",
+        "qty": 5
+      },
+      {
+        "id": "MAT_024",
+        "qty": 3
+      },
+      {
+        "id": "MAT_020",
+        "qty": 1
+      }
+    ],
+    "goldCost": 1580,
+    "successChance": 1,
+    "outputEffect": "End-arc epic gauntlets."
+  },
+  {
+    "id": "REC_LEGS_NEW_001",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Patchwork Greaves",
+    "result": "legs_001_patchwork_greaves",
+    "itemType": "Legs",
+    "requiredLevel": 2,
+    "tierRaw": "I",
+    "tier": 1,
+    "rarity": "common",
+    "unlockMethod": "Auto-known",
+    "recipeSource": "Crafting trainer",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_002",
+        "qty": 3
+      },
+      {
+        "id": "MAT_003",
+        "qty": 2
+      }
+    ],
+    "goldCost": 35,
+    "successChance": 1,
+    "outputEffect": "Starter leg armor with HP."
+  },
+  {
+    "id": "REC_LEGS_NEW_002",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Roadworn Trousers",
+    "result": "legs_002_roadworn_trousers",
+    "itemType": "Legs",
+    "requiredLevel": 4,
+    "tierRaw": "I",
+    "tier": 1,
+    "rarity": "common",
+    "unlockMethod": "Auto-known",
+    "recipeSource": "Crafting trainer",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_002",
+        "qty": 2
+      },
+      {
+        "id": "MAT_003",
+        "qty": 2
+      }
+    ],
+    "goldCost": 55,
+    "successChance": 1,
+    "outputEffect": "Light early legs with dodge."
+  },
+  {
+    "id": "REC_LEGS_NEW_003",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Blackfang Leather Greaves",
+    "result": "legs_003_blackfang_leather_greaves",
+    "itemType": "Legs",
+    "requiredLevel": 6,
+    "tierRaw": "I",
+    "tier": 1,
+    "rarity": "uncommon",
+    "unlockMethod": "Blackfang Forest progress",
+    "recipeSource": "Blackfang Forest",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_002",
+        "qty": 3
+      },
+      {
+        "id": "MAT_003",
+        "qty": 2
+      }
+    ],
+    "goldCost": 85,
+    "successChance": 1,
+    "outputEffect": "Forest mobility legs."
+  },
+  {
+    "id": "REC_LEGS_NEW_004",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Gatewarden Greaves",
+    "result": "legs_004_gatewarden_greaves",
+    "itemType": "Legs",
+    "requiredLevel": 8,
+    "tierRaw": "II",
+    "tier": 2,
+    "rarity": "uncommon",
+    "unlockMethod": "Old Watchtower progress",
+    "recipeSource": "Old Watchtower",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_008",
+        "qty": 4
+      },
+      {
+        "id": "MAT_021",
+        "qty": 2
+      }
+    ],
+    "goldCost": 175,
+    "successChance": 1,
+    "outputEffect": "Guard legs with stable defense."
+  },
+  {
+    "id": "REC_LEGS_NEW_005",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Ironmarch Legguards",
+    "result": "legs_005_ironmarch_legguards",
+    "itemType": "Legs",
+    "requiredLevel": 11,
+    "tierRaw": "II",
+    "tier": 2,
+    "rarity": "uncommon",
+    "unlockMethod": "Zone progress / enemy drop",
+    "recipeSource": "Iron Gate Warden",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_008",
+        "qty": 5
+      },
+      {
+        "id": "MAT_021",
+        "qty": 3
+      }
+    ],
+    "goldCost": 210,
+    "successChance": 1,
+    "outputEffect": "Medium-heavy legs for HP builds."
+  },
+  {
+    "id": "REC_LEGS_NEW_006",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Ashbound Legwraps",
+    "result": "legs_006_ashbound_legwraps",
+    "itemType": "Legs",
+    "requiredLevel": 14,
+    "tierRaw": "III",
+    "tier": 3,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "Ash Disciple / Ash Blood Priest",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_013",
+        "qty": 7
+      },
+      {
+        "id": "MAT_012",
+        "qty": 2
+      },
+      {
+        "id": "MAT_014",
+        "qty": 1
+      }
+    ],
+    "goldCost": 425,
+    "successChance": 1,
+    "outputEffect": "Ash-treated legs with regen."
+  },
+  {
+    "id": "REC_LEGS_NEW_007",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Crossroad Duelist Greaves",
+    "result": "legs_007_crossroad_duelist_greaves",
+    "itemType": "Legs",
+    "requiredLevel": 17,
+    "tierRaw": "III",
+    "tier": 3,
+    "rarity": "uncommon",
+    "unlockMethod": "Zone progress / enemy drop",
+    "recipeSource": "Veteran Sellblade / Crossroad Duelist",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_013",
+        "qty": 9
+      },
+      {
+        "id": "MAT_012",
+        "qty": 2
+      }
+    ],
+    "goldCost": 360,
+    "successChance": 1,
+    "outputEffect": "Duelist legs with offensive identity."
+  },
+  {
+    "id": "REC_LEGS_NEW_008",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Pit Crusher Legplates",
+    "result": "legs_008_pit_crusher_legplates",
+    "itemType": "Legs",
+    "requiredLevel": 20,
+    "tierRaw": "IV",
+    "tier": 4,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "Executioner / Headsman Veteran",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_016",
+        "qty": 9
+      },
+      {
+        "id": "MAT_024",
+        "qty": 2
+      },
+      {
+        "id": "MAT_023",
+        "qty": 1
+      }
+    ],
+    "goldCost": 705,
+    "successChance": 1,
+    "outputEffect": "Heavy stagger-resistant legs."
+  },
+  {
+    "id": "REC_LEGS_NEW_009",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Ravenstep Legguards",
+    "result": "legs_009_ravenstep_legguards",
+    "itemType": "Legs",
+    "requiredLevel": 23,
+    "tierRaw": "IV",
+    "tier": 4,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "Raven Fang Stalker / Elite Spawn",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_016",
+        "qty": 8
+      },
+      {
+        "id": "MAT_024",
+        "qty": 3
+      },
+      {
+        "id": "MAT_023",
+        "qty": 2
+      }
+    ],
+    "goldCost": 745,
+    "successChance": 1,
+    "outputEffect": "Rare agile legs."
+  },
+  {
+    "id": "REC_LEGS_NEW_010",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Crimson Plate Legguards",
+    "result": "legs_010_crimson_plate_legguards",
+    "itemType": "Legs",
+    "requiredLevel": 26,
+    "tierRaw": "V",
+    "tier": 5,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "War Brute / Ironbound Breaker",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_019",
+        "qty": 6
+      },
+      {
+        "id": "MAT_016",
+        "qty": 5
+      },
+      {
+        "id": "MAT_024",
+        "qty": 4
+      }
+    ],
+    "goldCost": 1080,
+    "successChance": 1,
+    "outputEffect": "Late-game heavy legs."
+  },
+  {
+    "id": "REC_LEGS_NEW_011",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Warbound Legplates",
+    "result": "legs_011_warbound_legplates",
+    "itemType": "Legs",
+    "requiredLevel": 28,
+    "tierRaw": "V",
+    "tier": 5,
+    "rarity": "epic",
+    "unlockMethod": "Boss / elite milestone recipe",
+    "recipeSource": "Arena Duelist / Arena Champion Spawn",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_019",
+        "qty": 7
+      },
+      {
+        "id": "MAT_016",
+        "qty": 6
+      },
+      {
+        "id": "MAT_024",
+        "qty": 5
+      },
+      {
+        "id": "MAT_020",
+        "qty": 3
+      },
+      {
+        "id": "MAT_017",
+        "qty": 3
+      }
+    ],
+    "goldCost": 1540,
+    "successChance": 1,
+    "outputEffect": "Epic pre-boss fortified legs."
+  },
+  {
+    "id": "REC_LEGS_NEW_012",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Vaelor Citadel Greaves",
+    "result": "legs_012_vaelor_citadel_greaves",
+    "itemType": "Legs",
+    "requiredLevel": 30,
+    "tierRaw": "V",
+    "tier": 5,
+    "rarity": "epic",
+    "unlockMethod": "Boss / elite milestone recipe",
+    "recipeSource": "Ash Lord Vaelor / Elite Spawn",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_019",
+        "qty": 8
+      },
+      {
+        "id": "MAT_016",
+        "qty": 4
+      },
+      {
+        "id": "MAT_024",
+        "qty": 3
+      },
+      {
+        "id": "MAT_020",
+        "qty": 1
+      },
+      {
+        "id": "MAT_017",
+        "qty": 2
+      }
+    ],
+    "goldCost": 1580,
+    "successChance": 1,
+    "outputEffect": "End-arc epic leg armor."
+  },
+  {
+    "id": "REC_FEET_NEW_001",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Roadworn Boots",
+    "result": "feet_001_roadworn_boots",
+    "itemType": "Boots",
+    "requiredLevel": 2,
+    "tierRaw": "I",
+    "tier": 1,
+    "rarity": "common",
+    "unlockMethod": "Auto-known",
+    "recipeSource": "Crafting trainer",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_001",
+        "qty": 3
+      },
+      {
+        "id": "MAT_002",
+        "qty": 2
+      }
+    ],
+    "goldCost": 35,
+    "successChance": 1,
+    "outputEffect": "Starter boots with dodge."
+  },
+  {
+    "id": "REC_FEET_NEW_002",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Mudstalker Boots",
+    "result": "feet_002_mudstalker_boots",
+    "itemType": "Boots",
+    "requiredLevel": 4,
+    "tierRaw": "I",
+    "tier": 1,
+    "rarity": "common",
+    "unlockMethod": "Auto-known",
+    "recipeSource": "Crafting trainer",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_001",
+        "qty": 2
+      },
+      {
+        "id": "MAT_002",
+        "qty": 2
+      }
+    ],
+    "goldCost": 55,
+    "successChance": 1,
+    "outputEffect": "Early boots for forest and road hunts."
+  },
+  {
+    "id": "REC_FEET_NEW_003",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Blackfang Trail Boots",
+    "result": "feet_003_blackfang_trail_boots",
+    "itemType": "Boots",
+    "requiredLevel": 6,
+    "tierRaw": "I",
+    "tier": 1,
+    "rarity": "uncommon",
+    "unlockMethod": "Blackfang Forest progress",
+    "recipeSource": "Blackfang Forest",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_001",
+        "qty": 3
+      },
+      {
+        "id": "MAT_002",
+        "qty": 2
+      }
+    ],
+    "goldCost": 85,
+    "successChance": 1,
+    "outputEffect": "Mobility boots for bleed zones."
+  },
+  {
+    "id": "REC_FEET_NEW_004",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Watchtower March Boots",
+    "result": "feet_004_watchtower_march_boots",
+    "itemType": "Boots",
+    "requiredLevel": 8,
+    "tierRaw": "II",
+    "tier": 2,
+    "rarity": "uncommon",
+    "unlockMethod": "Old Watchtower progress",
+    "recipeSource": "Old Watchtower",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_002",
+        "qty": 4
+      },
+      {
+        "id": "MAT_021",
+        "qty": 2
+      }
+    ],
+    "goldCost": 175,
+    "successChance": 1,
+    "outputEffect": "Guard boots with HP and stability."
+  },
+  {
+    "id": "REC_FEET_NEW_005",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Ironmarch Boots",
+    "result": "feet_005_ironmarch_boots",
+    "itemType": "Boots",
+    "requiredLevel": 11,
+    "tierRaw": "II",
+    "tier": 2,
+    "rarity": "uncommon",
+    "unlockMethod": "Zone progress / enemy drop",
+    "recipeSource": "Iron Gate Warden",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_002",
+        "qty": 5
+      },
+      {
+        "id": "MAT_021",
+        "qty": 3
+      }
+    ],
+    "goldCost": 210,
+    "successChance": 1,
+    "outputEffect": "Heavy boots for poise."
+  },
+  {
+    "id": "REC_FEET_NEW_006",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Ashwalk Sandals",
+    "result": "feet_006_ashwalk_sandals",
+    "itemType": "Boots",
+    "requiredLevel": 14,
+    "tierRaw": "III",
+    "tier": 3,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "Ash Disciple / Ash Blood Priest",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_004",
+        "qty": 4
+      },
+      {
+        "id": "MAT_013",
+        "qty": 3
+      },
+      {
+        "id": "MAT_012",
+        "qty": 2
+      },
+      {
+        "id": "MAT_011",
+        "qty": 1
+      }
+    ],
+    "goldCost": 425,
+    "successChance": 1,
+    "outputEffect": "Ash-zone boots with regen."
+  },
+  {
+    "id": "REC_FEET_NEW_007",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Sellblade Step Boots",
+    "result": "feet_007_sellblade_step_boots",
+    "itemType": "Boots",
+    "requiredLevel": 17,
+    "tierRaw": "III",
+    "tier": 3,
+    "rarity": "uncommon",
+    "unlockMethod": "Zone progress / enemy drop",
+    "recipeSource": "Veteran Sellblade / Crossroad Duelist",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_004",
+        "qty": 5
+      },
+      {
+        "id": "MAT_013",
+        "qty": 4
+      },
+      {
+        "id": "MAT_012",
+        "qty": 2
+      }
+    ],
+    "goldCost": 360,
+    "successChance": 1,
+    "outputEffect": "Duelist movement boots."
+  },
+  {
+    "id": "REC_FEET_NEW_008",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Ravenstep Boots",
+    "result": "feet_008_ravenstep_boots",
+    "itemType": "Boots",
+    "requiredLevel": 20,
+    "tierRaw": "IV",
+    "tier": 4,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "Executioner / Headsman Veteran",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_024",
+        "qty": 6
+      },
+      {
+        "id": "MAT_016",
+        "qty": 5
+      },
+      {
+        "id": "MAT_018",
+        "qty": 1
+      }
+    ],
+    "goldCost": 705,
+    "successChance": 1,
+    "outputEffect": "Agile rare boots."
+  },
+  {
+    "id": "REC_FEET_NEW_009",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Sanctuary Blood-Tread Boots",
+    "result": "feet_009_sanctuary_blood_tread_boots",
+    "itemType": "Boots",
+    "requiredLevel": 23,
+    "tierRaw": "IV",
+    "tier": 4,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "Raven Fang Stalker / Elite Spawn",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_024",
+        "qty": 8
+      },
+      {
+        "id": "MAT_016",
+        "qty": 3
+      },
+      {
+        "id": "MAT_018",
+        "qty": 2
+      }
+    ],
+    "goldCost": 745,
+    "successChance": 1,
+    "outputEffect": "Blood sanctuary boots with survival."
+  },
+  {
+    "id": "REC_FEET_NEW_010",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Quarry Iron Boots",
+    "result": "feet_010_quarry_iron_boots",
+    "itemType": "Boots",
+    "requiredLevel": 26,
+    "tierRaw": "V",
+    "tier": 5,
+    "rarity": "rare",
+    "unlockMethod": "Rare recipe drop",
+    "recipeSource": "War Brute / Ironbound Breaker",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_024",
+        "qty": 11
+      },
+      {
+        "id": "MAT_019",
+        "qty": 6
+      }
+    ],
+    "goldCost": 1080,
+    "successChance": 1,
+    "outputEffect": "Late heavy boots."
+  },
+  {
+    "id": "REC_FEET_NEW_011",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Threshold Strider Boots",
+    "result": "feet_011_threshold_strider_boots",
+    "itemType": "Boots",
+    "requiredLevel": 28,
+    "tierRaw": "V",
+    "tier": 5,
+    "rarity": "epic",
+    "unlockMethod": "Boss / elite milestone recipe",
+    "recipeSource": "Arena Duelist / Arena Champion Spawn",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_024",
+        "qty": 13
+      },
+      {
+        "id": "MAT_019",
+        "qty": 7
+      },
+      {
+        "id": "MAT_020",
+        "qty": 3
+      },
+      {
+        "id": "MAT_017",
+        "qty": 3
+      }
+    ],
+    "goldCost": 1540,
+    "successChance": 1,
+    "outputEffect": "Epic pre-boss boots."
+  },
+  {
+    "id": "REC_FEET_NEW_012",
+    "sourceSheet": "LC Craft Rcps",
+    "name": "Vaelor Ash-Tread Boots",
+    "result": "feet_012_vaelor_ash_tread_boots",
+    "itemType": "Boots",
+    "requiredLevel": 30,
+    "tierRaw": "V",
+    "tier": 5,
+    "rarity": "epic",
+    "unlockMethod": "Boss / elite milestone recipe",
+    "recipeSource": "Ash Lord Vaelor / Elite Spawn",
+    "station": "crafting",
+    "materials": [
+      {
+        "id": "MAT_024",
+        "qty": 8
+      },
+      {
+        "id": "MAT_019",
+        "qty": 5
+      },
+      {
+        "id": "MAT_020",
+        "qty": 1
+      },
+      {
+        "id": "MAT_017",
+        "qty": 2
+      }
+    ],
+    "goldCost": 1580,
+    "successChance": 1,
+    "outputEffect": "End-arc epic boots."
+  }
+]
