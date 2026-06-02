@@ -104,6 +104,13 @@ useEffect(() => {
   void sendFullHealthNotification();
 }, [hero.currentHp, hero.maxHp, fullHealthNotificationSent]);
   useEffect(() => {
+  scheduleCloudPlayerSave({
+    hero,
+    selectedLocationId,
+    updatedAt: new Date().toISOString(),
+  });
+}, [hero, selectedLocationId]);
+  useEffect(() => {
     const flushOnBackground = () => {
       if (document.hidden) {
         flushPendingSaveGame();
