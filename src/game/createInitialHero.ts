@@ -1,13 +1,52 @@
 import { armors } from '../data/armors';
 import { weapons } from '../data/weapons';
+import { shields } from '../data/shields';
 import { recipes } from '../data/recipes';
 import { calculateDerivedStats } from './formulas/stats';
 import { initializeQuests } from './formulas/quests';
-import type { HeroState } from './types';
+import type { EquipmentSlot, HeroState } from './types';
+
+const STARTER_EQUIPMENT: Record<
+  Exclude<EquipmentSlot, 'ring1' | 'ring2' | 'amulet'>,
+  string
+> = {
+  weapon: 'weapon_blade_lvl_01',
+  shield: 'shield_guard_lvl_01',
+  head: 'head_helmet_lvl_01',
+  chest: 'chest_armor_lvl_01',
+  hands: 'hands_gloves_lvl_01',
+  legs: 'legs_pants_lvl_01',
+  feet: 'feet_boots_lvl_01'
+};
+
+const STARTER_EQUIPMENT_SLOTS = Object.keys(STARTER_EQUIPMENT) as Array<
+  keyof typeof STARTER_EQUIPMENT
+>;
+
+function getStarterEquipmentDurability(): Record<string, number> {
+  return STARTER_EQUIPMENT_SLOTS.reduce<Record<string, number>>((acc, slot) => {
+    acc[slot] = 100;
+    return acc;
+  }, {});
+}
+
+function getStarterEquipmentAffixes() {
+  return STARTER_EQUIPMENT_SLOTS.reduce<Record<string, []>>((acc, slot) => {
+    acc[slot] = [];
+    return acc;
+  }, {});
+}
 
 export function createInitialHero(): HeroState {
-  const startingWeapon = weapons.find((weapon) => weapon.id === 'weapon_blade_lvl_01') ?? weapons[0];
-  const startingArmor = armors.find((armor) => armor.id === 'chest_armor_lvl_01') ?? armors[0];
+  const startingWeapon =
+    weapons.find((weapon) => weapon.id === STARTER_EQUIPMENT.weapon) ?? weapons[0];
+
+  const startingArmor =
+    armors.find((armor) => armor.id === STARTER_EQUIPMENT.chest) ?? armors[0];
+
+  const startingShield =
+    shields.find((shield) => shield.id === STARTER_EQUIPMENT.shield) ?? shields[0];
+
   const autoKnownRecipes = recipes
     .filter((recipe) => recipe.unlockMethod?.toLowerCase().includes('auto-known'))
     .map((recipe) => recipe.id);
@@ -27,39 +66,58 @@ export function createInitialHero(): HeroState {
       agility: 5
     },
     unspentStatPoints: 0,
+
     equippedWeaponId: startingWeapon.id,
     equippedArmorId: startingArmor.id,
+
     equipment: {
       weapon: startingWeapon.id,
-      shield: null,
-      head: null,
+      shield: startingShield?.id ?? STARTER_EQUIPMENT.shield,
+      head: STARTER_EQUIPMENT.head,
       chest: startingArmor.id,
-      legs: null,
-      hands: null,
-      feet: null,
+      legs: STARTER_EQUIPMENT.legs,
+      hands: STARTER_EQUIPMENT.hands,
+      feet: STARTER_EQUIPMENT.feet,
+
       ring1: null,
       ring2: null,
       amulet: null
     },
+
     inventory: [
       { itemId: 'MAT_001', qty: 4 },
       { itemId: 'MAT_002', qty: 4 },
       { itemId: 'MAT_003', qty: 2 },
       { itemId: 'MAT_004', qty: 2 }
     ],
-    equipmentDurability: {
-      weapon: 100,
-      chest: 100,
-      shield: 100
-    },
+
+    equipmentDurability: getStarterEquipmentDurability(),
+    equipmentAffixes: getStarterEquipmentAffixes(),
+    equippedGeneratedItems: {},
+
     quests: initializeQuests(1),
-    defeatedBossIds: []
+    defeatedBossIds: [],
+
+    migrationFlags: {
+      starterEquipmentV2: true
+    }
   };
 
-  const derived = calculateDerivedStats(baseHero.stats, baseHero.baseHp, startingArmor);
+  const heroForStats = {
+    ...baseHero,
+    currentHp: baseHero.baseHp,
+    maxHp: baseHero.baseHp
+  } as HeroState;
+
+  const derived = calculateDerivedStats(
+    heroForStats.stats,
+    heroForStats.baseHp,
+    undefined,
+    heroForStats
+  );
 
   return {
-    ...baseHero,
+    ...heroForStats,
     currentHp: derived.maxHp,
     maxHp: derived.maxHp
   };
