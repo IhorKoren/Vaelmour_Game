@@ -73,6 +73,50 @@ export default function AppShell() {
     // Prevent immediate notification on new game / first cold start
     return true;
   });
+  // Load cloud save from Supabase once on startup
+useEffect(() => {
+  let cancelled = false;
+
+  const loadFromCloud = async () => {
+    const cloudSave = await loadCloudPlayerSave();
+
+    if (cancelled) {
+      return;
+    }
+
+    if (cloudSave?.hero) {
+      setHero(cloudSave.hero);
+
+      if (cloudSave.selectedLocationId) {
+        setSelectedLocationId(cloudSave.selectedLocationId);
+      }
+
+      scheduleSaveGame({
+        hero: cloudSave.hero,
+        updatedAt: cloudSave.updatedAt,
+      });
+
+      const derived = calculateDerivedStats(
+        cloudSave.hero.stats,
+        cloudSave.hero.baseHp,
+        undefined,
+        cloudSave.hero,
+      );
+
+      setFullHealthNotificationSent(cloudSave.hero.currentHp >= derived.maxHp);
+
+      console.info('[Cloud Save] Applied cloud save to game state.');
+    }
+
+    setCloudSaveChecked(true);
+  };
+
+  void loadFromCloud();
+
+  return () => {
+    cancelled = true;
+  };
+}, []);
 
   // Track hero health transitions to trigger Telegram notifications only when player is away
   useEffect(() => {
