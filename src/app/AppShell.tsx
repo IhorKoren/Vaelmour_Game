@@ -1,24 +1,35 @@
 import { Suspense, lazy, startTransition, useEffect, useMemo, useState } from 'react';
+
 import { BottomNavigation } from '../components/layout/BottomNavigation';
 import { TopStatusBar } from '../components/layout/TopStatusBar';
+
 import { createInitialHero } from '../game/createInitialHero';
+
 import {
   applyOfflineHealthRegen,
   flushPendingSaveGame,
   loadGame,
   scheduleSaveGame,
 } from '../game/save/saveSystem';
+
 import { locations } from '../data/locations';
+
 import { calculateDerivedStats, xpToNextLevel } from '../game/formulas/stats';
+
 import { checkLevelUp } from '../game/formulas/progression';
 import { updateQuestProgressOnLocationChanged } from '../game/formulas/quests';
+
 import type { AppTab } from './tabs';
+
 import { sendFullHealthNotification } from '../telegram/telegramNotifications';
+
 import {
   flushCloudPlayerSave,
+  forceCloudPlayerSave,
   loadCloudPlayerSave,
   scheduleCloudPlayerSave,
 } from '../telegram/playerCloudSave';
+
 import type { HeroState } from '../game/types';
 
 const CombatScreen = lazy(async () => {
@@ -51,6 +62,16 @@ const ShopScreen = lazy(async () => {
   return { default: module.ShopScreen };
 });
 
+function getCriticalHeroSnapshot(hero: HeroState): string {
+  const { currentHp, maxHp, ...criticalHeroState } = hero;
+
+  return JSON.stringify(criticalHeroState);
+}
+
+function isCriticalHeroChange(previousHero: HeroState, nextHero: HeroState): boolean {
+  return getCriticalHeroSnapshot(previousHero) !== getCriticalHeroSnapshot(nextHero);
+}
+
 export default function AppShell() {
   const [activeTab, setActiveTab] = useState<AppTab>('combat');
   const [hero, setHero] = useState<HeroState>(() => loadGame()?.hero ?? createInitialHero());
@@ -60,6 +81,7 @@ export default function AppShell() {
 
   // Active combat state reported by CombatScreen
   const [isFighting, setIsFighting] = useState(false);
+
   const [cloudSaveChecked, setCloudSaveChecked] = useState(false);
 
   const [fullHealthNotificationSent, setFullHealthNotificationSent] = useState(() => {
@@ -67,56 +89,58 @@ export default function AppShell() {
 
     if (save?.hero) {
       const derived = calculateDerivedStats(save.hero.stats, save.hero.baseHp, undefined, save.hero);
+
       return save.hero.currentHp >= derived.maxHp;
     }
 
     // Prevent immediate notification on new game / first cold start
     return true;
   });
+
   // Load cloud save from Supabase once on startup
-useEffect(() => {
-  let cancelled = false;
+  useEffect(() => {
+    let cancelled = false;
 
-  const loadFromCloud = async () => {
-    const cloudSave = await loadCloudPlayerSave();
+    const loadFromCloud = async () => {
+      const cloudSave = await loadCloudPlayerSave();
 
-    if (cancelled) {
-      return;
-    }
-
-    if (cloudSave?.hero) {
-      setHero(cloudSave.hero);
-
-      if (cloudSave.selectedLocationId) {
-        setSelectedLocationId(cloudSave.selectedLocationId);
+      if (cancelled) {
+        return;
       }
 
-      scheduleSaveGame({
-        hero: cloudSave.hero,
-        updatedAt: cloudSave.updatedAt,
-      });
+      if (cloudSave?.hero) {
+        setHero(cloudSave.hero);
 
-      const derived = calculateDerivedStats(
-        cloudSave.hero.stats,
-        cloudSave.hero.baseHp,
-        undefined,
-        cloudSave.hero,
-      );
+        if (cloudSave.selectedLocationId) {
+          setSelectedLocationId(cloudSave.selectedLocationId);
+        }
 
-      setFullHealthNotificationSent(cloudSave.hero.currentHp >= derived.maxHp);
+        scheduleSaveGame({
+          hero: cloudSave.hero,
+          updatedAt: cloudSave.updatedAt,
+        });
 
-      console.info('[Cloud Save] Applied cloud save to game state.');
-    }
+        const derived = calculateDerivedStats(
+          cloudSave.hero.stats,
+          cloudSave.hero.baseHp,
+          undefined,
+          cloudSave.hero,
+        );
 
-    setCloudSaveChecked(true);
-  };
+        setFullHealthNotificationSent(cloudSave.hero.currentHp >= derived.maxHp);
 
-  void loadFromCloud();
+        console.info('[Cloud Save] Applied cloud save to game state.');
+      }
 
-  return () => {
-    cancelled = true;
-  };
-}, []);
+      setCloudSaveChecked(true);
+    };
+
+    void loadFromCloud();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Track hero health transitions to trigger Telegram notifications only when player is away
   useEffect(() => {
@@ -156,6 +180,7 @@ useEffect(() => {
       console.info(
         '[Telegram Notifications] Full HP reached, but player is active. Notification skipped.',
       );
+
       return;
     }
 
@@ -163,19 +188,19 @@ useEffect(() => {
     void sendFullHealthNotification();
   }, [hero, fullHealthNotificationSent]);
 
- // Debounced cloud save to Supabase.
-// Wait until cloud load is checked to avoid overwriting cloud save with old localStorage data.
-useEffect(() => {
-  if (!cloudSaveChecked) {
-    return;
-  }
+  // Debounced cloud save to Supabase.
+  // Wait until cloud load is checked to avoid overwriting cloud save with old localStorage data.
+  useEffect(() => {
+    if (!cloudSaveChecked) {
+      return;
+    }
 
-  scheduleCloudPlayerSave({
-    hero,
-    selectedLocationId,
-    updatedAt: new Date().toISOString(),
-  });
-}, [hero, selectedLocationId, cloudSaveChecked]);
+    scheduleCloudPlayerSave({
+      hero,
+      selectedLocationId,
+      updatedAt: new Date().toISOString(),
+    });
+  }, [hero, selectedLocationId, cloudSaveChecked]);
 
   // Flush local save and cloud save when player backgrounds/closes the WebApp
   useEffect(() => {
@@ -209,6 +234,7 @@ useEffect(() => {
       setHero((currentHero) => {
         // Regeneration is blocked during active combat
         if (isFighting) return currentHero;
+
         if (currentHero.currentHp <= 0) return currentHero;
 
         const currentDerived = calculateDerivedStats(
@@ -219,6 +245,7 @@ useEffect(() => {
         );
 
         if (currentDerived.healthRegen <= 0) return currentHero;
+
         if (currentHero.currentHp >= currentDerived.maxHp) return currentHero;
 
         const nextHp = Math.min(currentDerived.maxHp, currentHero.currentHp + currentDerived.healthRegen);
@@ -231,7 +258,8 @@ useEffect(() => {
           maxHp: currentDerived.maxHp,
         };
 
-        // Auto-save the regenerated HP locally
+        // Auto-save the regenerated HP locally.
+        // Cloud save remains debounced; HP-only changes do not force immediate Supabase writes.
         scheduleSaveGame({
           hero: updatedHero,
           updatedAt: new Date().toISOString(),
@@ -278,6 +306,25 @@ useEffect(() => {
     [hero],
   );
 
+  function saveHeroLocally(nextHero: HeroState) {
+    scheduleSaveGame({
+      hero: nextHero,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  function forceSaveHeroToCloud(nextHero: HeroState, nextSelectedLocationId = selectedLocationId) {
+    if (!cloudSaveChecked) {
+      return;
+    }
+
+    void forceCloudPlayerSave({
+      hero: nextHero,
+      selectedLocationId: nextSelectedLocationId,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
   function handleHeroChange(nextHero: HeroState) {
     const levelUpResult = checkLevelUp(nextHero.level, nextHero.xp);
     const didLevelUp = levelUpResult.newLevel > nextHero.level;
@@ -299,12 +346,32 @@ useEffect(() => {
       currentHp: didLevelUp ? derived.maxHp : Math.min(derived.maxHp, leveledHero.currentHp),
     };
 
-    setHero(normalizedHero);
+    const shouldForceCloudSave = isCriticalHeroChange(hero, normalizedHero);
 
-    scheduleSaveGame({
-      hero: normalizedHero,
-      updatedAt: new Date().toISOString(),
-    });
+    setHero(normalizedHero);
+    saveHeroLocally(normalizedHero);
+
+    if (shouldForceCloudSave) {
+      forceSaveHeroToCloud(normalizedHero);
+    }
+  }
+
+  function handleLocationChange(nextLocationId: string) {
+    setSelectedLocationId(nextLocationId);
+
+    const nextHero = updateQuestProgressOnLocationChanged(hero, nextLocationId);
+
+    handleHeroChange(nextHero);
+
+    if (cloudSaveChecked) {
+      void forceCloudPlayerSave({
+        hero: nextHero,
+        selectedLocationId: nextLocationId,
+        updatedAt: new Date().toISOString(),
+      });
+    }
+
+    handleTabChange('combat');
   }
 
   function handleTabChange(nextTab: AppTab) {
@@ -342,14 +409,7 @@ useEffect(() => {
         <MapScreen
           hero={hero}
           selectedLocationId={selectedLocationId}
-          onSelectLocation={(locId) => {
-            setSelectedLocationId(locId);
-
-            const nextHero = updateQuestProgressOnLocationChanged(hero, locId);
-
-            handleHeroChange(nextHero);
-            handleTabChange('combat');
-          }}
+          onSelectLocation={handleLocationChange}
         />
       );
     }
