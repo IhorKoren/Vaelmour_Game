@@ -7,10 +7,85 @@ type CloudPlayerSave = {
   updatedAt: string;
 };
 
+type CloudPlayerLoadResult = {
+  hero: HeroState;
+  selectedLocationId: string | null;
+  updatedAt: string;
+};
+
+type GetPlayerStateResponse = {
+  success: boolean;
+  exists?: boolean;
+  error?: string;
+  reason?: string;
+  save?: {
+    hero?: HeroState;
+    selectedLocationId?: string | null;
+    updatedAt?: string;
+  };
+};
+
 const CLOUD_SAVE_DEBOUNCE_MS = 5000;
 
 let pendingCloudSave: CloudPlayerSave | null = null;
 let pendingCloudSaveTimeout: number | null = null;
+
+export async function loadCloudPlayerSave(): Promise<CloudPlayerLoadResult | null> {
+  const webApp = getTelegramWebApp();
+  const initData = webApp?.initData ?? '';
+
+  if (!initData) {
+    console.info(
+      '[Cloud Save] Load skipped: Telegram initData is missing. Open the game through Telegram WebApp.',
+    );
+    return null;
+  }
+
+  try {
+    const response = await fetch('/.netlify/functions/getPlayerState', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ initData }),
+    });
+
+    const responseText = await response.text();
+
+    if (!response.ok) {
+      console.error('[Cloud Save] Load failed:', {
+        status: response.status,
+        body: responseText,
+      });
+      return null;
+    }
+
+    const data = JSON.parse(responseText) as GetPlayerStateResponse;
+
+    if (!data.success || !data.exists || !data.save?.hero) {
+      console.info('[Cloud Save] No cloud save found:', data);
+      return null;
+    }
+
+    console.info('[Cloud Save] Loaded cloud save:', {
+      level: data.save.hero.level,
+      gold: data.save.hero.gold,
+      currentHp: data.save.hero.currentHp,
+      maxHp: data.save.hero.maxHp,
+      selectedLocationId: data.save.selectedLocationId,
+      updatedAt: data.save.updatedAt,
+    });
+
+    return {
+      hero: data.save.hero,
+      selectedLocationId: data.save.selectedLocationId ?? null,
+      updatedAt: data.save.updatedAt ?? new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error('[Cloud Save] Load request failed:', error);
+    return null;
+  }
+}
 
 async function sendCloudPlayerSave(save: CloudPlayerSave, keepalive = false): Promise<void> {
   const webApp = getTelegramWebApp();
@@ -18,7 +93,7 @@ async function sendCloudPlayerSave(save: CloudPlayerSave, keepalive = false): Pr
 
   if (!initData) {
     console.info(
-      '[Cloud Save] Skipped: Telegram initData is missing. Open the game through Telegram WebApp.',
+      '[Cloud Save] Save skipped: Telegram initData is missing. Open the game through Telegram WebApp.',
     );
     return;
   }
@@ -43,7 +118,7 @@ async function sendCloudPlayerSave(save: CloudPlayerSave, keepalive = false): Pr
     const responseText = await response.text();
 
     if (!response.ok) {
-      console.error('[Cloud Save] Failed:', {
+      console.error('[Cloud Save] Save failed:', {
         status: response.status,
         body: responseText,
       });
@@ -52,7 +127,7 @@ async function sendCloudPlayerSave(save: CloudPlayerSave, keepalive = false): Pr
 
     console.info('[Cloud Save] Player state saved:', responseText);
   } catch (error) {
-    console.error('[Cloud Save] Request failed:', error);
+    console.error('[Cloud Save] Save request failed:', error);
   }
 }
 
