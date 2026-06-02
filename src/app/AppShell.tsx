@@ -110,16 +110,17 @@ useEffect(() => {
     updatedAt: new Date().toISOString(),
   });
 }, [hero, selectedLocationId]);
-  useEffect(() => {
-    const flushOnBackground = () => {
-      if (document.hidden) {
-        flushPendingSaveGame();
-      }
-    };
+ const flushOnBackground = () => {
+  if (document.hidden) {
+    flushPendingSaveGame();
+    void flushCloudPlayerSave(true);
+  }
+};
 
-    const flushOnUnload = () => {
-      flushPendingSaveGame();
-    };
+const flushOnUnload = () => {
+  flushPendingSaveGame();
+  void flushCloudPlayerSave(true);
+};
 
     document.addEventListener('visibilitychange', flushOnBackground);
     window.addEventListener('beforeunload', flushOnUnload);
