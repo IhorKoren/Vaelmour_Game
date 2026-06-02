@@ -60,6 +60,7 @@ export default function AppShell() {
 
   // Active combat state reported by CombatScreen
   const [isFighting, setIsFighting] = useState(false);
+  const [cloudSaveChecked, setCloudSaveChecked] = useState(false);
 
   const [fullHealthNotificationSent, setFullHealthNotificationSent] = useState(() => {
     const save = loadGame();
