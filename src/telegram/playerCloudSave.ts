@@ -1,7 +1,8 @@
 import type { HeroState } from '../game/types';
+
 import { getTelegramWebApp } from './telegramWebApp';
 
-type CloudPlayerSave = {
+export type CloudPlayerSave = {
   hero: HeroState;
   selectedLocationId: string | null;
   updatedAt: string;
@@ -30,6 +31,12 @@ const CLOUD_SAVE_DEBOUNCE_MS = 5000;
 let pendingCloudSave: CloudPlayerSave | null = null;
 let pendingCloudSaveTimeout: number | null = null;
 
+let immediateSaveInFlight = false;
+let queuedImmediateSave: {
+  save: CloudPlayerSave;
+  keepalive: boolean;
+} | null = null;
+
 export async function loadCloudPlayerSave(): Promise<CloudPlayerLoadResult | null> {
   const webApp = getTelegramWebApp();
   const initData = webApp?.initData ?? '';
@@ -38,6 +45,7 @@ export async function loadCloudPlayerSave(): Promise<CloudPlayerLoadResult | nul
     console.info(
       '[Cloud Save] Load skipped: Telegram initData is missing. Open the game through Telegram WebApp.',
     );
+
     return null;
   }
 
@@ -57,6 +65,7 @@ export async function loadCloudPlayerSave(): Promise<CloudPlayerLoadResult | nul
         status: response.status,
         body: responseText,
       });
+
       return null;
     }
 
@@ -64,6 +73,7 @@ export async function loadCloudPlayerSave(): Promise<CloudPlayerLoadResult | nul
 
     if (!data.success || !data.exists || !data.save?.hero) {
       console.info('[Cloud Save] No cloud save found:', data);
+
       return null;
     }
 
@@ -83,6 +93,7 @@ export async function loadCloudPlayerSave(): Promise<CloudPlayerLoadResult | nul
     };
   } catch (error) {
     console.error('[Cloud Save] Load request failed:', error);
+
     return null;
   }
 }
@@ -95,6 +106,7 @@ async function sendCloudPlayerSave(save: CloudPlayerSave, keepalive = false): Pr
     console.info(
       '[Cloud Save] Save skipped: Telegram initData is missing. Open the game through Telegram WebApp.',
     );
+
     return;
   }
 
@@ -122,6 +134,7 @@ async function sendCloudPlayerSave(save: CloudPlayerSave, keepalive = false): Pr
         status: response.status,
         body: responseText,
       });
+
       return;
     }
 
@@ -131,23 +144,59 @@ async function sendCloudPlayerSave(save: CloudPlayerSave, keepalive = false): Pr
   }
 }
 
+function clearPendingCloudSaveTimer(): void {
+  if (pendingCloudSaveTimeout !== null) {
+    window.clearTimeout(pendingCloudSaveTimeout);
+    pendingCloudSaveTimeout = null;
+  }
+}
+
+async function drainImmediateSaveQueue(): Promise<void> {
+  if (immediateSaveInFlight) {
+    return;
+  }
+
+  immediateSaveInFlight = true;
+
+  try {
+    while (queuedImmediateSave) {
+      const { save, keepalive } = queuedImmediateSave;
+      queuedImmediateSave = null;
+
+      await sendCloudPlayerSave(save, keepalive);
+    }
+  } finally {
+    immediateSaveInFlight = false;
+  }
+}
+
 export function scheduleCloudPlayerSave(save: CloudPlayerSave): void {
   pendingCloudSave = save;
 
-  if (pendingCloudSaveTimeout !== null) {
-    window.clearTimeout(pendingCloudSaveTimeout);
-  }
+  clearPendingCloudSaveTimer();
 
   pendingCloudSaveTimeout = window.setTimeout(() => {
     void flushCloudPlayerSave(false);
   }, CLOUD_SAVE_DEBOUNCE_MS);
 }
 
+export async function forceCloudPlayerSave(
+  save: CloudPlayerSave,
+  keepalive = false,
+): Promise<void> {
+  clearPendingCloudSaveTimer();
+  pendingCloudSave = null;
+
+  queuedImmediateSave = {
+    save,
+    keepalive,
+  };
+
+  await drainImmediateSaveQueue();
+}
+
 export async function flushCloudPlayerSave(keepalive = false): Promise<void> {
-  if (pendingCloudSaveTimeout !== null) {
-    window.clearTimeout(pendingCloudSaveTimeout);
-    pendingCloudSaveTimeout = null;
-  }
+  clearPendingCloudSaveTimer();
 
   if (!pendingCloudSave) {
     return;
@@ -156,5 +205,5 @@ export async function flushCloudPlayerSave(keepalive = false): Promise<void> {
   const save = pendingCloudSave;
   pendingCloudSave = null;
 
-  await sendCloudPlayerSave(save, keepalive);
+  await forceCloudPlayerSave(save, keepalive);
 }
