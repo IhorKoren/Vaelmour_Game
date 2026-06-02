@@ -379,6 +379,7 @@ export type HeroState = {
   equippedGeneratedItems?: Partial<Record<EquipmentSlot, GeneratedEquipmentItem | null>>;
   quests?: ActiveQuest[];
   defeatedBossIds?: string[];
+  migrationFlags?: Record<string, boolean>;
 };
 
 export type QuestObjectiveType =
