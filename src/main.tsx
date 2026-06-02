@@ -1,16 +1,17 @@
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-import App from './App';
-import './styles/global.css';
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import AppShell from './app/AppShell';
+import { AdminPanel } from './admin/AdminPanel';
+import './index.css';
 
 const rootElement = document.getElementById('root');
 
 if (!rootElement) {
-  throw new Error('Root element #root was not found.');
+  throw new Error('Root element not found');
 }
 
-createRoot(rootElement).render(
-  <StrictMode>
-    <App />
-  </StrictMode>
+const isAdminRoute = window.location.pathname.startsWith('/admin');
+
+ReactDOM.createRoot(rootElement).render(
+  <React.StrictMode>{isAdminRoute ? <AdminPanel /> : <AppShell />}</React.StrictMode>,
 );
