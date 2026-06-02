@@ -14,7 +14,11 @@ import { checkLevelUp } from '../game/formulas/progression';
 import { updateQuestProgressOnLocationChanged } from '../game/formulas/quests';
 import type { AppTab } from './tabs';
 import { sendFullHealthNotification } from '../telegram/telegramNotifications';
-import { flushCloudPlayerSave, scheduleCloudPlayerSave } from '../telegram/playerCloudSave';
+import {
+  flushCloudPlayerSave,
+  loadCloudPlayerSave,
+  scheduleCloudPlayerSave,
+} from '../telegram/playerCloudSave';
 import type { HeroState } from '../game/types';
 
 const CombatScreen = lazy(async () => {
