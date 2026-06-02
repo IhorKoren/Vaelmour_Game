@@ -24,6 +24,10 @@ function json(statusCode: number, body: unknown) {
   };
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 function validateTelegramInitData(initData: string, botToken: string): boolean {
   if (!initData || !botToken) return false;
 
@@ -104,7 +108,8 @@ export async function handler(event: NetlifyEvent) {
   }
 
   const initData = typeof body.initData === 'string' ? body.initData : '';
-  const hero = body.hero as Record<string, unknown> | undefined;
+  const hero = isRecord(body.hero) ? body.hero : undefined;
+
   const selectedLocationId =
     typeof body.selectedLocationId === 'string' ? body.selectedLocationId : null;
 
@@ -132,18 +137,26 @@ export async function handler(event: NetlifyEvent) {
       providedAdminSecret === adminSecret &&
       debugTelegramUserId
     ) {
-      const debugUser = body.debugUser as Record<string, unknown> | undefined;
+      const debugUser = isRecord(body.debugUser) ? body.debugUser : undefined;
 
       telegramUser = {
         id: debugTelegramUserId,
         username:
-          typeof debugUser?.username === 'string' ? debugUser.username : 'admin_test',
+          typeof debugUser?.username === 'string'
+            ? debugUser.username
+            : 'admin_test',
         first_name:
-          typeof debugUser?.first_name === 'string' ? debugUser.first_name : 'Admin',
+          typeof debugUser?.first_name === 'string'
+            ? debugUser.first_name
+            : 'Admin',
         last_name:
-          typeof debugUser?.last_name === 'string' ? debugUser.last_name : 'Test',
+          typeof debugUser?.last_name === 'string'
+            ? debugUser.last_name
+            : 'Test',
         language_code:
-          typeof debugUser?.language_code === 'string' ? debugUser.language_code : 'uk',
+          typeof debugUser?.language_code === 'string'
+            ? debugUser.language_code
+            : 'uk',
       };
 
       authMode = 'admin_debug';
@@ -158,7 +171,7 @@ export async function handler(event: NetlifyEvent) {
     });
   }
 
-  if (!hero || typeof hero !== 'object') {
+  if (!hero) {
     return json(400, {
       error: 'Missing hero object',
     });
@@ -200,96 +213,103 @@ export async function handler(event: NetlifyEvent) {
     });
   }
 
+  /**
+   * Important:
+   * We read the existing save before writing.
+   * This prevents partial frontend saves from deleting inventory/equipment.
+   */
   const { data: existingSave, error: existingSaveError } = await supabase
-  .from('player_saves')
-  .select('hero_json, selected_location_id')
-  .eq('player_id', player.id)
-  .maybeSingle();
+    .from('player_saves')
+    .select('hero_json, selected_location_id')
+    .eq('player_id', player.id)
+    .maybeSingle();
 
-if (existingSaveError) {
-  console.error('[savePlayerState] Failed to read existing save:', existingSaveError);
+  if (existingSaveError) {
+    console.error('[savePlayerState] Failed to read existing save:', existingSaveError);
 
-  return json(500, {
-    error: 'Failed to read existing player save',
-    details: existingSaveError.message,
-  });
-}
+    return json(500, {
+      error: 'Failed to read existing player save',
+      details: existingSaveError.message,
+    });
+  }
 
-const existingHero =
-  existingSave?.hero_json &&
-  typeof existingSave.hero_json === 'object' &&
-  !Array.isArray(existingSave.hero_json)
-    ? (existingSave.hero_json as Record<string, unknown>)
+  const existingHero = isRecord(existingSave?.hero_json)
+    ? existingSave.hero_json
     : {};
 
-const incomingInventory = Array.isArray(hero.inventory)
-  ? hero.inventory
-  : Array.isArray(existingHero.inventory)
-    ? existingHero.inventory
-    : [];
+  const incomingInventory = Array.isArray(hero.inventory)
+    ? hero.inventory
+    : Array.isArray(existingHero.inventory)
+      ? existingHero.inventory
+      : [];
 
-const incomingEquipment =
-  hero.equipment && typeof hero.equipment === 'object' && !Array.isArray(hero.equipment)
+  const incomingEquipment = isRecord(hero.equipment)
     ? hero.equipment
-    : existingHero.equipment && typeof existingHero.equipment === 'object'
+    : isRecord(existingHero.equipment)
       ? existingHero.equipment
       : {};
 
-const finalSelectedLocationId =
-  selectedLocationId ??
-  (typeof hero.selectedLocationId === 'string' ? hero.selectedLocationId : null) ??
-  (typeof existingSave?.selected_location_id === 'string'
-    ? existingSave.selected_location_id
-    : null) ??
-  'LOC_001';
+  const finalSelectedLocationId =
+    selectedLocationId ??
+    (typeof hero.selectedLocationId === 'string' ? hero.selectedLocationId : null) ??
+    (typeof existingSave?.selected_location_id === 'string'
+      ? existingSave.selected_location_id
+      : null) ??
+    'LOC_001';
 
-const normalizedHero: Record<string, unknown> = {
-  ...existingHero,
-  ...hero,
-  inventory: incomingInventory,
-  equipment: incomingEquipment,
-  selectedLocationId: finalSelectedLocationId,
-  saveVersion: 2,
-  updatedAt: now,
-};
+  const normalizedHero: Record<string, unknown> = {
+    ...existingHero,
+    ...hero,
 
-const level = Number(normalizedHero.level ?? 1);
-const xp = Number(normalizedHero.xp ?? 0);
-const gold = Number(normalizedHero.gold ?? 0);
-const currentHp = Number(
-  normalizedHero.currentHp ??
-    normalizedHero.current_hp ??
-    existingHero.currentHp ??
-    existingHero.current_hp ??
-    1,
-);
-const maxHp = Number(
-  normalizedHero.maxHp ??
-    normalizedHero.max_hp ??
-    existingHero.maxHp ??
-    existingHero.max_hp ??
-    100,
-);
+    // These two must always survive saves.
+    inventory: incomingInventory,
+    equipment: incomingEquipment,
 
-const { error: saveError } = await supabase
-  .from('player_saves')
-  .upsert(
-    {
-      player_id: player.id,
-      hero_json: normalizedHero,
-      level,
-      xp,
-      gold,
-      current_hp: currentHp,
-      max_hp: maxHp,
-      selected_location_id: finalSelectedLocationId,
-      save_version: 2,
-      updated_at: now,
-    },
-    {
-      onConflict: 'player_id',
-    },
+    selectedLocationId: finalSelectedLocationId,
+    saveVersion: 2,
+    updatedAt: now,
+  };
+
+  const level = Number(normalizedHero.level ?? 1);
+  const xp = Number(normalizedHero.xp ?? 0);
+  const gold = Number(normalizedHero.gold ?? 0);
+
+  const currentHp = Number(
+    normalizedHero.currentHp ??
+      normalizedHero.current_hp ??
+      existingHero.currentHp ??
+      existingHero.current_hp ??
+      1,
   );
+
+  const maxHp = Number(
+    normalizedHero.maxHp ??
+      normalizedHero.max_hp ??
+      existingHero.maxHp ??
+      existingHero.max_hp ??
+      100,
+  );
+
+  const { error: saveError } = await supabase
+    .from('player_saves')
+    .upsert(
+      {
+        player_id: player.id,
+        hero_json: normalizedHero,
+        level,
+        xp,
+        gold,
+        current_hp: currentHp,
+        max_hp: maxHp,
+        selected_location_id: finalSelectedLocationId,
+        save_version: 2,
+        updated_at: now,
+      },
+      {
+        onConflict: 'player_id',
+      },
+    );
+
   if (saveError) {
     console.error('[savePlayerState] Failed to upsert player save:', saveError);
 
@@ -299,11 +319,33 @@ const { error: saveError } = await supabase
     });
   }
 
-  await supabase.from('player_events').insert({
-  player_id: player.id,
-  event_type: 'player_save',
-  payload: {
+  const { error: eventError } = await supabase.from('player_events').insert({
+    player_id: player.id,
+    event_type: 'player_save',
+    payload: {
+      authMode,
+      level,
+      xp,
+      gold,
+      currentHp,
+      maxHp,
+      selectedLocationId: finalSelectedLocationId,
+      inventoryCount: incomingInventory.length,
+      hasEquipment: Object.keys(incomingEquipment).length > 0,
+      equipment: incomingEquipment,
+    },
+  });
+
+  if (eventError) {
+    console.warn('[savePlayerState] Failed to insert player event:', eventError);
+  }
+
+  return json(200, {
+    success: true,
+    message: 'Player state saved',
     authMode,
+    playerId: player.id,
+    telegramUserId: player.telegram_user_id,
     level,
     xp,
     gold,
@@ -311,23 +353,6 @@ const { error: saveError } = await supabase
     maxHp,
     selectedLocationId: finalSelectedLocationId,
     inventoryCount: incomingInventory.length,
-    hasEquipment: Object.keys(incomingEquipment).length > 0,
     equipment: incomingEquipment,
-  },
-});
-
-return json(200, {
-  success: true,
-  message: 'Player state saved',
-  authMode,
-  playerId: player.id,
-  telegramUserId: player.telegram_user_id,
-  level,
-  xp,
-  gold,
-  currentHp,
-  maxHp,
-  selectedLocationId: finalSelectedLocationId,
-  inventoryCount: incomingInventory.length,
-  equipment: incomingEquipment,
-});
+  });
+}
