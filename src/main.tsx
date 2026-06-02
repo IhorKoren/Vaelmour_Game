@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import AppShell from './app/AppShell';
 import { AdminPanel } from './admin/AdminPanel';
-import './index.css';
+import "./styles/global.css";
 
 const rootElement = document.getElementById('root');
 
