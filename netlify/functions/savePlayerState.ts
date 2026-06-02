@@ -200,32 +200,96 @@ export async function handler(event: NetlifyEvent) {
     });
   }
 
-  const level = Number(hero.level ?? 1);
-  const xp = Number(hero.xp ?? 0);
-  const gold = Number(hero.gold ?? 0);
-  const currentHp = Number(hero.currentHp ?? 0);
-  const maxHp = Number(hero.maxHp ?? 0);
+  const { data: existingSave, error: existingSaveError } = await supabase
+  .from('player_saves')
+  .select('hero_json, selected_location_id')
+  .eq('player_id', player.id)
+  .maybeSingle();
 
-  const { error: saveError } = await supabase
-    .from('player_saves')
-    .upsert(
-      {
-        player_id: player.id,
-        hero_json: hero,
-        level,
-        xp,
-        gold,
-        current_hp: currentHp,
-        max_hp: maxHp,
-        selected_location_id: selectedLocationId,
-        save_version: 1,
-        updated_at: now,
-      },
-      {
-        onConflict: 'player_id',
-      },
-    );
+if (existingSaveError) {
+  console.error('[savePlayerState] Failed to read existing save:', existingSaveError);
 
+  return json(500, {
+    error: 'Failed to read existing player save',
+    details: existingSaveError.message,
+  });
+}
+
+const existingHero =
+  existingSave?.hero_json &&
+  typeof existingSave.hero_json === 'object' &&
+  !Array.isArray(existingSave.hero_json)
+    ? (existingSave.hero_json as Record<string, unknown>)
+    : {};
+
+const incomingInventory = Array.isArray(hero.inventory)
+  ? hero.inventory
+  : Array.isArray(existingHero.inventory)
+    ? existingHero.inventory
+    : [];
+
+const incomingEquipment =
+  hero.equipment && typeof hero.equipment === 'object' && !Array.isArray(hero.equipment)
+    ? hero.equipment
+    : existingHero.equipment && typeof existingHero.equipment === 'object'
+      ? existingHero.equipment
+      : {};
+
+const finalSelectedLocationId =
+  selectedLocationId ??
+  (typeof hero.selectedLocationId === 'string' ? hero.selectedLocationId : null) ??
+  (typeof existingSave?.selected_location_id === 'string'
+    ? existingSave.selected_location_id
+    : null) ??
+  'LOC_001';
+
+const normalizedHero: Record<string, unknown> = {
+  ...existingHero,
+  ...hero,
+  inventory: incomingInventory,
+  equipment: incomingEquipment,
+  selectedLocationId: finalSelectedLocationId,
+  saveVersion: 2,
+  updatedAt: now,
+};
+
+const level = Number(normalizedHero.level ?? 1);
+const xp = Number(normalizedHero.xp ?? 0);
+const gold = Number(normalizedHero.gold ?? 0);
+const currentHp = Number(
+  normalizedHero.currentHp ??
+    normalizedHero.current_hp ??
+    existingHero.currentHp ??
+    existingHero.current_hp ??
+    1,
+);
+const maxHp = Number(
+  normalizedHero.maxHp ??
+    normalizedHero.max_hp ??
+    existingHero.maxHp ??
+    existingHero.max_hp ??
+    100,
+);
+
+const { error: saveError } = await supabase
+  .from('player_saves')
+  .upsert(
+    {
+      player_id: player.id,
+      hero_json: normalizedHero,
+      level,
+      xp,
+      gold,
+      current_hp: currentHp,
+      max_hp: maxHp,
+      selected_location_id: finalSelectedLocationId,
+      save_version: 2,
+      updated_at: now,
+    },
+    {
+      onConflict: 'player_id',
+    },
+  );
   if (saveError) {
     console.error('[savePlayerState] Failed to upsert player save:', saveError);
 
