@@ -14,6 +14,8 @@ type TelegramUser = {
   language_code?: string;
 };
 
+type AuthMode = 'telegram' | 'admin_debug' | null;
+
 type PlayerEventInsert = {
   player_id: string;
   event_type: string;
@@ -61,8 +63,8 @@ function stableStringify(value: unknown): string {
   return JSON.stringify(sortValueForCompare(value));
 }
 
-function areDifferent(a: unknown, b: unknown): boolean {
-  return stableStringify(a) !== stableStringify(b);
+function areDifferent(previousValue: unknown, nextValue: unknown): boolean {
+  return stableStringify(previousValue) !== stableStringify(nextValue);
 }
 
 function validateTelegramInitData(initData: string, botToken: string): boolean {
@@ -114,156 +116,428 @@ function parseTelegramUserFromInitData(initData: string): TelegramUser | null {
 
 function buildImportantEvents(params: {
   playerId: string;
-  authMode: 'telegram' | 'admin_debug' | null;
+  authMode: AuthMode;
   existingSaveExists: boolean;
-  existingHero: Record<string, unknown>;
-  normalizedHero: Record<string, unknown>;
+  previousHero: Record<string, unknown>;
   previousSelectedLocationId: string | null;
-  finalSelectedLocationId: string;
+  nextSelectedLocationId: string;
   previousLevel: number;
-  level: number;
+  nextLevel: number;
   previousXp: number;
-  xp: number;
+  nextXp: number;
   previousGold: number;
-  gold: number;
+  nextGold: number;
   currentHp: number;
   maxHp: number;
-  incomingInventory: unknown[];
-  incomingEquipment: Record<string, unknown>;
+  nextInventory: unknown[];
+  nextEquipment: Record<string, unknown>;
   now: string;
 }): PlayerEventInsert[] {
-  const {
-    playerId,
-    authMode,
-    existingSaveExists,
-    existingHero,
-    normalizedHero,
-    previousSelectedLocationId,
-    finalSelectedLocationId,
-    previousLevel,
-    level,
-    previousXp,
-    xp,
-    previousGold,
-    gold,
-    currentHp,
-    maxHp,
-    incomingInventory,
-    incomingEquipment,
-    now,
-  } = params;
+  const previousInventory = Array.isArray(params.previousHero.inventory)
+    ? params.previousHero.inventory
+    : [];
 
-  const previousInventory = Array.isArray(existingHero.inventory) ? existingHero.inventory : [];
-
-  const previousEquipment = isRecord(existingHero.equipment) ? existingHero.equipment : {};
+  const previousEquipment = isRecord(params.previousHero.equipment)
+    ? params.previousHero.equipment
+    : {};
 
   const basePayload = {
-    authMode,
-    level,
-    xp,
-    gold,
-    currentHp,
-    maxHp,
-    selectedLocationId: finalSelectedLocationId,
-    inventoryCount: incomingInventory.length,
-    hasEquipment: Object.keys(incomingEquipment).length > 0,
-    savedAt: now,
+    authMode: params.authMode,
+    level: params.nextLevel,
+    xp: params.nextXp,
+    gold: params.nextGold,
+    currentHp: params.currentHp,
+    maxHp: params.maxHp,
+    selectedLocationId: params.nextSelectedLocationId,
+    inventoryCount: params.nextInventory.length,
+    hasEquipment: Object.keys(params.nextEquipment).length > 0,
+    savedAt: params.now,
   };
 
   const events: PlayerEventInsert[] = [];
 
-  if (!existingSaveExists) {
+  if (!params.existingSaveExists) {
     events.push({
-      player_id: playerId,
+      player_id: params.playerId,
       event_type: 'initial_save_created',
       payload: {
         ...basePayload,
-        equipment: incomingEquipment,
+        equipment: params.nextEquipment,
       },
     });
 
     return events;
   }
 
-  if (areDifferent(previousEquipment, incomingEquipment)) {
+  if (areDifferent(previousEquipment, params.nextEquipment)) {
     events.push({
-      player_id: playerId,
+      player_id: params.playerId,
       event_type: 'equipment_changed',
       payload: {
         ...basePayload,
         previousEquipment,
-        nextEquipment: incomingEquipment,
+        nextEquipment: params.nextEquipment,
       },
     });
   }
 
-  if (areDifferent(previousInventory, incomingInventory)) {
+  if (areDifferent(previousInventory, params.nextInventory)) {
     events.push({
-      player_id: playerId,
+      player_id: params.playerId,
       event_type: 'inventory_changed',
       payload: {
         ...basePayload,
         previousInventoryCount: previousInventory.length,
-        nextInventoryCount: incomingInventory.length,
+        nextInventoryCount: params.nextInventory.length,
       },
     });
   }
 
-  if (previousSelectedLocationId !== finalSelectedLocationId) {
+  if (params.previousSelectedLocationId !== params.nextSelectedLocationId) {
     events.push({
-      player_id: playerId,
+      player_id: params.playerId,
       event_type: 'location_changed',
       payload: {
         ...basePayload,
-        previousLocationId: previousSelectedLocationId,
-        nextLocationId: finalSelectedLocationId,
+        previousLocationId: params.previousSelectedLocationId,
+        nextLocationId: params.nextSelectedLocationId,
       },
     });
   }
 
-  if (previousLevel !== level) {
+  if (params.previousLevel !== params.nextLevel) {
     events.push({
-      player_id: playerId,
+      player_id: params.playerId,
       event_type: 'level_changed',
       payload: {
         ...basePayload,
-        previousLevel,
-        nextLevel: level,
+        previousLevel: params.previousLevel,
+        nextLevel: params.nextLevel,
       },
     });
   }
 
-  if (previousXp !== xp) {
+  if (params.previousXp !== params.nextXp) {
     events.push({
-      player_id: playerId,
+      player_id: params.playerId,
       event_type: 'xp_changed',
       payload: {
         ...basePayload,
-        previousXp,
-        nextXp: xp,
+        previousXp: params.previousXp,
+        nextXp: params.nextXp,
       },
     });
   }
 
-  if (previousGold !== gold) {
+  if (params.previousGold !== params.nextGold) {
     events.push({
-      player_id: playerId,
+      player_id: params.playerId,
       event_type: 'gold_changed',
       payload: {
         ...basePayload,
-        previousGold,
-        nextGold: gold,
+        previousGold: params.previousGold,
+        nextGold: params.nextGold,
       },
     });
   }
-
-  // HP-only changes are intentionally not logged into player_events.
-  // player_saves is still updated normally.
 
   return events;
 }
 
 export async function handler(event: NetlifyEvent) {
   if (event.httpMethod !== 'POST') {
-  return json(405, { error: 'Method Not Allowed' });
+    return json(405, { error: 'Method Not Allowed' });
+  }
+
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
+  const adminSecret = process.env.ADMIN_SECRET;
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    return json(500, {
+      error: 'Missing Supabase environment variables',
+      hasSupabaseUrl: Boolean(supabaseUrl),
+      hasServiceRoleKey: Boolean(serviceRoleKey),
+    });
+  }
+
+  if (!telegramBotToken) {
+    return json(500, {
+      error: 'Missing TELEGRAM_BOT_TOKEN',
+    });
+  }
+
+  let body: Record<string, unknown>;
+
+  try {
+    body = JSON.parse(event.body || '{}') as Record<string, unknown>;
+  } catch {
+    return json(400, { error: 'Invalid JSON body' });
+  }
+
+  const initData = typeof body.initData === 'string' ? body.initData : '';
+  const hero = isRecord(body.hero) ? body.hero : undefined;
+
+  const selectedLocationId =
+    typeof body.selectedLocationId === 'string' ? body.selectedLocationId : null;
+
+  let telegramUser: TelegramUser | null = null;
+  let authMode: AuthMode = null;
+
+  if (initData && validateTelegramInitData(initData, telegramBotToken)) {
+    telegramUser = parseTelegramUserFromInitData(initData);
+    authMode = 'telegram';
+  }
+
+  if (!telegramUser) {
+    const providedAdminSecret =
+      typeof body.adminSecret === 'string' ? body.adminSecret : '';
+
+    const debugTelegramUserId =
+      typeof body.debugTelegramUserId === 'number'
+        ? body.debugTelegramUserId
+        : null;
+
+    if (
+      adminSecret &&
+      providedAdminSecret &&
+      providedAdminSecret === adminSecret &&
+      debugTelegramUserId
+    ) {
+      const debugUser = isRecord(body.debugUser) ? body.debugUser : undefined;
+
+      telegramUser = {
+        id: debugTelegramUserId,
+        username:
+          typeof debugUser?.username === 'string'
+            ? debugUser.username
+            : 'admin_test',
+        first_name:
+          typeof debugUser?.first_name === 'string'
+            ? debugUser.first_name
+            : 'Admin',
+        last_name:
+          typeof debugUser?.last_name === 'string'
+            ? debugUser.last_name
+            : 'Test',
+        language_code:
+          typeof debugUser?.language_code === 'string'
+            ? debugUser.language_code
+            : 'uk',
+      };
+
+      authMode = 'admin_debug';
+    }
+  }
+
+  if (!telegramUser?.id) {
+    return json(401, {
+      error: 'Unauthorized',
+      reason: 'Valid Telegram initData or admin debug credentials are required',
+      hasInitData: Boolean(initData),
+    });
+  }
+
+  if (!hero) {
+    return json(400, {
+      error: 'Missing hero object',
+    });
+  }
+
+  const now = new Date().toISOString();
+
+  const supabase = createClient(supabaseUrl, serviceRoleKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  });
+
+  const { data: player, error: playerError } = await supabase
+    .from('players')
+    .upsert(
+      {
+        telegram_user_id: telegramUser.id,
+        telegram_username: telegramUser.username ?? null,
+        telegram_first_name: telegramUser.first_name ?? null,
+        telegram_last_name: telegramUser.last_name ?? null,
+        telegram_language_code: telegramUser.language_code ?? null,
+        last_seen_at: now,
+      },
+      {
+        onConflict: 'telegram_user_id',
+      },
+    )
+    .select('id, telegram_user_id')
+    .single();
+
+  if (playerError || !player) {
+    console.error('[savePlayerState] Failed to upsert player:', playerError);
+
+    return json(500, {
+      error: 'Failed to save player profile',
+      details: playerError?.message,
+    });
+  }
+
+  const { data: existingSave, error: existingSaveError } = await supabase
+    .from('player_saves')
+    .select('hero_json, selected_location_id, level, xp, gold')
+    .eq('player_id', player.id)
+    .maybeSingle();
+
+  if (existingSaveError) {
+    console.error('[savePlayerState] Failed to read existing save:', existingSaveError);
+
+    return json(500, {
+      error: 'Failed to read existing player save',
+      details: existingSaveError.message,
+    });
+  }
+
+  const existingSaveRecord = isRecord(existingSave) ? existingSave : null;
+  const existingSaveExists = Boolean(existingSaveRecord);
+
+  const existingHero = isRecord(existingSaveRecord?.hero_json)
+    ? existingSaveRecord.hero_json
+    : {};
+
+  const nextInventory = Array.isArray(hero.inventory)
+    ? hero.inventory
+    : Array.isArray(existingHero.inventory)
+      ? existingHero.inventory
+      : [];
+
+  const nextEquipment = isRecord(hero.equipment)
+    ? hero.equipment
+    : isRecord(existingHero.equipment)
+      ? existingHero.equipment
+      : {};
+
+  const nextSelectedLocationId =
+    selectedLocationId ??
+    (typeof hero.selectedLocationId === 'string' ? hero.selectedLocationId : null) ??
+    (typeof existingSaveRecord?.selected_location_id === 'string'
+      ? existingSaveRecord.selected_location_id
+      : null) ??
+    'LOC_001';
+
+  const normalizedHero: Record<string, unknown> = {
+    ...existingHero,
+    ...hero,
+    inventory: nextInventory,
+    equipment: nextEquipment,
+    selectedLocationId: nextSelectedLocationId,
+    saveVersion: 2,
+    updatedAt: now,
+  };
+
+  const level = toNumber(normalizedHero.level, 1);
+  const xp = toNumber(normalizedHero.xp, 0);
+  const gold = toNumber(normalizedHero.gold, 0);
+
+  const currentHp = toNumber(
+    normalizedHero.currentHp ??
+      normalizedHero.current_hp ??
+      existingHero.currentHp ??
+      existingHero.current_hp,
+    1,
+  );
+
+  const maxHp = toNumber(
+    normalizedHero.maxHp ??
+      normalizedHero.max_hp ??
+      existingHero.maxHp ??
+      existingHero.max_hp,
+    100,
+  );
+
+  const previousSelectedLocationId =
+    typeof existingSaveRecord?.selected_location_id === 'string'
+      ? existingSaveRecord.selected_location_id
+      : typeof existingHero.selectedLocationId === 'string'
+        ? existingHero.selectedLocationId
+        : null;
+
+  const previousLevel = toNumber(existingSaveRecord?.level ?? existingHero.level, level);
+  const previousXp = toNumber(existingSaveRecord?.xp ?? existingHero.xp, xp);
+  const previousGold = toNumber(existingSaveRecord?.gold ?? existingHero.gold, gold);
+
+  const { error: saveError } = await supabase
+    .from('player_saves')
+    .upsert(
+      {
+        player_id: player.id,
+        hero_json: normalizedHero,
+        level,
+        xp,
+        gold,
+        current_hp: currentHp,
+        max_hp: maxHp,
+        selected_location_id: nextSelectedLocationId,
+        save_version: 2,
+        updated_at: now,
+      },
+      {
+        onConflict: 'player_id',
+      },
+    );
+
+  if (saveError) {
+    console.error('[savePlayerState] Failed to upsert player save:', saveError);
+
+    return json(500, {
+      error: 'Failed to save player state',
+      details: saveError.message,
+    });
+  }
+
+  const importantEvents = buildImportantEvents({
+    playerId: player.id,
+    authMode,
+    existingSaveExists,
+    previousHero: existingHero,
+    previousSelectedLocationId,
+    nextSelectedLocationId,
+    previousLevel,
+    nextLevel: level,
+    previousXp,
+    nextXp: xp,
+    previousGold,
+    nextGold: gold,
+    currentHp,
+    maxHp,
+    nextInventory,
+    nextEquipment,
+    now,
+  });
+
+  if (importantEvents.length > 0) {
+    const { error: eventError } = await supabase
+      .from('player_events')
+      .insert(importantEvents);
+
+    if (eventError) {
+      console.warn('[savePlayerState] Failed to insert player events:', eventError);
+    }
+  }
+
+  return json(200, {
+    success: true,
+    message: 'Player state saved',
+    authMode,
+    playerId: player.id,
+    telegramUserId: player.telegram_user_id,
+    level,
+    xp,
+    gold,
+    currentHp,
+    maxHp,
+    selectedLocationId: nextSelectedLocationId,
+    inventoryCount: nextInventory.length,
+    equipment: nextEquipment,
+    eventCount: importantEvents.length,
+    eventTypes: importantEvents.map((playerEvent) => playerEvent.event_type),
+  });
 }
