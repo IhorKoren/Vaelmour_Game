@@ -265,4 +265,5 @@ function buildImportantEvents(params: {
 
 export async function handler(event: NetlifyEvent) {
   if (event.httpMethod !== 'POST') {
-    return json(405, { error: 'Method Not
+  return json(405, { error: 'Method Not Allowed' });
+}
