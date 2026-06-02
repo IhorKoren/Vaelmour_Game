@@ -10,6 +10,21 @@ export type GameSave = {
 
 const HEALTH_REGEN_INTERVAL_MS = 5000;
 const SAVE_DEBOUNCE_MS = 800;
+const STARTER_EQUIPMENT_V2_FLAG = 'starterEquipmentV2';
+
+const STARTER_EQUIPMENT_BY_SLOT: Partial<Record<EquipmentSlot, string>> = {
+  weapon: 'weapon_blade_lvl_01',
+  shield: 'shield_guard_lvl_01',
+  head: 'head_helmet_lvl_01',
+  chest: 'chest_armor_lvl_01',
+  hands: 'hands_gloves_lvl_01',
+  legs: 'legs_pants_lvl_01',
+  feet: 'feet_boots_lvl_01'
+};
+
+const STARTER_EQUIPMENT_SLOTS = Object.keys(
+  STARTER_EQUIPMENT_BY_SLOT
+) as EquipmentSlot[];
 let pendingSaveTimeout: ReturnType<typeof setTimeout> | null = null;
 let pendingSaveSnapshot: GameSave | null = null;
 
