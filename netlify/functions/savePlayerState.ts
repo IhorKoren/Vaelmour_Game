@@ -14,6 +14,12 @@ type TelegramUser = {
   language_code?: string;
 };
 
+type PlayerEventInsert = {
+  player_id: string;
+  event_type: string;
+  payload: Record<string, unknown>;
+};
+
 function json(statusCode: number, body: unknown) {
   return {
     statusCode,
@@ -26,6 +32,37 @@ function json(statusCode: number, body: unknown) {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function toNumber(value: unknown, fallback: number): number {
+  const parsed = Number(value);
+
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function sortValueForCompare(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(sortValueForCompare);
+  }
+
+  if (isRecord(value)) {
+    return Object.keys(value)
+      .sort()
+      .reduce<Record<string, unknown>>((result, key) => {
+        result[key] = sortValueForCompare(value[key]);
+        return result;
+      }, {});
+  }
+
+  return value;
+}
+
+function stableStringify(value: unknown): string {
+  return JSON.stringify(sortValueForCompare(value));
+}
+
+function areDifferent(a: unknown, b: unknown): boolean {
+  return stableStringify(a) !== stableStringify(b);
 }
 
 function validateTelegramInitData(initData: string, botToken: string): boolean {
@@ -75,277 +112,53 @@ function parseTelegramUserFromInitData(initData: string): TelegramUser | null {
   }
 }
 
-export async function handler(event: NetlifyEvent) {
-  if (event.httpMethod !== 'POST') {
-    return json(405, { error: 'Method Not Allowed' });
-  }
-
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
-  const adminSecret = process.env.ADMIN_SECRET;
-
-  if (!supabaseUrl || !serviceRoleKey) {
-    return json(500, {
-      error: 'Missing Supabase environment variables',
-      hasSupabaseUrl: Boolean(supabaseUrl),
-      hasServiceRoleKey: Boolean(serviceRoleKey),
-    });
-  }
-
-  if (!telegramBotToken) {
-    return json(500, {
-      error: 'Missing TELEGRAM_BOT_TOKEN',
-    });
-  }
-
-  let body: Record<string, unknown>;
-
-  try {
-    body = JSON.parse(event.body || '{}') as Record<string, unknown>;
-  } catch {
-    return json(400, { error: 'Invalid JSON body' });
-  }
-
-  const initData = typeof body.initData === 'string' ? body.initData : '';
-  const hero = isRecord(body.hero) ? body.hero : undefined;
-
-  const selectedLocationId =
-    typeof body.selectedLocationId === 'string' ? body.selectedLocationId : null;
-
-  let telegramUser: TelegramUser | null = null;
-  let authMode: 'telegram' | 'admin_debug' | null = null;
-
-  if (initData && validateTelegramInitData(initData, telegramBotToken)) {
-    telegramUser = parseTelegramUserFromInitData(initData);
-    authMode = 'telegram';
-  }
-
-  // Debug/admin test mode. Use only manually, never from normal frontend code.
-  if (!telegramUser) {
-    const providedAdminSecret =
-      typeof body.adminSecret === 'string' ? body.adminSecret : '';
-
-    const debugTelegramUserId =
-      typeof body.debugTelegramUserId === 'number'
-        ? body.debugTelegramUserId
-        : null;
-
-    if (
-      adminSecret &&
-      providedAdminSecret &&
-      providedAdminSecret === adminSecret &&
-      debugTelegramUserId
-    ) {
-      const debugUser = isRecord(body.debugUser) ? body.debugUser : undefined;
-
-      telegramUser = {
-        id: debugTelegramUserId,
-        username:
-          typeof debugUser?.username === 'string'
-            ? debugUser.username
-            : 'admin_test',
-        first_name:
-          typeof debugUser?.first_name === 'string'
-            ? debugUser.first_name
-            : 'Admin',
-        last_name:
-          typeof debugUser?.last_name === 'string'
-            ? debugUser.last_name
-            : 'Test',
-        language_code:
-          typeof debugUser?.language_code === 'string'
-            ? debugUser.language_code
-            : 'uk',
-      };
-
-      authMode = 'admin_debug';
-    }
-  }
-
-  if (!telegramUser?.id) {
-    return json(401, {
-      error: 'Unauthorized',
-      reason: 'Valid Telegram initData or admin debug credentials are required',
-      hasInitData: Boolean(initData),
-    });
-  }
-
-  if (!hero) {
-    return json(400, {
-      error: 'Missing hero object',
-    });
-  }
-
-  const now = new Date().toISOString();
-
-  const supabase = createClient(supabaseUrl, serviceRoleKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    },
-  });
-
-  const { data: player, error: playerError } = await supabase
-    .from('players')
-    .upsert(
-      {
-        telegram_user_id: telegramUser.id,
-        telegram_username: telegramUser.username ?? null,
-        telegram_first_name: telegramUser.first_name ?? null,
-        telegram_last_name: telegramUser.last_name ?? null,
-        telegram_language_code: telegramUser.language_code ?? null,
-        last_seen_at: now,
-      },
-      {
-        onConflict: 'telegram_user_id',
-      },
-    )
-    .select('id, telegram_user_id')
-    .single();
-
-  if (playerError || !player) {
-    console.error('[savePlayerState] Failed to upsert player:', playerError);
-
-    return json(500, {
-      error: 'Failed to save player profile',
-      details: playerError?.message,
-    });
-  }
-
-  /**
-   * Important:
-   * We read the existing save before writing.
-   * This prevents partial frontend saves from deleting inventory/equipment.
-   */
-  const { data: existingSave, error: existingSaveError } = await supabase
-    .from('player_saves')
-    .select('hero_json, selected_location_id')
-    .eq('player_id', player.id)
-    .maybeSingle();
-
-  if (existingSaveError) {
-    console.error('[savePlayerState] Failed to read existing save:', existingSaveError);
-
-    return json(500, {
-      error: 'Failed to read existing player save',
-      details: existingSaveError.message,
-    });
-  }
-
-  const existingHero = isRecord(existingSave?.hero_json)
-    ? existingSave.hero_json
-    : {};
-
-  const incomingInventory = Array.isArray(hero.inventory)
-    ? hero.inventory
-    : Array.isArray(existingHero.inventory)
-      ? existingHero.inventory
-      : [];
-
-  const incomingEquipment = isRecord(hero.equipment)
-    ? hero.equipment
-    : isRecord(existingHero.equipment)
-      ? existingHero.equipment
-      : {};
-
-  const finalSelectedLocationId =
-    selectedLocationId ??
-    (typeof hero.selectedLocationId === 'string' ? hero.selectedLocationId : null) ??
-    (typeof existingSave?.selected_location_id === 'string'
-      ? existingSave.selected_location_id
-      : null) ??
-    'LOC_001';
-
-  const normalizedHero: Record<string, unknown> = {
-    ...existingHero,
-    ...hero,
-
-    // These two must always survive saves.
-    inventory: incomingInventory,
-    equipment: incomingEquipment,
-
-    selectedLocationId: finalSelectedLocationId,
-    saveVersion: 2,
-    updatedAt: now,
-  };
-
-  const level = Number(normalizedHero.level ?? 1);
-  const xp = Number(normalizedHero.xp ?? 0);
-  const gold = Number(normalizedHero.gold ?? 0);
-
-  const currentHp = Number(
-    normalizedHero.currentHp ??
-      normalizedHero.current_hp ??
-      existingHero.currentHp ??
-      existingHero.current_hp ??
-      1,
-  );
-
-  const maxHp = Number(
-    normalizedHero.maxHp ??
-      normalizedHero.max_hp ??
-      existingHero.maxHp ??
-      existingHero.max_hp ??
-      100,
-  );
-
-  const { error: saveError } = await supabase
-    .from('player_saves')
-    .upsert(
-      {
-        player_id: player.id,
-        hero_json: normalizedHero,
-        level,
-        xp,
-        gold,
-        current_hp: currentHp,
-        max_hp: maxHp,
-        selected_location_id: finalSelectedLocationId,
-        save_version: 2,
-        updated_at: now,
-      },
-      {
-        onConflict: 'player_id',
-      },
-    );
-
-  if (saveError) {
-    console.error('[savePlayerState] Failed to upsert player save:', saveError);
-
-    return json(500, {
-      error: 'Failed to save player state',
-      details: saveError.message,
-    });
-  }
-
-  const { error: eventError } = await supabase.from('player_events').insert({
-    player_id: player.id,
-    event_type: 'player_save',
-    payload: {
-      authMode,
-      level,
-      xp,
-      gold,
-      currentHp,
-      maxHp,
-      selectedLocationId: finalSelectedLocationId,
-      inventoryCount: incomingInventory.length,
-      hasEquipment: Object.keys(incomingEquipment).length > 0,
-      equipment: incomingEquipment,
-    },
-  });
-
-  if (eventError) {
-    console.warn('[savePlayerState] Failed to insert player event:', eventError);
-  }
-
-  return json(200, {
-    success: true,
-    message: 'Player state saved',
+function buildImportantEvents(params: {
+  playerId: string;
+  authMode: 'telegram' | 'admin_debug' | null;
+  existingSaveExists: boolean;
+  existingHero: Record<string, unknown>;
+  normalizedHero: Record<string, unknown>;
+  previousSelectedLocationId: string | null;
+  finalSelectedLocationId: string;
+  previousLevel: number;
+  level: number;
+  previousXp: number;
+  xp: number;
+  previousGold: number;
+  gold: number;
+  currentHp: number;
+  maxHp: number;
+  incomingInventory: unknown[];
+  incomingEquipment: Record<string, unknown>;
+  now: string;
+}): PlayerEventInsert[] {
+  const {
+    playerId,
     authMode,
-    playerId: player.id,
-    telegramUserId: player.telegram_user_id,
+    existingSaveExists,
+    existingHero,
+    normalizedHero,
+    previousSelectedLocationId,
+    finalSelectedLocationId,
+    previousLevel,
+    level,
+    previousXp,
+    xp,
+    previousGold,
+    gold,
+    currentHp,
+    maxHp,
+    incomingInventory,
+    incomingEquipment,
+    now,
+  } = params;
+
+  const previousInventory = Array.isArray(existingHero.inventory) ? existingHero.inventory : [];
+
+  const previousEquipment = isRecord(existingHero.equipment) ? existingHero.equipment : {};
+
+  const basePayload = {
+    authMode,
     level,
     xp,
     gold,
@@ -353,6 +166,103 @@ export async function handler(event: NetlifyEvent) {
     maxHp,
     selectedLocationId: finalSelectedLocationId,
     inventoryCount: incomingInventory.length,
-    equipment: incomingEquipment,
-  });
+    hasEquipment: Object.keys(incomingEquipment).length > 0,
+    savedAt: now,
+  };
+
+  const events: PlayerEventInsert[] = [];
+
+  if (!existingSaveExists) {
+    events.push({
+      player_id: playerId,
+      event_type: 'initial_save_created',
+      payload: {
+        ...basePayload,
+        equipment: incomingEquipment,
+      },
+    });
+
+    return events;
+  }
+
+  if (areDifferent(previousEquipment, incomingEquipment)) {
+    events.push({
+      player_id: playerId,
+      event_type: 'equipment_changed',
+      payload: {
+        ...basePayload,
+        previousEquipment,
+        nextEquipment: incomingEquipment,
+      },
+    });
+  }
+
+  if (areDifferent(previousInventory, incomingInventory)) {
+    events.push({
+      player_id: playerId,
+      event_type: 'inventory_changed',
+      payload: {
+        ...basePayload,
+        previousInventoryCount: previousInventory.length,
+        nextInventoryCount: incomingInventory.length,
+      },
+    });
+  }
+
+  if (previousSelectedLocationId !== finalSelectedLocationId) {
+    events.push({
+      player_id: playerId,
+      event_type: 'location_changed',
+      payload: {
+        ...basePayload,
+        previousLocationId: previousSelectedLocationId,
+        nextLocationId: finalSelectedLocationId,
+      },
+    });
+  }
+
+  if (previousLevel !== level) {
+    events.push({
+      player_id: playerId,
+      event_type: 'level_changed',
+      payload: {
+        ...basePayload,
+        previousLevel,
+        nextLevel: level,
+      },
+    });
+  }
+
+  if (previousXp !== xp) {
+    events.push({
+      player_id: playerId,
+      event_type: 'xp_changed',
+      payload: {
+        ...basePayload,
+        previousXp,
+        nextXp: xp,
+      },
+    });
+  }
+
+  if (previousGold !== gold) {
+    events.push({
+      player_id: playerId,
+      event_type: 'gold_changed',
+      payload: {
+        ...basePayload,
+        previousGold,
+        nextGold: gold,
+      },
+    });
+  }
+
+  // HP-only changes are intentionally not logged into player_events.
+  // player_saves is still updated normally.
+
+  return events;
 }
+
+export async function handler(event: NetlifyEvent) {
+  if (event.httpMethod !== 'POST') {
+    return json(405, { error: 'Method Not
