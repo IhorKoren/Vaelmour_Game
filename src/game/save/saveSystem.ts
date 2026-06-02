@@ -1,6 +1,12 @@
 import { SAVE_KEY } from '../constants';
 import { calculateDerivedStats } from '../formulas/stats';
-import type { HeroState, ItemAffix, ActiveQuest, EquipmentSlot, GeneratedEquipmentItem } from '../types';
+import type {
+  HeroState,
+  ItemAffix,
+  ActiveQuest,
+  EquipmentSlot,
+  GeneratedEquipmentItem
+} from '../types';
 import { initializeQuests } from '../formulas/quests';
 
 export type GameSave = {
@@ -10,6 +16,7 @@ export type GameSave = {
 
 const HEALTH_REGEN_INTERVAL_MS = 5000;
 const SAVE_DEBOUNCE_MS = 800;
+
 const STARTER_EQUIPMENT_V2_FLAG = 'starterEquipmentV2';
 
 const STARTER_EQUIPMENT_BY_SLOT: Partial<Record<EquipmentSlot, string>> = {
@@ -25,6 +32,7 @@ const STARTER_EQUIPMENT_BY_SLOT: Partial<Record<EquipmentSlot, string>> = {
 const STARTER_EQUIPMENT_SLOTS = Object.keys(
   STARTER_EQUIPMENT_BY_SLOT
 ) as EquipmentSlot[];
+
 let pendingSaveTimeout: ReturnType<typeof setTimeout> | null = null;
 let pendingSaveSnapshot: GameSave | null = null;
 
@@ -36,31 +44,57 @@ export function normalizeHeroState(savedHero: unknown): HeroState {
   if (!savedHero) return savedHero as HeroState;
 
   const heroObj = savedHero as Record<string, unknown>;
-  const rawEquipmentAffixes = (heroObj.equipmentAffixes ?? {}) as Record<string, ItemAffix[]>;
+
+  const rawEquipmentAffixes = (heroObj.equipmentAffixes ?? {}) as Record<
+    string,
+    ItemAffix[]
+  >;
+
   const equipmentAffixes: Record<string, ItemAffix[]> = {
     ...rawEquipmentAffixes
   };
+
   if (!equipmentAffixes.ring1 && rawEquipmentAffixes.ring) {
     equipmentAffixes.ring1 = rawEquipmentAffixes.ring;
   }
 
-  const rawDurability = (heroObj.equipmentDurability ?? {}) as Record<string, number>;
+  const rawDurability = (heroObj.equipmentDurability ?? {}) as Record<
+    string,
+    number
+  >;
+
   const equipmentDurability: Record<string, number> = {
     ...rawDurability
   };
-  if (equipmentDurability.ring1 === undefined && rawDurability.ring !== undefined) {
+
+  if (
+    equipmentDurability.ring1 === undefined &&
+    rawDurability.ring !== undefined
+  ) {
     equipmentDurability.ring1 = rawDurability.ring;
   }
-  
-  const rawInventory = (heroObj.inventory ?? []) as Array<Record<string, unknown>>;
+
+  const rawInventory = (heroObj.inventory ?? []) as Array<
+    Record<string, unknown>
+  >;
+
   const inventory = rawInventory.map((stack) => {
-    const rawGeneratedItem = stack.generatedItem as GeneratedEquipmentItem | undefined;
+    const rawGeneratedItem = stack.generatedItem as
+      | GeneratedEquipmentItem
+      | undefined;
+
     return {
       itemId: String(stack.itemId ?? ''),
       qty: Number(stack.qty ?? 0),
       affixes: (stack.affixes ?? []) as ItemAffix[],
-      durability: typeof stack.durability === 'number' ? Number(stack.durability) : undefined,
-      rerollCount: typeof stack.rerollCount === 'number' ? Number(stack.rerollCount) : 0,
+      durability:
+        typeof stack.durability === 'number'
+          ? Number(stack.durability)
+          : undefined,
+      rerollCount:
+        typeof stack.rerollCount === 'number'
+          ? Number(stack.rerollCount)
+          : 0,
       generatedItem: rawGeneratedItem
         ? {
             ...rawGeneratedItem,
@@ -71,13 +105,22 @@ export function normalizeHeroState(savedHero: unknown): HeroState {
     };
   });
 
-  const rawEquippedGeneratedItems = (heroObj.equippedGeneratedItems ?? {}) as Partial<Record<EquipmentSlot, GeneratedEquipmentItem | null>>;
-  const equippedGeneratedItems: Partial<Record<EquipmentSlot, GeneratedEquipmentItem | null>> = {};
-  for (const [slot, generatedItem] of Object.entries(rawEquippedGeneratedItems)) {
+  const rawEquippedGeneratedItems = (heroObj.equippedGeneratedItems ?? {}) as Partial<
+    Record<EquipmentSlot, GeneratedEquipmentItem | null>
+  >;
+
+  const equippedGeneratedItems: Partial<
+    Record<EquipmentSlot, GeneratedEquipmentItem | null>
+  > = {};
+
+  for (const [slot, generatedItem] of Object.entries(
+    rawEquippedGeneratedItems
+  )) {
     if (!generatedItem) {
       equippedGeneratedItems[slot as EquipmentSlot] = null;
       continue;
     }
+
     equippedGeneratedItems[slot as EquipmentSlot] = {
       ...generatedItem,
       affixes: (generatedItem.affixes ?? []) as ItemAffix[],
@@ -88,70 +131,141 @@ export function normalizeHeroState(savedHero: unknown): HeroState {
   const level = Number(heroObj.level ?? 1);
   const defaultQuests = initializeQuests(level);
   const savedQuests = (heroObj.quests ?? []) as ActiveQuest[];
-  const savedQuestMap = new Map(savedQuests.map((quest) => [quest.questId, quest]));
-  let quests = defaultQuests.map((quest) => savedQuestMap.get(quest.questId) ?? quest);
-  
+  const savedQuestMap = new Map(
+    savedQuests.map((quest) => [quest.questId, quest])
+  );
+
+  let quests = defaultQuests.map(
+    (quest) => savedQuestMap.get(quest.questId) ?? quest
+  );
+
   // Auto-migrate active quest QST_004 targetId from 'thornrot_forest' to 'LOC_002' for compatibility
   quests = quests.map((q) => {
     if (q.questId === 'QST_004') {
       return {
         ...q,
         objectives: q.objectives.map((o) => {
-          if (o.type === 'travel_location' && o.targetId === 'thornrot_forest') {
-            return { ...o, targetId: 'LOC_002' };
+          if (
+            o.type === 'travel_location' &&
+            o.targetId === 'thornrot_forest'
+          ) {
+            return {
+              ...o,
+              targetId: 'LOC_002'
+            };
           }
+
           return o;
         })
       };
     }
+
     return q;
   });
 
   const defeatedBossIds = (heroObj.defeatedBossIds ?? []) as string[];
 
-  return {
+  const rawEquipment =
+    heroObj.equipment && typeof heroObj.equipment === 'object'
+      ? (heroObj.equipment as Record<string, unknown>)
+      : {};
+
+  const normalizedEquipment: HeroState['equipment'] = {
+    weapon: String(rawEquipment.weapon ?? '') || null,
+    shield: String(rawEquipment.shield ?? '') || null,
+    head: String(rawEquipment.head ?? '') || null,
+    chest: String(rawEquipment.chest ?? '') || null,
+    legs: String(rawEquipment.legs ?? '') || null,
+    hands: String(rawEquipment.hands ?? '') || null,
+    feet: String(rawEquipment.feet ?? '') || null,
+    ring1: String(rawEquipment.ring1 ?? rawEquipment.ring ?? '') || null,
+    ring2: String(rawEquipment.ring2 ?? '') || null,
+    amulet: String(rawEquipment.amulet ?? '') || null
+  };
+
+  const migrationFlags =
+    heroObj.migrationFlags && typeof heroObj.migrationFlags === 'object'
+      ? {
+          ...(heroObj.migrationFlags as Record<string, boolean>)
+        }
+      : {};
+
+  if (!migrationFlags[STARTER_EQUIPMENT_V2_FLAG]) {
+    for (const slot of STARTER_EQUIPMENT_SLOTS) {
+      const starterItemId = STARTER_EQUIPMENT_BY_SLOT[slot];
+
+      if (!starterItemId) continue;
+
+      if (!normalizedEquipment[slot]) {
+        normalizedEquipment[slot] = starterItemId;
+      }
+
+      if (
+        normalizedEquipment[slot] === starterItemId &&
+        equipmentDurability[slot] === undefined
+      ) {
+        equipmentDurability[slot] = 100;
+      }
+
+      if (
+        normalizedEquipment[slot] === starterItemId &&
+        !equipmentAffixes[slot]
+      ) {
+        equipmentAffixes[slot] = [];
+      }
+    }
+
+    // Rings and amulet are intentionally NOT given as starter equipment.
+    migrationFlags[STARTER_EQUIPMENT_V2_FLAG] = true;
+  }
+
+  const normalizedHero = {
     ...heroObj,
-    equipment: {
-      weapon: heroObj.equipment && typeof heroObj.equipment === 'object' ? String((heroObj.equipment as Record<string, unknown>).weapon ?? '') || null : null,
-      shield: heroObj.equipment && typeof heroObj.equipment === 'object' ? String((heroObj.equipment as Record<string, unknown>).shield ?? '') || null : null,
-      head: heroObj.equipment && typeof heroObj.equipment === 'object' ? String((heroObj.equipment as Record<string, unknown>).head ?? '') || null : null,
-      chest: heroObj.equipment && typeof heroObj.equipment === 'object' ? String((heroObj.equipment as Record<string, unknown>).chest ?? '') || null : null,
-      legs: heroObj.equipment && typeof heroObj.equipment === 'object' ? String((heroObj.equipment as Record<string, unknown>).legs ?? '') || null : null,
-      hands: heroObj.equipment && typeof heroObj.equipment === 'object' ? String((heroObj.equipment as Record<string, unknown>).hands ?? '') || null : null,
-      feet: heroObj.equipment && typeof heroObj.equipment === 'object' ? String((heroObj.equipment as Record<string, unknown>).feet ?? '') || null : null,
-      ring1:
-        heroObj.equipment && typeof heroObj.equipment === 'object'
-          ? String(
-              (heroObj.equipment as Record<string, unknown>).ring1 ??
-                (heroObj.equipment as Record<string, unknown>).ring ??
-                ''
-            ) || null
-          : null,
-      ring2:
-        heroObj.equipment && typeof heroObj.equipment === 'object'
-          ? String((heroObj.equipment as Record<string, unknown>).ring2 ?? '') || null
-          : null,
-      amulet: heroObj.equipment && typeof heroObj.equipment === 'object' ? String((heroObj.equipment as Record<string, unknown>).amulet ?? '') || null : null
-    },
+    equipment: normalizedEquipment,
+    equippedWeaponId:
+      normalizedEquipment.weapon ?? String(heroObj.equippedWeaponId ?? ''),
+    equippedArmorId:
+      normalizedEquipment.chest ?? String(heroObj.equippedArmorId ?? ''),
     inventory,
     equipmentAffixes,
     equipmentDurability,
     equippedGeneratedItems,
     quests,
-    defeatedBossIds
+    defeatedBossIds,
+    migrationFlags
   } as unknown as HeroState;
+
+  const derived = calculateDerivedStats(
+    normalizedHero.stats,
+    normalizedHero.baseHp,
+    undefined,
+    normalizedHero
+  );
+
+  return {
+    ...normalizedHero,
+    maxHp: derived.maxHp,
+    currentHp: Math.min(
+      Number(normalizedHero.currentHp ?? derived.maxHp),
+      derived.maxHp
+    )
+  };
 }
 
 export function loadGame(): GameSave | null {
   try {
     const raw = window.localStorage.getItem(SAVE_KEY);
+
     if (!raw) {
       return null;
     }
+
     const save = JSON.parse(raw) as GameSave;
+
     if (save && save.hero) {
       save.hero = normalizeHeroState(save.hero);
     }
+
     return applyOfflineHealthRegen(save);
   } catch {
     return null;
@@ -174,6 +288,7 @@ export function scheduleSaveGame(save: GameSave): void {
       saveGame(pendingSaveSnapshot);
       pendingSaveSnapshot = null;
     }
+
     pendingSaveTimeout = null;
   }, SAVE_DEBOUNCE_MS);
 }
@@ -194,16 +309,27 @@ export function clearGameSave(): void {
   window.localStorage.removeItem(SAVE_KEY);
 }
 
-export function applyOfflineHealthRegen(save: GameSave | null, now = Date.now()): GameSave | null {
+export function applyOfflineHealthRegen(
+  save: GameSave | null,
+  now = Date.now()
+): GameSave | null {
   if (!save?.hero) return save;
 
   const savedAt = Date.parse(save.updatedAt);
+
   if (Number.isNaN(savedAt) || now <= savedAt) return save;
 
   const hero = normalizeHeroState(save.hero);
-  if (hero.currentHp <= 0) return { ...save, hero };
+
+  if (hero.currentHp <= 0) {
+    return {
+      ...save,
+      hero
+    };
+  }
 
   const derived = calculateDerivedStats(hero.stats, hero.baseHp, undefined, hero);
+
   if (derived.healthRegen <= 0 || hero.currentHp >= derived.maxHp) {
     return {
       ...save,
@@ -215,7 +341,10 @@ export function applyOfflineHealthRegen(save: GameSave | null, now = Date.now())
     };
   }
 
-  const elapsedTicks = Math.floor((now - savedAt) / HEALTH_REGEN_INTERVAL_MS);
+  const elapsedTicks = Math.floor(
+    (now - savedAt) / HEALTH_REGEN_INTERVAL_MS
+  );
+
   if (elapsedTicks <= 0) {
     return {
       ...save,
@@ -226,7 +355,11 @@ export function applyOfflineHealthRegen(save: GameSave | null, now = Date.now())
     };
   }
 
-  const healedHp = Math.min(derived.maxHp, hero.currentHp + elapsedTicks * derived.healthRegen);
+  const healedHp = Math.min(
+    derived.maxHp,
+    hero.currentHp + elapsedTicks * derived.healthRegen
+  );
+
   return {
     hero: {
       ...hero,
