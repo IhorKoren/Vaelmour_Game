@@ -163,14 +163,19 @@ useEffect(() => {
     void sendFullHealthNotification();
   }, [hero, fullHealthNotificationSent]);
 
-  // Debounced cloud save to Supabase
-  useEffect(() => {
-    scheduleCloudPlayerSave({
-      hero,
-      selectedLocationId,
-      updatedAt: new Date().toISOString(),
-    });
-  }, [hero, selectedLocationId]);
+ // Debounced cloud save to Supabase.
+// Wait until cloud load is checked to avoid overwriting cloud save with old localStorage data.
+useEffect(() => {
+  if (!cloudSaveChecked) {
+    return;
+  }
+
+  scheduleCloudPlayerSave({
+    hero,
+    selectedLocationId,
+    updatedAt: new Date().toISOString(),
+  });
+}, [hero, selectedLocationId, cloudSaveChecked]);
 
   // Flush local save and cloud save when player backgrounds/closes the WebApp
   useEffect(() => {
