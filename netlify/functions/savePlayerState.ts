@@ -300,28 +300,34 @@ const { error: saveError } = await supabase
   }
 
   await supabase.from('player_events').insert({
-    player_id: player.id,
-    event_type: 'player_save',
-    payload: {
-      authMode,
-      level,
-      xp,
-      gold,
-      currentHp,
-      maxHp,
-      selectedLocationId,
-    },
-  });
-
-  return json(200, {
-    success: true,
-    message: 'Player state saved',
+  player_id: player.id,
+  event_type: 'player_save',
+  payload: {
     authMode,
-    playerId: player.id,
-    telegramUserId: player.telegram_user_id,
     level,
+    xp,
     gold,
     currentHp,
     maxHp,
-  });
-}
+    selectedLocationId: finalSelectedLocationId,
+    inventoryCount: incomingInventory.length,
+    hasEquipment: Object.keys(incomingEquipment).length > 0,
+    equipment: incomingEquipment,
+  },
+});
+
+return json(200, {
+  success: true,
+  message: 'Player state saved',
+  authMode,
+  playerId: player.id,
+  telegramUserId: player.telegram_user_id,
+  level,
+  xp,
+  gold,
+  currentHp,
+  maxHp,
+  selectedLocationId: finalSelectedLocationId,
+  inventoryCount: incomingInventory.length,
+  equipment: incomingEquipment,
+});
