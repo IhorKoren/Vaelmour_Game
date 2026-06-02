@@ -2,8 +2,11 @@ import { weapons } from '../../data/weapons';
 import { armors } from '../../data/armors';
 import { items } from '../../data/items';
 import { shields } from '../../data/shields';
-import type { HeroState, EquipmentSlot, Weapon, Armor, Shield } from '../types';
+import type { HeroState, EquipmentSlot, Weapon, Armor, Shield, GeneratedEquipmentItem } from '../types';
 import { calculateDerivedStats } from './stats';
+import { getGeneratedItemFromHero } from '../equipment/generatedEquipment';
+import { calculateItemSellValue } from './sellValue';
+import { calculateSecondaryStats } from './secondaryStats';
 
 const RING_SLOTS: EquipmentSlot[] = ['ring1', 'ring2'];
 
@@ -14,6 +17,69 @@ function isStackableInventoryItem(itemId: string): boolean {
   }
 
   return getEquippableSlot(item) === null;
+}
+
+function generatedToEquippedShape(item: GeneratedEquipmentItem): Weapon | Armor | Shield {
+  if (item.slot === 'weapon') {
+    return {
+      id: item.id,
+      name: item.name,
+      type: 'generated',
+      tier: item.tier,
+      rarity: item.rarity,
+      minDamage: Number(item.stats.minDamage ?? 1),
+      maxDamage: Number(item.stats.maxDamage ?? Math.max(2, Number(item.stats.minDamage ?? 1) + 1)),
+      attackSpeed: Number(item.stats.attackSpeed ?? 1),
+      mainStat: 'strength',
+      effect: '',
+      description: 'Generated equipment item.'
+    };
+  }
+
+  if (item.slot === 'shield') {
+    return {
+      id: item.id,
+      name: item.name,
+      type: 'shield',
+      tier: item.tier,
+      rarity: item.rarity,
+      armor: Number(item.stats.armor ?? item.stats.defense ?? 0),
+      defense: Number(item.stats.defense ?? item.stats.armor ?? 0),
+      blockChance: Number(item.stats.blockChance ?? 0),
+      blockValue: Number(item.stats.blockValue ?? item.stats.blockPower ?? 0),
+      maxHealth: Number(item.stats.maxHealth ?? item.stats.maxHp ?? 0),
+      staggerResist: Number(item.stats.stunResist ?? 0),
+      description: 'Generated equipment item.',
+      damageReduction: Number(item.stats.damageReduction ?? 0)
+    };
+  }
+
+  return {
+    id: item.id,
+    name: item.name,
+    type: item.slot,
+    tier: item.tier,
+    rarity: item.rarity,
+    armor: Number(item.stats.armor ?? item.stats.defense ?? 0),
+    defense: Number(item.stats.defense ?? item.stats.armor ?? 0),
+    damageBonus: Number(item.stats.damageBonus ?? 0),
+    dodgeBonus: Number(item.stats.dodgeBonus ?? item.stats.dodgeChance ?? 0),
+    hpBonus: Number(item.stats.hpBonus ?? 0),
+    description: 'Generated equipment item.',
+    healthRegen: Number(item.stats.healthRegen ?? 0),
+    accuracy: Number(item.stats.accuracy ?? 0),
+    critChance: Number(item.stats.critChance ?? 0),
+    critDamage: Number(item.stats.critDamage ?? 0),
+    attackSpeedBonus: Number(item.stats.attackSpeed ?? 0),
+    armorPenetration: Number(item.stats.armorPenetration ?? 0),
+    dodgeChance: Number(item.stats.dodgeChance ?? 0),
+    maxHp: Number(item.stats.maxHp ?? item.stats.maxHealth ?? 0),
+    maxHealth: Number(item.stats.maxHealth ?? item.stats.maxHp ?? 0),
+    damageReduction: Number(item.stats.damageReduction ?? 0),
+    blockChance: Number(item.stats.blockChance ?? 0),
+    blockPower: Number(item.stats.blockPower ?? item.stats.blockValue ?? 0),
+    lifeSteal: Number(item.stats.lifeSteal ?? 0)
+  } as Armor;
 }
 
 export function getEquippableSlot(item: { id: string; category: string; name?: string }): EquipmentSlot | null {
@@ -71,6 +137,11 @@ export function getEquippedItemStats(hero: HeroState, slot: EquipmentSlot): Weap
   const itemId = hero.equipment?.[slot] ?? null;
   if (!itemId || itemId.startsWith('fallback_') || itemId.startsWith('blank_')) {
     return null;
+  }
+
+  const generated = hero.equippedGeneratedItems?.[slot] ?? getGeneratedItemFromHero(hero, itemId);
+  if (generated) {
+    return generatedToEquippedShape(generated);
   }
 
   // 1. Check weapons database
@@ -303,7 +374,15 @@ export function getEffectiveItemStats(hero: HeroState, slot: EquipmentSlot): Wea
 }
 
 export function equipInventoryItem(hero: HeroState, itemId: string, stackIndexOverride?: number): HeroState {
-  let item: { id: string; category: string; name?: string } | undefined = items.find((i) => i.id.toLowerCase() === itemId.toLowerCase());
+  const locatedStackIndex = stackIndexOverride ?? hero.inventory.findIndex((s) => s.itemId.toLowerCase() === itemId.toLowerCase());
+  const locatedStack = locatedStackIndex >= 0 ? hero.inventory[locatedStackIndex] : undefined;
+  let item: { id: string; category: string; name?: string } | undefined = locatedStack?.generatedItem
+    ? {
+        id: locatedStack.generatedItem.id,
+        category: locatedStack.generatedItem.category,
+        name: locatedStack.generatedItem.name
+      }
+    : items.find((i) => i.id.toLowerCase() === itemId.toLowerCase());
   if (!item) {
     const w = weapons.find((w) => w.id.toLowerCase() === itemId.toLowerCase());
     if (w) {
@@ -328,19 +407,21 @@ export function equipInventoryItem(hero: HeroState, itemId: string, stackIndexOv
         'ring1')
       : baseSlot;
 
-  const stackIndex = stackIndexOverride ?? hero.inventory.findIndex((s) => s.itemId.toLowerCase() === itemId.toLowerCase());
+  const stackIndex = locatedStackIndex;
   if (stackIndex === -1 || hero.inventory[stackIndex].qty <= 0) {
     return hero;
   }
 
   const stack = hero.inventory[stackIndex];
   const itemAffixes = stack.affixes ?? [];
-  const itemDurability = stack.durability ?? 100;
+  const itemDurability = stack.generatedItem?.durability ?? stack.durability ?? 100;
+  const generatedItem = stack.generatedItem;
 
   const updatedInventory = hero.inventory.map((s) => ({ ...s }));
   const updatedEquipment = { ...hero.equipment };
   const updatedEquipmentAffixes = { ...hero.equipmentAffixes };
   const updatedEquipmentDurability = { ...hero.equipmentDurability };
+  const updatedEquippedGeneratedItems = { ...hero.equippedGeneratedItems };
 
   updatedInventory[stackIndex].qty -= 1;
   if (updatedInventory[stackIndex].qty <= 0) {
@@ -352,7 +433,15 @@ export function equipInventoryItem(hero: HeroState, itemId: string, stackIndexOv
 
   if (prevEquippedId && !prevEquippedId.startsWith('fallback_')) {
     const prevAffixes = hero.equipmentAffixes?.[slot] ?? [];
-    const returnedStack = { itemId: prevEquippedId, qty: 1, affixes: prevAffixes, durability: prevDurability };
+    const returnedStack: HeroState['inventory'][number] = { itemId: prevEquippedId, qty: 1, affixes: prevAffixes, durability: prevDurability };
+    const prevGeneratedItem = hero.equippedGeneratedItems?.[slot] ?? null;
+    if (prevGeneratedItem) {
+      returnedStack.generatedItem = {
+        ...prevGeneratedItem,
+        durability: prevDurability,
+        affixes: prevAffixes
+      } as never;
+    }
     if (prevAffixes.length > 0 || !isStackableInventoryItem(prevEquippedId)) {
       updatedInventory.push(returnedStack);
     } else {
@@ -368,6 +457,7 @@ export function equipInventoryItem(hero: HeroState, itemId: string, stackIndexOv
   updatedEquipment[slot] = itemId;
   updatedEquipmentAffixes[slot] = itemAffixes;
   updatedEquipmentDurability[slot] = itemDurability;
+  updatedEquippedGeneratedItems[slot] = generatedItem ? { ...generatedItem, durability: itemDurability, affixes: itemAffixes } : null;
 
   let nextEquippedWeaponId = hero.equippedWeaponId;
   let nextEquippedArmorId = hero.equippedArmorId;
@@ -384,7 +474,8 @@ export function equipInventoryItem(hero: HeroState, itemId: string, stackIndexOv
     equipment: updatedEquipment,
     inventory: updatedInventory,
     equipmentAffixes: updatedEquipmentAffixes,
-    equipmentDurability: updatedEquipmentDurability
+    equipmentDurability: updatedEquipmentDurability,
+    equippedGeneratedItems: updatedEquippedGeneratedItems
   };
 
   const nextDerived = calculateDerivedStats(nextHeroPartial.stats, nextHeroPartial.baseHp, undefined, nextHeroPartial);
@@ -406,14 +497,24 @@ export function unequipInventoryItem(hero: HeroState, slot: EquipmentSlot): Hero
   const updatedInventory = hero.inventory.map((s) => ({ ...s }));
   const updatedEquipmentAffixes = { ...hero.equipmentAffixes };
   const updatedEquipmentDurability = { ...hero.equipmentDurability };
+  const updatedEquippedGeneratedItems = { ...hero.equippedGeneratedItems };
   const equippedDurability = hero.equipmentDurability?.[slot] ?? 100;
 
   updatedEquipment[slot] = null;
   const prevAffixes = hero.equipmentAffixes?.[slot] ?? [];
+  const prevGeneratedItem = hero.equippedGeneratedItems?.[slot] ?? null;
   delete updatedEquipmentAffixes[slot];
   delete updatedEquipmentDurability[slot];
+  delete updatedEquippedGeneratedItems[slot];
 
-  const returnedStack = { itemId, qty: 1, affixes: prevAffixes, durability: equippedDurability };
+  const returnedStack: HeroState['inventory'][number] = { itemId, qty: 1, affixes: prevAffixes, durability: equippedDurability };
+  if (prevGeneratedItem) {
+    returnedStack.generatedItem = {
+      ...prevGeneratedItem,
+      durability: equippedDurability,
+      affixes: prevAffixes
+    } as never;
+  }
   if (prevAffixes.length > 0 || !isStackableInventoryItem(itemId)) {
     updatedInventory.push(returnedStack);
   } else {
@@ -440,7 +541,8 @@ export function unequipInventoryItem(hero: HeroState, slot: EquipmentSlot): Hero
     equipment: updatedEquipment,
     inventory: updatedInventory,
     equipmentAffixes: updatedEquipmentAffixes,
-    equipmentDurability: updatedEquipmentDurability
+    equipmentDurability: updatedEquipmentDurability,
+    equippedGeneratedItems: updatedEquippedGeneratedItems
   };
 
   const nextDerived = calculateDerivedStats(nextHeroPartial.stats, nextHeroPartial.baseHp, undefined, nextHeroPartial);
@@ -461,8 +563,10 @@ export function applyWeaponDurabilityLoss(hero: HeroState, amount: number = 1): 
   if (Math.random() > 0.20) {
     return hero;
   }
+  const reductionMultiplier = 1 - calculateSecondaryStats(hero).durabilityLossReduction;
   const currentDurability = hero.equipmentDurability?.weapon ?? 100;
-  const nextDurability = Math.max(0, currentDurability - amount);
+  const effectiveAmount = Math.max(1, Math.round(amount * Math.max(0.25, reductionMultiplier)));
+  const nextDurability = Math.max(0, currentDurability - effectiveAmount);
   return {
     ...hero,
     equipmentDurability: {
@@ -490,8 +594,10 @@ export function applyArmorDurabilityLoss(hero: HeroState, amount: number = 1): H
   }
 
   const rolledSlot = equippedArmorSlots[Math.floor(Math.random() * equippedArmorSlots.length)];
+  const reductionMultiplier = 1 - calculateSecondaryStats(hero).durabilityLossReduction;
   const currentDurability = hero.equipmentDurability?.[rolledSlot] ?? 100;
-  const nextDurability = Math.max(0, currentDurability - amount);
+  const effectiveAmount = Math.max(1, Math.round(amount * Math.max(0.25, reductionMultiplier)));
+  const nextDurability = Math.max(0, currentDurability - effectiveAmount);
 
   return {
     ...hero,
@@ -503,8 +609,17 @@ export function applyArmorDurabilityLoss(hero: HeroState, amount: number = 1): H
 }
 
 export function getRepairCost(item: Weapon | Armor | Shield, durability: number, maxDurability: number = 100): number {
-  const tier = item.tier ?? 1;
-  return Math.ceil((maxDurability - durability) * tier * 0.5);
+  const missingRatio = Math.max(0, (maxDurability - durability) / Math.max(1, maxDurability));
+  const rarityRepairMultiplier = item.rarity === 'epic' ? 1.25 : item.rarity === 'legendary' ? 1.5 : 1;
+  const itemGoldValue = calculateItemSellValue({
+    itemId: item.id,
+    category: item.type ?? 'armor',
+    rarity: item.rarity,
+    level: ('level' in item ? item.level : undefined) ?? item.tier ?? 1,
+    tier: item.tier ?? 1,
+    stats: item as unknown as Record<string, number | undefined>
+  }) * 4;
+  return Math.max(1, Math.ceil(itemGoldValue * missingRatio * 0.35 * rarityRepairMultiplier));
 }
 
 export function repairEquippedItem(hero: HeroState, slot: EquipmentSlot): HeroState {

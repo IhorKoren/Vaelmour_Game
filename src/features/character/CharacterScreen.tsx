@@ -155,6 +155,18 @@ export function CharacterScreen({ hero, onHeroChange }: Props) {
     return hero.inventory
       .map((stack) => {
         let item = items.find((entry) => entry.id.toLowerCase() === stack.itemId.toLowerCase());
+        if (!item && stack.generatedItem) {
+          item = {
+            id: stack.generatedItem.id,
+            name: stack.generatedItem.name,
+            category: stack.generatedItem.category,
+            rarity: stack.generatedItem.rarity,
+            tier: stack.generatedItem.tier,
+            level: stack.generatedItem.level,
+            description: 'Generated equipment drop.',
+            ...stack.generatedItem.stats
+          };
+        }
         if (!item) {
           const weapon = weapons.find((entry) => entry.id.toLowerCase() === stack.itemId.toLowerCase());
           if (weapon) {
@@ -602,10 +614,10 @@ export function CharacterScreen({ hero, onHeroChange }: Props) {
                     >
                       <div style={{ minWidth: 0 }}>
                         <strong style={{ display: 'block', fontSize: '12px', color: 'var(--color-text-dark)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {getDisplayItemName(entry.stack.itemId)}
+                          {entry.stack.generatedItem?.name ?? getDisplayItemName(entry.stack.itemId)}
                         </strong>
                         <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>
-                          Ранг {entry.item.tier ?? 1} · {entry.stack.qty} шт.
+                          Ранг {entry.stack.generatedItem?.level ?? entry.item.level ?? entry.item.tier ?? 1} · {entry.stack.qty} шт.
                         </span>
                       </div>
                       <button

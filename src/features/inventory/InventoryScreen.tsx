@@ -64,7 +64,7 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
   const [sellMessage, setSellMessage] = useState<{ success: boolean; text: string } | null>(null);
 
   function getInventoryStackKey(stack: HeroState['inventory'][number], index: number): string {
-    return `${stack.itemId}::${stack.durability ?? 'na'}::${stack.affixes?.map((affix) => affix.id).join('|') ?? 'noaffix'}::${index}`;
+    return `${stack.itemId}::${stack.durability ?? 'na'}::${stack.affixes?.map((affix) => affix.id).join('|') ?? 'noaffix'}::${stack.rerollCount ?? 0}::${index}`;
   }
 
   function handleSelectItemChange(itemKey: string | null) {
@@ -86,6 +86,18 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
     }
 
     let item = items.find((entry) => entry.id.toLowerCase() === itemId.toLowerCase());
+    if (!item && stack.generatedItem) {
+      item = {
+        id: stack.generatedItem.id,
+        name: stack.generatedItem.name,
+        category: stack.generatedItem.category,
+        rarity: stack.generatedItem.rarity,
+        tier: stack.generatedItem.tier,
+        level: stack.generatedItem.level,
+        description: 'Generated equipment drop.',
+        ...stack.generatedItem.stats
+      };
+    }
     if (!item) {
       const w = weapons.find((entry) => entry.id.toLowerCase() === itemId.toLowerCase());
       if (w) {
@@ -107,9 +119,11 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
       itemId: item.id,
       category: item.category,
       rarity: item.rarity,
+      level: stack.generatedItem?.level ?? item.level ?? item.tier,
       tier: item.tier,
       affixesCount: stack.affixes?.length || 0,
-      baseValueGold: item.sellValueGold
+      baseValueGold: item.sellValueGold,
+      stats: stack.generatedItem?.stats
     });
 
     const nextInventory = [...hero.inventory];
@@ -139,6 +153,18 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
 
     let item = items.find((entry) => entry.id.toLowerCase() === itemId.toLowerCase());
     let category = 'material';
+    if (!item && stack.generatedItem) {
+      item = {
+        id: stack.generatedItem.id,
+        name: stack.generatedItem.name,
+        category: stack.generatedItem.category,
+        rarity: stack.generatedItem.rarity,
+        tier: stack.generatedItem.tier,
+        level: stack.generatedItem.level,
+        description: 'Generated equipment drop.'
+      };
+      category = stack.generatedItem.slot === 'ring1' || stack.generatedItem.slot === 'ring2' ? 'ring' : stack.generatedItem.slot;
+    }
     if (!item) {
       const w = weapons.find((entry) => entry.id.toLowerCase() === itemId.toLowerCase());
       if (w) {
@@ -155,7 +181,11 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
     }
     if (!item) return;
 
-    const cost = calculateRerollCost(item.rarity || 'common');
+    const cost = calculateRerollCost({
+      rarity: item.rarity || 'common',
+      itemLevel: stack.generatedItem?.level ?? item.level ?? item.tier,
+      rerollCount: stack.rerollCount ?? 0
+    });
     if (hero.gold < cost) {
       setRerollMessage({ success: false, text: 'Недостатньо золота!' });
       return;
@@ -171,7 +201,12 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
         affixIndex: index
       });
 
-      const nextInventory = hero.inventory.map((s, currentIndex) => currentIndex === stackIdx ? { ...s, affixes: newAffixes } : s);
+      const nextInventory = hero.inventory.map((s, currentIndex) => currentIndex === stackIdx ? {
+        ...s,
+        affixes: newAffixes,
+        rerollCount: (s.rerollCount ?? 0) + 1,
+        generatedItem: s.generatedItem ? { ...s.generatedItem, affixes: newAffixes } : s.generatedItem
+      } : s);
 
       onHeroChange({
         ...hero,
@@ -193,6 +228,18 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
   const resolvedStacks = useMemo(() => {
     return hero.inventory.map((stack, index) => {
       let item = items.find((entry) => entry.id.toLowerCase() === stack.itemId.toLowerCase());
+      if (!item && stack.generatedItem) {
+        item = {
+          id: stack.generatedItem.id,
+          name: stack.generatedItem.name,
+          category: stack.generatedItem.category,
+          rarity: stack.generatedItem.rarity,
+          tier: stack.generatedItem.tier,
+          level: stack.generatedItem.level,
+          description: 'Generated equipment drop.',
+          ...stack.generatedItem.stats
+        };
+      }
       if (!item) {
         const w = weapons.find((entry) => entry.id.toLowerCase() === stack.itemId.toLowerCase());
         if (w) {
@@ -258,7 +305,10 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
 
     const mockHero = {
       ...hero,
-      equipment: { ...hero.equipment, [slot]: stack.itemId }
+      equipment: { ...hero.equipment, [slot]: stack.itemId },
+      equippedGeneratedItems: stack.generatedItem
+        ? { ...hero.equippedGeneratedItems, [slot]: stack.generatedItem }
+        : hero.equippedGeneratedItems
     } as HeroState;
     const itemStats = getEquippedItemStats(mockHero, slot);
     if (!itemStats) return null;
@@ -489,7 +539,7 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
                     {typeIcon}
                   </span>
                   <span className="inventory-slot__name">
-                    {getDisplayItemName(stack.itemId)}
+                    {stack.generatedItem?.name ?? getDisplayItemName(stack.itemId)}
                   </span>
                   {stack.qty > 1 && (
                     <span className="inventory-slot__qty">
@@ -523,7 +573,7 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px', justifyContent: 'space-between' }}>
                 <div>
                   <h3 style={{ margin: 0, fontSize: '15px', color: 'var(--color-text-dark)', display: 'inline-block', fontFamily: 'var(--font-display)', fontWeight: 'bold' }}>
-                    {getDisplayItemName(item.id)}
+                    {selectedStack.stack.generatedItem?.name ?? getDisplayItemName(item.id)}
                   </h3>
                   <span style={{
                     fontSize: '8px',
@@ -541,7 +591,7 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
                   </span>
                 </div>
                 <span style={{ fontSize: '10px', color: 'var(--color-gold-gilded)', fontWeight: 'bold' }}>
-                  Ранг {item.tier} · {formatItemType(item.category)}
+                  Ранг {selectedStack.stack.generatedItem?.level ?? item.level ?? item.tier} · {formatItemType(item.category)}
                 </span>
               </div>
 
@@ -549,7 +599,11 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
               {compareDetails && compareDetails.compare}
 
               {selectedStack.stack.affixes && selectedStack.stack.affixes.length > 0 && (() => {
-                const cost = calculateRerollCost(item.rarity || 'common');
+                const cost = calculateRerollCost({
+                  rarity: item.rarity || 'common',
+                  itemLevel: selectedStack.stack.generatedItem?.level ?? item.level ?? item.tier,
+                  rerollCount: selectedStack.stack.rerollCount ?? 0
+                });
                 const hasGold = hero.gold >= cost;
 
                 return (
@@ -677,9 +731,11 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
                       itemId: item.id,
                       category: item.category,
                       rarity: item.rarity,
+                      level: selectedStack.stack.generatedItem?.level ?? item.level ?? item.tier,
                       tier: item.tier,
                       affixesCount: selectedStack.stack.affixes?.length || 0,
-                      baseValueGold: item.sellValueGold
+                      baseValueGold: item.sellValueGold,
+                      stats: selectedStack.stack.generatedItem?.stats
                     })} зол.
                   </button>
                 )}

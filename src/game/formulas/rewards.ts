@@ -1,5 +1,6 @@
-import type { Enemy } from '../types';
+import type { Enemy, HeroState } from '../types';
 import { lootTables } from '../../data/lootTables';
+import { calculateSecondaryStats } from './secondaryStats';
 
 type LootTablesData = {
   enemyLoot?: Array<{
@@ -31,7 +32,7 @@ export function getEnemyXpReward(enemy: Enemy): number {
  * First checks for a matching gold range in the enemy loot tables,
  * then checks the enemy's direct gold value, and falls back to a level-based formula.
  */
-export function getEnemyGoldReward(enemy: Enemy, random: () => number = Math.random): number {
+export function getEnemyGoldReward(enemy: Enemy, random: () => number = Math.random, hero?: HeroState): number {
   let gold = 0;
 
   const typedLootTables = lootTables as unknown as LootTablesData;
@@ -69,5 +70,6 @@ export function getEnemyGoldReward(enemy: Enemy, random: () => number = Math.ran
     gold = Math.round(gold * Math.pow(1.10, enemy.levelDiff));
   }
 
-  return gold;
+  const bonusMultiplier = hero ? 1 + Math.max(0, Number((calculateSecondaryStats(hero) as unknown as Record<string, number>).goldFindBonus ?? 0)) : 1;
+  return Math.max(0, Math.round(gold * bonusMultiplier));
 }

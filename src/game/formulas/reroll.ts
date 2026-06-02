@@ -1,32 +1,36 @@
 import type { ItemAffix } from '../types';
-import {
-  WEAPON_AFFIX_POOL,
-  ARMOR_AFFIX_POOL,
-  ACCESSORY_AFFIX_POOL
-} from './affixes';
+import { getAffixPool } from './affixes';
 
-/**
- * Calculates gold cost to reroll an affix based on item rarity.
- * Uncommon: 100 gold
- * Rare: 250 gold
- * Epic: 600 gold
- * Legendary: 1500 gold
- * Default: 50 gold
- */
-export function calculateRerollCost(rarity: string): number {
-  const norm = rarity.toLowerCase().trim();
-  if (norm === 'uncommon') return 100;
-  if (norm === 'rare') return 250;
-  if (norm === 'epic') return 600;
-  if (norm === 'legendary') return 1500;
-  return 50;
+export function calculateRerollCost(input: string | { rarity: string; itemLevel?: number; rerollCount?: number }): number {
+  if (typeof input === 'string') {
+    switch (input.toLowerCase().trim()) {
+      case 'uncommon':
+        return 100;
+      case 'rare':
+        return 250;
+      case 'epic':
+        return 600;
+      case 'legendary':
+        return 1500;
+      default:
+        return 50;
+    }
+  }
+  const rarity = input.rarity;
+  const itemLevel = input.itemLevel ?? 1;
+  const rerollCount = input.rerollCount ?? 0;
+  const rarityMultiplier =
+    rarity.toLowerCase().trim() === 'legendary' ? 5 :
+    rarity.toLowerCase().trim() === 'epic' ? 3 :
+    rarity.toLowerCase().trim() === 'rare' ? 1.8 :
+    rarity.toLowerCase().trim() === 'uncommon' ? 1 : 0.75;
+
+  const baseCost = 100;
+  const itemLevelMultiplier = 1 + itemLevel * 0.12;
+  const rerollAttemptMultiplier = 1 + rerollCount * 0.35;
+  return Math.max(25, Math.round(baseCost * itemLevelMultiplier * rarityMultiplier * rerollAttemptMultiplier));
 }
 
-/**
- * Rerolls a single affix of an item instance.
- * Replaces the affix at affixIndex with a new one rolled from the correct pool,
- * ensuring no duplicate affixes of the same type are added.
- */
 export function rerollItemAffix(params: {
   itemId: string;
   category: string;
@@ -47,47 +51,26 @@ export function rerollItemAffix(params: {
     throw new Error('Invalid affix index.');
   }
 
-  const normCat = category.toLowerCase().trim();
-  let pool = ARMOR_AFFIX_POOL;
-  if (normCat === 'weapon') {
-    pool = WEAPON_AFFIX_POOL;
-  } else if (
-    normCat === 'ring' ||
-    normCat === 'amulet' ||
-    normCat === 'talisman' ||
-    normCat === 'charm' ||
-    normCat === 'sigil' ||
-    normCat === 'accessory'
-  ) {
-    pool = ACCESSORY_AFFIX_POOL;
-  }
+  const pool = getAffixPool(category);
+  const current = [...affixes];
+  const existingTypes = new Set(current.filter((_, index) => index !== affixIndex).map((affix) => affix.type));
+  const available = pool.filter((affix) => !existingTypes.has(affix.type));
+  const source = available.length > 0 ? available : pool;
+  const picked = source[Math.floor(random() * source.length)];
+  const jitter = 0.85 + random() * 0.3;
+  const baseValue = picked.baseValue + Math.max(0, tier - 1) * picked.scalePerTier;
+  const rawValue = baseValue * jitter;
+  const value = picked.valueType === 'percent'
+    ? Math.min(picked.cap ?? Number.POSITIVE_INFINITY, Math.round(rawValue * 200) / 200)
+    : Math.min(picked.cap ?? Number.POSITIVE_INFINITY, Math.max(1, Math.round(rawValue)));
 
-  // Filter out any affix types that already exist on the item
-  // EXCEPT the one we are currently replacing!
-  const currentAffixes = [...affixes];
-  const existingTypes = currentAffixes
-    .filter((_, idx) => idx !== affixIndex)
-    .map((aff) => aff.type);
-
-  const availableDefs = pool.filter((def) => !existingTypes.includes(def.type));
-
-  // Fallback if the pool is somehow fully exhausted
-  const finalPool = availableDefs.length > 0 ? availableDefs : pool;
-
-  // Roll a new affix from the final pool
-  const rolledDef = finalPool[Math.floor(random() * finalPool.length)];
-
-  const value = rolledDef.baseValue + (tier - 1) * rolledDef.scalePerTier;
-  const finalVal = rolledDef.valueType === 'percent' ? Number(value.toFixed(4)) : Math.round(value);
-
-  // Replace only the target affix at the index
-  currentAffixes[affixIndex] = {
-    id: `${rolledDef.type}_affix_${affixIndex + 1}`,
-    type: rolledDef.type,
-    label: rolledDef.label,
-    value: finalVal,
-    valueType: rolledDef.valueType
+  current[affixIndex] = {
+    id: `${picked.type}_affix_${affixIndex + 1}`,
+    type: picked.type,
+    label: picked.label,
+    value,
+    valueType: picked.valueType
   };
 
-  return currentAffixes;
+  return current;
 }

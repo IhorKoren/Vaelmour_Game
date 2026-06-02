@@ -5,14 +5,12 @@ import { locations } from '../../data/locations';
 import { items } from '../../data/items';
 import { recipes } from '../../data/recipes';
 import { recipeDrops } from '../../data/recipeDrops';
-import { weapons } from '../../data/weapons';
-import { armors } from '../../data/armors';
 import { Panel } from '../../components/ui/Panel';
 import { calculateEnemyDamage, calculateHeroDamage } from '../../game/formulas/combat';
 import { calculateDerivedStats } from '../../game/formulas/stats';
 import { selectWeightedEnemy } from '../../game/formulas/spawn';
 import { getEnemyXpReward, getEnemyGoldReward } from '../../game/formulas/rewards';
-import { rollLootDrop } from '../../game/formulas/loot';
+import { rollLootDrop, rollGeneratedEquipmentDrop } from '../../game/formulas/loot';
 import {
   clampRage,
   getRageFromDamageDealt,
@@ -47,7 +45,6 @@ import {
   isSkillUnlocked,
   getNewlyUnlockedSkills
 } from '../../game/formulas/skills';
-import { generateItemAffixes } from '../../game/formulas/affixes';
 import { COMBAT_ATTACK_INTERVAL_MULTIPLIER } from '../../game/constants';
 import {
   getDisplayEnemyName,
@@ -197,16 +194,11 @@ export function CombatScreen({ hero, onHeroChange, selectedLocationId, onCombatS
   const [heroRage, setHeroRage] = useState(0);
 
   const [heroAttacking, setHeroAttacking] = useState(false);
-  const [heroHitFlash, setHeroHitFlash] = useState(false);
   const [enemyAttacking, setEnemyAttacking] = useState(false);
-  const [enemyHitFlash, setEnemyHitFlash] = useState(false);
   
   const [heroFlash, setHeroFlash] = useState<{ damage: number; isCrit: boolean; id: number } | null>(null);
   const [enemyFlash, setEnemyFlash] = useState<{ damage: number; isCrit: boolean; id: number } | null>(null);
   const [rageFlash, setRageFlash] = useState<{ amount: number; id: number } | null>(null);
-
-  const [heroVfx, setHeroVfx] = useState<'slash' | 'impact' | null>(null);
-  const [enemyVfx, setEnemyVfx] = useState<'slash' | 'impact' | null>(null);
 
   const [encounterId, setEncounterId] = useState(0);
   const [enemyBleed, setEnemyBleed] = useState<BleedState | null>(null);
@@ -236,13 +228,9 @@ export function CombatScreen({ hero, onHeroChange, selectedLocationId, onCombatS
       setEncounterId((id) => id + 1);
       
       setHeroAttacking(false);
-      setHeroHitFlash(false);
       setEnemyAttacking(false);
-      setEnemyHitFlash(false);
       setHeroFlash(null);
       setEnemyFlash(null);
-      setHeroVfx(null);
-      setEnemyVfx(null);
       setEnemyBleed(null);
       setHeroBleed(null);
       setEnemyStagger(null);
@@ -396,8 +384,9 @@ export function CombatScreen({ hero, onHeroChange, selectedLocationId, onCombatS
     setHuntState('victory');
 
     const xpReward = getEnemyXpReward(latestEnemy.current);
-    const goldReward = getEnemyGoldReward(latestEnemy.current);
+    const goldReward = getEnemyGoldReward(latestEnemy.current, Math.random, latestHero.current);
     const lootResult = rollLootDrop(latestEnemy.current, items, riskRaw);
+    const generatedEquipmentDrop = rollGeneratedEquipmentDrop(latestEnemy.current, latestHero.current, currentLocation.id);
     const knownRecipeIds = getKnownRecipeIds(latestHero.current);
     const learnedRecipe = rollLearnedRecipe(latestEnemy.current, currentLocation.name, knownRecipeIds);
     const nextKnownRecipeIds = learnedRecipe
@@ -406,37 +395,28 @@ export function CombatScreen({ hero, onHeroChange, selectedLocationId, onCombatS
 
     const updatedInventory = [...latestHero.current.inventory];
     if (lootResult.dropped && lootResult.itemId) {
-      const isW = lootResult.itemId && enemies.some(() => weapons.some(w => w.id.toLowerCase() === lootResult.itemId!.toLowerCase()));
-      const isA = lootResult.itemId && enemies.some(() => armors.some(a => a.id.toLowerCase() === lootResult.itemId!.toLowerCase()));
-      let category = 'material';
-      if (isW) category = 'weapon';
-      else if (isA) category = 'armor';
-
-      const isEquip = isW || isA;
-      const affixes = isEquip ? generateItemAffixes(lootResult.itemRarity || 'common', category, latestEnemy.current.level ?? 1) : [];
-
-      if (affixes.length > 0) {
+      const existingStackIndex = updatedInventory.findIndex((stack) => stack.itemId.toLowerCase() === lootResult.itemId!.toLowerCase() && !stack.generatedItem && (!stack.affixes || stack.affixes.length === 0));
+      if (existingStackIndex >= 0) {
+        updatedInventory[existingStackIndex] = {
+          ...updatedInventory[existingStackIndex],
+          qty: updatedInventory[existingStackIndex].qty + 1
+        };
+      } else {
         updatedInventory.push({
           itemId: lootResult.itemId,
-          qty: 1,
-          affixes
+          qty: 1
         });
-      } else {
-        const existingStackIndex = lootResult.itemId
-          ? updatedInventory.findIndex((stack) => stack.itemId.toLowerCase() === lootResult.itemId!.toLowerCase() && (!stack.affixes || stack.affixes.length === 0))
-          : -1;
-        if (existingStackIndex >= 0) {
-          updatedInventory[existingStackIndex] = {
-            ...updatedInventory[existingStackIndex],
-            qty: updatedInventory[existingStackIndex].qty + 1
-          };
-        } else {
-          updatedInventory.push({
-            itemId: lootResult.itemId,
-            qty: 1
-          });
-        }
       }
+    }
+    if (generatedEquipmentDrop.dropped && generatedEquipmentDrop.item) {
+      updatedInventory.push({
+        itemId: generatedEquipmentDrop.item.id,
+        qty: 1,
+        affixes: generatedEquipmentDrop.item.affixes,
+        durability: generatedEquipmentDrop.item.durability,
+        rerollCount: 0,
+        generatedItem: generatedEquipmentDrop.item
+      });
     }
 
     const totalXp = latestHero.current.xp + xpReward;
@@ -692,17 +672,12 @@ export function CombatScreen({ hero, onHeroChange, selectedLocationId, onCombatS
       });
 
       if (heroDamage.damage > 0) {
-        setEnemyHitFlash(true);
-        setTimeout(() => setEnemyHitFlash(false), 300);
-        
         flashIdCounter.current += 1;
         setEnemyFlash({
           damage: heroDamage.damage,
           isCrit: heroDamage.crit,
           id: flashIdCounter.current
         });
-        setEnemyVfx(heroDamage.crit ? 'impact' : 'slash');
-        setTimeout(() => setEnemyVfx(null), 300);
       }
 
       setEnemyHp(nextEnemyHp);
@@ -799,17 +774,12 @@ export function CombatScreen({ hero, onHeroChange, selectedLocationId, onCombatS
       setTimeout(() => setEnemyAttacking(false), 200);
 
       if (enemyDamage.damage > 0) {
-        setHeroHitFlash(true);
-        setTimeout(() => setHeroHitFlash(false), 300);
-
         flashIdCounter.current += 1;
         setHeroFlash({
           damage: incomingDamage,
           isCrit: enemyDamage.crit,
           id: flashIdCounter.current
         });
-        setHeroVfx(enemyDamage.crit ? 'impact' : 'slash');
-        setTimeout(() => setHeroVfx(null), 300);
       }
 
       latestOnHeroChange.current(nextHero);
@@ -826,14 +796,10 @@ export function CombatScreen({ hero, onHeroChange, selectedLocationId, onCombatS
         setHeroRage(0);
         setHuntState('idle');
         setHeroAttacking(false);
-        setHeroHitFlash(false);
         setEnemyAttacking(false);
-        setEnemyHitFlash(false);
         setHeroFlash(null);
         setEnemyFlash(null);
         setRageFlash(null);
-        setHeroVfx(null);
-        setEnemyVfx(null);
         appendCombatLog('Герой зазнав поразки, отримав 1 HP і автоматично відступив до табору.');
         return;
       }
@@ -981,17 +947,12 @@ export function CombatScreen({ hero, onHeroChange, selectedLocationId, onCombatS
     setTimeout(() => setHeroAttacking(false), 200);
 
     if (heroDamage.damage > 0) {
-      setEnemyHitFlash(true);
-      setTimeout(() => setEnemyHitFlash(false), 300);
-
       flashIdCounter.current += 1;
       setEnemyFlash({
         damage: heroDamage.damage,
         isCrit: heroDamage.crit,
         id: flashIdCounter.current
       });
-      setEnemyVfx(heroDamage.crit ? 'impact' : 'slash');
-      setTimeout(() => setEnemyVfx(null), 300);
     }
 
     setEnemyHp(nextEnemyHp);
@@ -1200,7 +1161,7 @@ export function CombatScreen({ hero, onHeroChange, selectedLocationId, onCombatS
 
             {/* Enemy Actor Visual */}
             {huntState !== 'victory' && (
-              <div className={`combat-actor enemy-actor ${enemyAttacking ? 'unit-attacking' : ''} ${enemyHitFlash ? 'unit-hit' : ''}`}>
+              <div className={`combat-actor enemy-actor ${enemyAttacking ? 'unit-attacking' : ''}`}>
                 <div className="combat-actor__sprite-container enemy-portrait-idle">
                   <div className="combat-actor__rune-bg" />
                   {enemyArt ? (
@@ -1216,13 +1177,11 @@ export function CombatScreen({ hero, onHeroChange, selectedLocationId, onCombatS
                     -{enemyFlash.damage}
                   </div>
                 )}
-                {enemyVfx === 'slash' && <div className="slash-vfx" />}
-                {enemyVfx === 'impact' && <div className="impact-vfx" />}
               </div>
             )}
 
             {/* Hero Actor Visual */}
-            <div className={`combat-actor hero-actor ${heroAttacking ? 'unit-attacking' : ''} ${heroHitFlash ? 'unit-hit' : ''}`}>
+            <div className={`combat-actor hero-actor ${heroAttacking ? 'unit-attacking' : ''}`}>
               <div className="combat-actor__sprite-container">
                 <div className="combat-actor__rune-bg" />
                 <img src={heroWanderer} className="hero-sprite-back idle-bob" alt={hero.name} decoding="async" style={{ objectFit: 'contain' }} />
@@ -1239,8 +1198,6 @@ export function CombatScreen({ hero, onHeroChange, selectedLocationId, onCombatS
                   +{rageFlash.amount} Лють
                 </div>
               )}
-              {heroVfx === 'slash' && <div className="slash-vfx" />}
-              {heroVfx === 'impact' && <div className="impact-vfx" />}
             </div>
           </div>
 

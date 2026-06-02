@@ -1,12 +1,15 @@
 import type { Rarity } from '../types';
+import { calculateItemPower } from './power';
 
 export type SellValueOptions = {
   itemId: string;
   category: string;
   rarity?: Rarity;
   tier?: number;
+  level?: number;
   affixesCount?: number;
   baseValueGold?: number;
+  stats?: Record<string, number | undefined>;
 };
 
 /**
@@ -14,13 +17,13 @@ export type SellValueOptions = {
  * Uses a safe, conservative scaling formula based on rarity, tier, and affixes.
  */
 export function calculateItemSellValue(options: SellValueOptions): number {
-  // 1. Determine base value from explicit baseValueGold or fallback rarity
-  let base: number;
   const rarity = options.rarity || 'common';
-
   if (options.baseValueGold !== undefined && options.baseValueGold > 0) {
-    base = options.baseValueGold;
-  } else {
+    return Math.round(options.baseValueGold);
+  }
+
+  if (options.level === undefined && options.stats === undefined) {
+    let base: number;
     switch (rarity) {
       case 'uncommon':
         base = 25;
@@ -39,16 +42,31 @@ export function calculateItemSellValue(options: SellValueOptions): number {
         base = 10;
         break;
     }
+    const tier = options.tier || 1;
+    const tierMultiplier = 1 + (tier - 1) * 0.15;
+    const affixMultiplier = 1 + (options.affixesCount || 0) * 0.1;
+    return Math.round(base * tierMultiplier * affixMultiplier);
   }
 
-  // 2. Adjust by tier (e.g. +15% per tier above tier 1)
-  const tier = options.tier || 1;
-  const tierMultiplier = 1 + (tier - 1) * 0.15;
-
-  // 3. Adjust by affixes (+10% per affix)
-  const affixesCount = options.affixesCount || 0;
-  const affixMultiplier = 1 + affixesCount * 0.10;
-
-  // 4. Return rounded conservative final cost
-  return Math.round(base * tierMultiplier * affixMultiplier);
+  const level = options.level ?? options.tier ?? 1;
+  const raritySellMultiplier =
+    rarity === 'legendary' ? 7 :
+    rarity === 'epic' ? 4 :
+    rarity === 'rare' ? 2.4 :
+    rarity === 'uncommon' ? 1.5 : 1;
+  const levelMultiplier = 1 + level * 0.05;
+  const itemPower = calculateItemPower({
+    level,
+    rarity,
+    stats: options.stats,
+    affixes: Array.from({ length: options.affixesCount ?? 0 }).map((_, index) => ({
+      id: `virtual_${index}`,
+      type: 'damageBonus',
+      label: 'Virtual',
+      value: 1,
+      valueType: 'flat'
+    }))
+  });
+  const itemGoldValue = itemPower * levelMultiplier * raritySellMultiplier;
+  return Math.max(1, Math.round(itemGoldValue * 0.25));
 }

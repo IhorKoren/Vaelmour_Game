@@ -4,31 +4,36 @@ import { items } from '../../data/items';
 import { weapons } from '../../data/weapons';
 import { shields } from '../../data/shields';
 import { clamp } from './stats';
+import { getGeneratedItemFromHero } from '../equipment/generatedEquipment';
 
-type ItemLike = {
-  id?: string;
-  name?: string;
+type NumericItemStats = {
   defense?: number;
   armor?: number;
   damageBonus?: number;
   dodgeBonus?: number;
+  dodgeChance?: number;
   hpBonus?: number;
   maxHealth?: number;
+  maxHp?: number;
   healthRegen?: number;
-  hpRegen?: number;
-  regeneration?: number;
-  recovery?: number;
-  healthRecovery?: number;
-  hpRecovery?: number;
-  lifeRegen?: number;
+  accuracy?: number;
+  critChance?: number;
+  critDamage?: number;
+  attackSpeedBonus?: number;
+  armorPenetration?: number;
+  bleedChance?: number;
+  bleedResist?: number;
+  stunChance?: number;
+  stunResist?: number;
   blockChance?: number;
   blockValue?: number;
-  staggerResist?: number;
-  description?: string;
-  effect?: string;
-  primaryBonus?: string;
-  tier?: number;
-  rarity?: string;
+  blockPower?: number;
+  damageReduction?: number;
+  lifeSteal?: number;
+  goldFindBonus?: number;
+  lootChanceBonus?: number;
+  rarityFindBonus?: number;
+  durabilityLossReduction?: number;
 };
 
 const EMPTY_SECONDARY_STATS: SecondaryStats = {
@@ -51,6 +56,10 @@ const EMPTY_SECONDARY_STATS: SecondaryStats = {
   rageFromAttacks: 0,
   blockChance: 0,
   blockValue: 0,
+  goldFindBonus: 0,
+  lootChanceBonus: 0,
+  rarityFindBonus: 0,
+  durabilityLossReduction: 0,
   counterChance: 0,
   counterDamage: 0,
   executeDamage: 0,
@@ -60,166 +69,50 @@ const EMPTY_SECONDARY_STATS: SecondaryStats = {
   bleedRageBonus: 0
 };
 
-function getSlotMultiplier(slot: EquipmentSlot): number {
-  if (slot === 'head' || slot === 'legs') return 0.7;
-  if (slot === 'hands' || slot === 'feet') return 0.5;
-  if (slot === 'ring1' || slot === 'ring2' || slot === 'amulet') return 0.2;
-  return 1;
-}
-
-function scaledValue(tier: number, base: number, perTier = base * 0.5): number {
-  return base + Math.max(0, tier - 1) * perTier;
-}
-
-function parsePercentValue(text: string): number {
-  const match = text.match(/([+-]?\d+(?:\.\d+)?)%/);
-  if (!match) return 0;
-  return Number(match[1]) / 100;
-}
-
-function extractItemRegen(item: ItemLike): number {
-  const rawItem = item as Record<string, unknown>;
-  return Number(
-    rawItem.healthRegen ??
-    rawItem.hpRegen ??
-    rawItem.regeneration ??
-    rawItem.recovery ??
-    rawItem.healthRecovery ??
-    rawItem.hpRecovery ??
-    rawItem.lifeRegen ??
-    0
+function resolveItem(itemId: string): NumericItemStats | null {
+  return (
+    (armors.find((entry) => entry.id.toLowerCase() === itemId.toLowerCase()) as NumericItemStats | undefined) ??
+    (shields.find((entry) => entry.id.toLowerCase() === itemId.toLowerCase()) as NumericItemStats | undefined) ??
+    (weapons.find((entry) => entry.id.toLowerCase() === itemId.toLowerCase()) as NumericItemStats | undefined) ??
+    (items.find((entry) => entry.id.toLowerCase() === itemId.toLowerCase()) as NumericItemStats | undefined) ??
+    null
   );
 }
 
-function getFallbackItemStats(item: { id: string; name: string; description: string; tier: number; rarity: string }, slot: EquipmentSlot): ItemLike {
-  const multiplier = getSlotMultiplier(slot);
-  return {
-    id: item.id,
-    name: item.name,
-    tier: item.tier,
-    rarity: item.rarity,
-    description: item.description,
-    defense: Math.round(item.tier * 5 * multiplier),
-    armor: Math.round(item.tier * 5 * multiplier),
-    damageBonus: Number((item.tier * 0.01 * multiplier).toFixed(3)),
-    dodgeBonus: Number((item.tier * 0.008 * multiplier).toFixed(3)),
-    hpBonus: Number((item.tier * 0.02 * multiplier).toFixed(3)),
-    healthRegen: slot === 'ring1' || slot === 'ring2' || slot === 'amulet' ? Math.round(item.tier * 1.5 * multiplier) : 0,
-    blockChance: slot === 'shield' ? Number((0.12 + Math.max(0, item.tier - 1) * 0.015).toFixed(3)) : 0,
-    blockValue: slot === 'shield' ? Math.round(4 + item.tier * 3) : 0,
-    maxHealth: slot === 'shield' ? Math.round(10 + item.tier * 8) : 0,
-    staggerResist: slot === 'shield' ? Number((0.08 + Math.max(0, item.tier - 1) * 0.02).toFixed(3)) : 0
-  };
-}
-
-function resolveEquippedItem(hero: HeroState, slot: EquipmentSlot): ItemLike | null {
-  const itemId = hero.equipment?.[slot];
-  if (!itemId || itemId.startsWith('fallback_') || itemId.startsWith('blank_')) {
-    return null;
+function resolveItemForHero(hero: HeroState, slot: EquipmentSlot, itemId: string): NumericItemStats | null {
+  const generated = hero.equippedGeneratedItems?.[slot] ?? getGeneratedItemFromHero(hero, itemId);
+  if (generated) {
+    return {
+      defense: Number(generated.stats.defense ?? generated.stats.armor ?? 0),
+      armor: Number(generated.stats.armor ?? generated.stats.defense ?? 0),
+      damageBonus: Number(generated.stats.damageBonus ?? 0),
+      dodgeBonus: Number(generated.stats.dodgeBonus ?? generated.stats.dodgeChance ?? 0),
+      dodgeChance: Number(generated.stats.dodgeChance ?? 0),
+      hpBonus: Number(generated.stats.hpBonus ?? 0),
+      maxHealth: Number(generated.stats.maxHealth ?? generated.stats.maxHp ?? 0),
+      maxHp: Number(generated.stats.maxHp ?? generated.stats.maxHealth ?? 0),
+      healthRegen: Number(generated.stats.healthRegen ?? 0),
+      accuracy: Number(generated.stats.accuracy ?? 0),
+      critChance: Number(generated.stats.critChance ?? 0),
+      critDamage: Number(generated.stats.critDamage ?? 0),
+      attackSpeedBonus: Number(generated.stats.attackSpeedBonus ?? 0),
+      armorPenetration: Number(generated.stats.armorPenetration ?? 0),
+      bleedChance: Number(generated.stats.bleedChance ?? 0),
+      bleedResist: Number(generated.stats.bleedResist ?? 0),
+      stunChance: Number(generated.stats.stunChance ?? 0),
+      stunResist: Number(generated.stats.stunResist ?? 0),
+      blockChance: Number(generated.stats.blockChance ?? 0),
+      blockValue: Number(generated.stats.blockValue ?? generated.stats.blockPower ?? 0),
+      blockPower: Number(generated.stats.blockPower ?? generated.stats.blockValue ?? 0),
+      damageReduction: Number(generated.stats.damageReduction ?? 0),
+      lifeSteal: Number(generated.stats.lifeSteal ?? 0),
+      goldFindBonus: Number(generated.stats.goldFindBonus ?? 0),
+      lootChanceBonus: Number(generated.stats.lootChanceBonus ?? 0),
+      rarityFindBonus: Number(generated.stats.rarityFindBonus ?? 0),
+      durabilityLossReduction: Number(generated.stats.durabilityLossReduction ?? 0)
+    };
   }
-
-  const armor = armors.find((entry) => entry.id.toLowerCase() === itemId.toLowerCase());
-  if (armor) return armor;
-
-  const shield = shields.find((entry) => entry.id.toLowerCase() === itemId.toLowerCase());
-  if (shield) return shield;
-
-  const weapon = weapons.find((entry) => entry.id.toLowerCase() === itemId.toLowerCase());
-  if (weapon) return weapon;
-
-  const item = items.find((entry) => entry.id.toLowerCase() === itemId.toLowerCase());
-  if (!item) return null;
-
-  if (
-    item.defense !== undefined ||
-    item.armor !== undefined ||
-    item.damageBonus !== undefined ||
-    item.dodgeBonus !== undefined ||
-    item.hpBonus !== undefined ||
-    item.maxHealth !== undefined ||
-    item.healthRegen !== undefined
-  ) {
-    return item;
-  }
-
-  return getFallbackItemStats(
-    {
-      id: item.id,
-      name: item.name,
-      description: item.description,
-      tier: item.tier,
-      rarity: String(item.rarity ?? 'common')
-    },
-    slot
-  );
-}
-
-function addTextBonuses(stats: SecondaryStats, item: ItemLike): void {
-  const tier = item.tier ?? 1;
-  const effectText = `${item.primaryBonus ?? ''} | ${item.effect ?? ''} | ${item.description ?? ''}`.toLowerCase();
-
-  if (effectText.includes('+bleed chance / bleed damage')) {
-    stats.bleedChance += scaledValue(tier, 0.03, 0.01);
-    stats.bleedDamage += scaledValue(tier, 0.15, 0.05);
-  }
-  if (effectText.includes('+bleed chance') && !effectText.includes('/ bleed damage')) {
-    const parsed = parsePercentValue(effectText);
-    stats.bleedChance += parsed > 0 ? parsed : scaledValue(tier, 0.02, 0.01);
-  }
-  if (effectText.includes('+rage from attacks')) {
-    const parsed = parsePercentValue(effectText);
-    stats.rageFromAttacks += parsed > 0 ? parsed : scaledValue(tier, 0.03, 0.01);
-  }
-  if (effectText.includes('+poise')) {
-    const parsed = parsePercentValue(effectText);
-    stats.poise += parsed > 0 ? parsed : scaledValue(tier, 0.06, 0.02);
-  }
-  if (effectText.includes('+stagger power')) {
-    stats.staggerPower += scaledValue(tier, 0.14, 0.04);
-  }
-  if (effectText.includes('-stagger duration') || effectText.includes('+stagger resistance')) {
-    stats.staggerResistance += scaledValue(tier, 0.15, 0.05);
-  }
-  if (effectText.includes('+bleed resist') || effectText.includes('+bleed resistance')) {
-    stats.bleedResistance += scaledValue(tier, 0.16, 0.04);
-  }
-  if (effectText.includes('+bleed damage')) {
-    stats.bleedDamage += scaledValue(tier, 0.18, 0.05);
-  }
-  if (effectText.includes('+attack speed')) {
-    stats.attackSpeedBonus += scaledValue(tier, 0.06, 0.02);
-  }
-  if (effectText.includes('+counter chance')) {
-    stats.counterChance += scaledValue(tier, 0.08, 0.03);
-  }
-  if (effectText.includes('+counter damage')) {
-    stats.counterDamage += scaledValue(tier, 0.2, 0.05);
-  }
-  if (effectText.includes('+block efficiency')) {
-    stats.blockChance += scaledValue(tier, 0.08, 0.03);
-  }
-  if (effectText.includes('+execute damage')) {
-    stats.executeDamage += scaledValue(tier, 0.22, 0.05);
-  }
-  if (effectText.includes('+crit and rage')) {
-    stats.critDamageBonus += scaledValue(tier, 0.08, 0.02);
-    stats.rageFromAttacks += scaledValue(tier, 0.06, 0.02);
-  }
-  if (effectText.includes('bleeds tick faster')) {
-    stats.bleedTickRate += 0.25;
-  }
-  if (effectText.includes('+damage reduction above 70% hp')) {
-    stats.damageReductionHighHp += scaledValue(tier, 0.08, 0.02);
-  }
-  if (effectText.includes('bleeds trigger bonus rage')) {
-    stats.bleedRageBonus += 3 + tier;
-  }
-  if (effectText.includes('fortified at low hp')) {
-    stats.lowHpArmorBonus += scaledValue(tier, 0.1, 0.03);
-  }
-  if (effectText.includes('+starter damage')) {
-    stats.damageBonus += scaledValue(tier, 0.02, 0.01);
-  }
+  return resolveItem(itemId);
 }
 
 export function calculateSecondaryStats(hero: HeroState): SecondaryStats {
@@ -227,49 +120,117 @@ export function calculateSecondaryStats(hero: HeroState): SecondaryStats {
   const slots: EquipmentSlot[] = ['head', 'chest', 'legs', 'hands', 'feet', 'ring1', 'ring2', 'amulet', 'shield', 'weapon'];
 
   for (const slot of slots) {
-    const item = resolveEquippedItem(hero, slot);
+    const itemId = hero.equipment?.[slot];
+    if (!itemId || itemId.startsWith('fallback_') || itemId.startsWith('blank_')) continue;
+
+    const item = resolveItemForHero(hero, slot, itemId);
     if (!item) continue;
 
-    const durability = hero.equipmentDurability?.[slot] ?? 100;
-    const factor = durability <= 0 ? 0 : 1;
+    const factor = (hero.equipmentDurability?.[slot] ?? 100) <= 0 ? 0 : 1;
 
     totals.defense += Number(item.defense ?? item.armor ?? 0) * factor;
     totals.damageBonus += Number(item.damageBonus ?? 0) * factor;
-    totals.dodgeBonus += Number(item.dodgeBonus ?? 0) * factor;
+    totals.dodgeBonus += Number(item.dodgeBonus ?? item.dodgeChance ?? 0) * factor;
     totals.hpBonus += Number(item.hpBonus ?? 0) * factor;
-    totals.flatMaxHealth += Number(item.maxHealth ?? 0) * factor;
-    totals.healthRegen += extractItemRegen(item) * factor;
+    totals.flatMaxHealth += Number(item.maxHealth ?? item.maxHp ?? 0) * factor;
+    totals.healthRegen += Number(item.healthRegen ?? 0) * factor;
+    totals.critDamageBonus += Number(item.critDamage ?? 0) * factor;
+    totals.attackSpeedBonus += Number(item.attackSpeedBonus ?? 0) * factor;
+    totals.armorPenetration += Number(item.armorPenetration ?? 0) * factor;
+    totals.lifesteal += Number(item.lifeSteal ?? 0) * factor;
+    totals.bleedChance += Number(item.bleedChance ?? 0) * factor;
+    totals.bleedResistance += Number(item.bleedResist ?? 0) * factor;
+    totals.staggerResistance += Number(item.stunResist ?? 0) * factor;
     totals.blockChance += Number(item.blockChance ?? 0) * factor;
-    totals.blockValue += Number(item.blockValue ?? 0) * factor;
-    totals.staggerResistance += Number(item.staggerResist ?? 0) * factor;
+    totals.blockValue += Number(item.blockValue ?? item.blockPower ?? 0) * factor;
+    totals.damageReductionHighHp += Number(item.damageReduction ?? 0) * factor;
+    totals.goldFindBonus += Number(item.goldFindBonus ?? 0) * factor;
+    totals.lootChanceBonus += Number(item.lootChanceBonus ?? 0) * factor;
+    totals.rarityFindBonus += Number(item.rarityFindBonus ?? 0) * factor;
+    totals.durabilityLossReduction += Number(item.durabilityLossReduction ?? 0) * factor;
 
-    const textStats = { ...EMPTY_SECONDARY_STATS };
-    addTextBonuses(textStats, item);
-    for (const [key, value] of Object.entries(textStats) as Array<[keyof SecondaryStats, number]>) {
-      totals[key] += value * factor;
-    }
-
-    const slotAffixes = hero.equipmentAffixes?.[slot] ?? [];
+    const isGenerated = Boolean(hero.equippedGeneratedItems?.[slot]);
+    const slotAffixes = isGenerated ? [] : (hero.equipmentAffixes?.[slot] ?? []);
     for (const affix of slotAffixes) {
       const affixValue = affix.value * factor;
-      if (affix.type === 'armor') totals.defense += affixValue;
-      if (affix.type === 'critDamage') totals.critDamageBonus += affixValue;
+      switch (affix.type) {
+        case 'armor':
+          totals.defense += affixValue;
+          break;
+        case 'damageBonus':
+          totals.damageBonus += affixValue;
+          break;
+        case 'dodgeChance':
+          totals.dodgeBonus += affixValue;
+          break;
+        case 'maxHealth':
+        case 'maxHp':
+          totals.flatMaxHealth += affixValue;
+          break;
+        case 'healthRegen':
+          totals.healthRegen += affixValue;
+          break;
+        case 'critDamage':
+          totals.critDamageBonus += affixValue;
+          break;
+        case 'attackSpeedBonus':
+          totals.attackSpeedBonus += affixValue;
+          break;
+        case 'armorPenetration':
+          totals.armorPenetration += affixValue;
+          break;
+        case 'lifeSteal':
+          totals.lifesteal += affixValue;
+          break;
+        case 'bleedChance':
+          totals.bleedChance += affixValue;
+          break;
+        case 'bleedResist':
+          totals.bleedResistance += affixValue;
+          break;
+        case 'stunResist':
+          totals.staggerResistance += affixValue;
+          break;
+        case 'blockChance':
+          totals.blockChance += affixValue;
+          break;
+        case 'blockPower':
+          totals.blockValue += affixValue;
+          break;
+        case 'damageReduction':
+          totals.damageReductionHighHp += affixValue;
+          break;
+        case 'goldFindBonus':
+          totals.goldFindBonus += affixValue;
+          break;
+        case 'lootChanceBonus':
+          totals.lootChanceBonus += affixValue;
+          break;
+        case 'rarityFindBonus':
+          totals.rarityFindBonus += affixValue;
+          break;
+        case 'durabilityLossReduction':
+          totals.durabilityLossReduction += affixValue;
+          break;
+      }
     }
   }
 
   return {
     ...totals,
-    attackSpeedBonus: Math.min(totals.attackSpeedBonus, 0.35),
-    armorPenetration: Math.min(totals.armorPenetration, 0.6),
-    lifesteal: Math.min(totals.lifesteal, 0.5),
-    blockChance: Math.min(totals.blockChance, 0.6),
-    counterChance: Math.min(totals.counterChance, 0.75),
-    damageReductionHighHp: Math.min(totals.damageReductionHighHp, 0.5)
+    attackSpeedBonus: clamp(totals.attackSpeedBonus, 0, 0.25),
+    armorPenetration: clamp(totals.armorPenetration, 0, 0.6),
+    lifesteal: clamp(totals.lifesteal, 0, 0.15),
+    blockChance: clamp(totals.blockChance, 0, 0.45),
+    damageReductionHighHp: clamp(totals.damageReductionHighHp, 0, 0.65),
+    rarityFindBonus: Math.max(0, totals.rarityFindBonus),
+    lootChanceBonus: Math.max(0, totals.lootChanceBonus),
+    goldFindBonus: Math.max(0, totals.goldFindBonus),
+    durabilityLossReduction: clamp(totals.durabilityLossReduction, 0, 0.5)
   };
 }
 
 export function getEffectiveAttackSpeed(hero: HeroState, weapon: { attackSpeed: number }): number {
   const stats = calculateSecondaryStats(hero);
-  const agilityBonus = hero.stats.agility * 0.0005;
-  return weapon.attackSpeed * (1 + clamp(stats.attackSpeedBonus + agilityBonus, 0, 0.35));
+  return weapon.attackSpeed * (1 + clamp(stats.attackSpeedBonus, 0, 0.25));
 }

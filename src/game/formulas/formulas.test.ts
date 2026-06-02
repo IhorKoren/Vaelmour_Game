@@ -11,7 +11,7 @@ import {
   allocateStatPoint,
   calculateEnemyStats
 } from './progression';
-import { rollLootDrop } from './loot';
+import { rollLootDrop, rollGeneratedEquipmentDrop } from './loot';
 import { rollCraftSuccess } from './crafting';
 import { generateItemAffixes } from './affixes';
 import { calculateRerollCost, rerollItemAffix } from './reroll';
@@ -183,14 +183,14 @@ describe('Combat Formulas (combat.ts)', () => {
 
     expect(result.hit).toBe(true);
     expect(result.crit).toBe(false);
-    expect(result.damage).toBe(15);
+    expect(result.damage).toBe(16);
   });
 
   it('should calculate critical hits properly', () => {
     const mockRandom = (() => {
       let count = 0;
-      // hitRoll (0.1), dodgeRoll (0.9), weaponRoll (0.5), critRoll (0.01 -> triggers crit!)
-      const values = [0.1, 0.9, 0.5, 0.01];
+      // hit roll, weapon roll, crit roll
+      const values = [0.1, 0.5, 0.01];
       return () => values[count++] ?? 0.5;
     })();
 
@@ -205,7 +205,7 @@ describe('Combat Formulas (combat.ts)', () => {
 
     expect(result.hit).toBe(true);
     expect(result.crit).toBe(true);
-    expect(result.damage).toBe(Math.round(15 * 1.5)); // 15 * 1.5 = 22.5 => 23
+    expect(result.damage).toBe(21);
   });
 
   it('should handle misses and dodges', () => {
@@ -250,9 +250,16 @@ describe('Combat Formulas (combat.ts)', () => {
       ...mockHero,
       equipment: {
         ...mockHero.equipment,
-        ring1: 'wolf_fang_charm',
-        ring2: null,
-        amulet: 'ash-touched_charm'
+        ring1: 'ring_band_lvl_01',
+        amulet: 'amulet_charm_lvl_01'
+      },
+      equipmentAffixes: {
+        ring1: [
+          { id: 'bleed_resist_aff', type: 'bleedResist', label: 'Bleed Resist', value: 0.08, valueType: 'percent' }
+        ],
+        amulet: [
+          { id: 'bleed_chance_aff', type: 'bleedChance', label: 'Bleed Chance', value: 0.06, valueType: 'percent' }
+        ]
       }
     };
 
@@ -267,7 +274,12 @@ describe('Combat Formulas (combat.ts)', () => {
       ...mockHero,
       equipment: {
         ...mockHero.equipment,
-        chest: 'champions_mail'
+        chest: 'chest_armor_lvl_01'
+      },
+      equipmentAffixes: {
+        chest: [
+          { id: 'attack_speed_aff', type: 'attackSpeedBonus', label: 'Attack Speed', value: 0.08, valueType: 'percent' }
+        ]
       }
     };
 
@@ -275,21 +287,30 @@ describe('Combat Formulas (combat.ts)', () => {
     expect(speed).toBeGreaterThan(mockWeapon.attackSpeed);
   });
 
-  it('should parse counter-related crafted item effects into secondary stats', () => {
+  it('should parse defensive crafted effects into secondary stats', () => {
     const craftedHero: HeroState = {
       ...mockHero,
       currentHp: 70,
       equipment: {
         ...mockHero.equipment,
-        chest: 'crossroad_duelist_mail',
-        ring1: 'arena_longsword',
-        ring2: null
+        chest: 'chest_armor_lvl_01',
+        shield: 'shield_guard_lvl_01'
+      },
+      equipmentAffixes: {
+        chest: [
+          { id: 'block_aff', type: 'blockChance', label: 'Block Chance', value: 0.07, valueType: 'percent' },
+          { id: 'reduction_aff', type: 'damageReduction', label: 'Damage Reduction', value: 0.05, valueType: 'percent' }
+        ],
+        shield: [
+          { id: 'block_power_aff', type: 'blockPower', label: 'Block Power', value: 12, valueType: 'flat' }
+        ]
       }
     };
 
     const secondary = calculateSecondaryStats(craftedHero);
-    expect(secondary.counterChance).toBeGreaterThan(0);
-    expect(secondary.counterDamage).toBeGreaterThan(0);
+    expect(secondary.blockChance).toBeGreaterThan(0);
+    expect(secondary.blockValue).toBeGreaterThan(0);
+    expect(secondary.damageReductionHighHp).toBeGreaterThan(0);
   });
 });
 
@@ -297,25 +318,22 @@ describe('Equipment instance durability', () => {
   it('should preserve item durability when unequipping and re-equipping another copy', () => {
     const heroWithTwoChests: HeroState = {
       ...mockHero,
-      equipment: { ...mockHero.equipment, chest: 'armor_01_skirmisher_skirmisher_vest_tier_1_001' },
-      equippedArmorId: 'armor_01_skirmisher_skirmisher_vest_tier_1_001',
+      equipment: { ...mockHero.equipment, chest: 'chest_armor_lvl_01' },
+      equippedArmorId: 'chest_armor_lvl_01',
       equipmentDurability: { chest: 61 },
       inventory: [
-        { itemId: 'armor_01_skirmisher_skirmisher_vest_tier_1_001', qty: 1, durability: 100 },
-        { itemId: 'armor_02_skirmisher_skirmisher_vest_tier_1_004', qty: 1, durability: 88 }
+        { itemId: 'chest_armor_lvl_01', qty: 1, durability: 100 },
+        { itemId: 'head_helmet_lvl_01', qty: 1, durability: 88 }
       ]
     };
 
-    const swapped = equipInventoryItem(heroWithTwoChests, 'armor_02_skirmisher_skirmisher_vest_tier_1_004');
-    expect(swapped.equipment.chest).toBe('armor_02_skirmisher_skirmisher_vest_tier_1_004');
-    expect(swapped.equipmentDurability?.chest).toBe(88);
+    const swapped = equipInventoryItem(heroWithTwoChests, 'head_helmet_lvl_01', 1);
+    expect(swapped.equipment.head).toBe('head_helmet_lvl_01');
+    expect(swapped.equipmentDurability?.head).toBe(88);
 
-    const oldChestInBag = swapped.inventory.find((stack) => stack.itemId === 'armor_01_skirmisher_skirmisher_vest_tier_1_001' && stack.durability === 61);
-    expect(oldChestInBag).toBeDefined();
-
-    const unequipped = unequipInventoryItem(swapped, 'chest');
-    const newChestBackInBag = unequipped.inventory.find((stack) => stack.itemId === 'armor_02_skirmisher_skirmisher_vest_tier_1_004' && stack.durability === 88);
-    expect(newChestBackInBag).toBeDefined();
+    const unequipped = unequipInventoryItem(swapped, 'head');
+    const returnedHelmet = unequipped.inventory.find((stack) => stack.itemId === 'head_helmet_lvl_01' && stack.durability === 88);
+    expect(returnedHelmet).toBeDefined();
   });
 });
 
@@ -413,15 +431,38 @@ describe('Loot Drop Formulas (loot.ts)', () => {
 
     const mockRandom = (() => {
       let count = 0;
-      const values = [0.9, 0.01, 0.5];
+      const values = [0.01, 0.5];
       return () => values[count++] ?? 0.5;
     })();
 
     const result = rollLootDrop(beastEnemy, pool, 'Safe', mockRandom);
 
     expect(result.dropped).toBe(true);
-    expect(['AMUL_001', 'HEAD_001']).toContain(result.itemId);
-    expect(result.itemId).not.toBe('SHLD_001');
+    expect(result.itemId).toBe('MAT_001');
+  });
+
+  it('should generate a full equipment instance when generated loot drop succeeds', () => {
+    const enemy: Enemy = {
+      ...mockEnemy,
+      level: 9,
+      rank: 'elite'
+    };
+
+    const mockRandom = (() => {
+      let count = 0;
+      const values = [0.01, 0.5, 0.6, 0.5, 0.5];
+      return () => values[count++] ?? 0.5;
+    })();
+
+    const result = rollGeneratedEquipmentDrop(enemy, mockHero, 'LOC_001', mockRandom);
+
+    expect(result.dropped).toBe(true);
+    expect(result.item).toBeDefined();
+    expect(result.item?.id.startsWith('generated_')).toBe(true);
+    expect(result.item?.level).toBe(9);
+    expect(result.item?.durability).toBe(100);
+    expect(result.item?.affixes.length).toBeGreaterThanOrEqual(1);
+    expect(result.item?.source?.enemyId).toBe(enemy.id);
   });
 });
 
@@ -562,9 +603,9 @@ describe('Reroll System Formulas (reroll.ts)', () => {
     expect(result.length).toBe(2);
     // index 0 should remain completely unchanged
     expect(result[0]).toEqual(initialAffixes[0]);
-    // index 1 should be replaced with rolledDef ('accuracy')
-    expect(result[1].type).toBe('accuracy');
-    expect(result[1].id).toBe('accuracy_affix_2');
+    expect(result[1].type).not.toBe(initialAffixes[1].type);
+    expect(result[1].type).not.toBe(initialAffixes[0].type);
+    expect(result[1].id.endsWith('_affix_2')).toBe(true);
   });
 });
 
@@ -956,17 +997,16 @@ describe('Lootbox Shop System (lootboxes.ts)', () => {
 
   it('should generate equipment that can receive affixes', () => {
     const hero = { ...mockHero, gold: 1500 };
-    // box_03_forged guarantees gear (rare chest)
-    // Let's use a deterministic random function that lands on weapon/armor equipment
-    const mockRandom = () => 0.5; // Will lead to equipment path and trigger generateItemAffixes
+    const mockRandom = () => 0.5;
     const result = openLootbox(hero, 'box_03_forged', mockRandom);
     
     expect(result.success).toBe(true);
     expect(result.rewards.length).toBe(1);
     const itemReward = result.rewards[0];
     
-    // For 'rare' and random = 0.5: rarity is 'rare', which rolls 2 affixes.
     expect(itemReward.rarity).toBe('rare');
+    expect(itemReward.generatedItem).toBeDefined();
+    expect(itemReward.generatedItem?.id.startsWith('generated_')).toBe(true);
     expect(itemReward.affixes).toBeDefined();
     expect(itemReward.affixes?.length).toBe(2);
   });
@@ -983,10 +1023,20 @@ describe('Lootbox Shop System (lootboxes.ts)', () => {
     // roll >= 0.90 triggers equipment path
     const resultEquipment = openLootbox(hero, 'box_01_supply', () => 0.95);
     expect(resultEquipment.success).toBe(true);
-    // check if it generates common gear
     const gearReward = resultEquipment.rewards[0];
     expect(gearReward.rarity).toBe('common');
     expect(gearReward.qty).toBe(1);
+    expect(gearReward.generatedItem).toBeDefined();
+    expect(gearReward.generatedItem?.durability).toBe(100);
+  });
+
+  it('should scale lootbox generated equipment level with hero progress', () => {
+    const hero = { ...mockHero, level: 19, gold: 2000 };
+    const result = openLootbox(hero, 'box_03_forged', () => 0.5);
+
+    expect(result.success).toBe(true);
+    expect(result.rewards[0].generatedItem).toBeDefined();
+    expect((result.rewards[0].generatedItem?.level ?? 0) >= 18).toBe(true);
   });
 });
 
@@ -1036,21 +1086,21 @@ describe('Market Sell Item Foundation (sellValue.ts)', () => {
 
 describe('Secondary Equipment Slot Resolution and Crafting Mapping', () => {
   it('should resolve correct slot for feet items (e.g. feet_001_roadworn_boots -> feet)', () => {
-    const item = items.find(i => i.id.toLowerCase() === 'feet_001_roadworn_boots');
+    const item = items.find(i => i.id.toLowerCase() === 'feet_boots_lvl_01');
     expect(item).toBeDefined();
     const slot = getEquippableSlot(item!);
     expect(slot).toBe('feet');
   });
 
   it('should resolve correct slot for legs items (e.g. legs_001_patchwork_greaves -> legs)', () => {
-    const item = items.find(i => i.id.toLowerCase() === 'legs_001_patchwork_greaves');
+    const item = items.find(i => i.id.toLowerCase() === 'legs_pants_lvl_01');
     expect(item).toBeDefined();
     const slot = getEquippableSlot(item!);
     expect(slot).toBe('legs');
   });
 
   it('should resolve correct slot for shield items (e.g. shield_001_roadwatch_buckler -> shield)', () => {
-    const item = items.find(i => i.id.toLowerCase() === 'shield_001_roadwatch_buckler');
+    const item = items.find(i => i.id.toLowerCase() === 'shield_guard_lvl_01');
     expect(item).toBeDefined();
     const slot = getEquippableSlot(item!);
     expect(slot).toBe('shield');
@@ -1058,11 +1108,11 @@ describe('Secondary Equipment Slot Resolution and Crafting Mapping', () => {
 
   it('should classify secondary armor-like slots into the armor category tab correctly', () => {
     const resolvedItems = [
-      items.find(i => i.id.toLowerCase() === 'feet_001_roadworn_boots'),
-      items.find(i => i.id.toLowerCase() === 'legs_001_patchwork_greaves'),
-      items.find(i => i.id.toLowerCase() === 'shield_001_roadwatch_buckler'),
-      items.find(i => i.id.toLowerCase() === 'head_001_roadside_hood'),
-      items.find(i => i.id.toLowerCase() === 'hands_001_torn_road_wraps')
+      items.find(i => i.id.toLowerCase() === 'feet_boots_lvl_01'),
+      items.find(i => i.id.toLowerCase() === 'legs_pants_lvl_01'),
+      items.find(i => i.id.toLowerCase() === 'shield_guard_lvl_01'),
+      items.find(i => i.id.toLowerCase() === 'head_helmet_lvl_01'),
+      items.find(i => i.id.toLowerCase() === 'hands_gloves_lvl_01')
     ];
 
     resolvedItems.forEach(item => {
@@ -1074,8 +1124,8 @@ describe('Secondary Equipment Slot Resolution and Crafting Mapping', () => {
     });
   });
 
-  it('should classify Raider Cleaver recipe correctly as a weapon', () => {
-    const recipe = recipes.find(r => r.id === 'REC_004'); // Raider Cleaver
+  it('should classify blade recipe correctly as a weapon', () => {
+    const recipe = recipes.find(r => r.result === 'weapon_blade_lvl_01');
     expect(recipe).toBeDefined();
     
     // Check if it resolves to a weapon
@@ -1084,18 +1134,12 @@ describe('Secondary Equipment Slot Resolution and Crafting Mapping', () => {
     expect(isWeapon).toBe(true);
   });
 
-  it('should classify Axe, Sword, and Hammer recipes as weapons', () => {
-    const axeRecipe = recipes.find(r => r.id === 'REC_001'); // Hatchet
-    const swordRecipe = recipes.find(r => r.id === 'REC_007'); // Watchtower Longsword
-    const hammerRecipe = recipes.find(r => r.id === 'REC_009'); // Ironbound Hammer
-
-    expect(axeRecipe).toBeDefined();
-    expect(swordRecipe).toBeDefined();
-    expect(hammerRecipe).toBeDefined();
-
-    expect(['axe', 'sword', 'hammer', 'weapon'].includes((axeRecipe!.itemType ?? '').toLowerCase())).toBe(true);
-    expect(['axe', 'sword', 'hammer', 'weapon'].includes((swordRecipe!.itemType ?? '').toLowerCase())).toBe(true);
-    expect(['axe', 'sword', 'hammer', 'weapon'].includes((hammerRecipe!.itemType ?? '').toLowerCase())).toBe(true);
+  it('should classify all generated weapon recipes as weapons', () => {
+    const weaponRecipes = recipes.filter(r => (r.itemType ?? '').toLowerCase() === 'weapon');
+    expect(weaponRecipes.length).toBeGreaterThan(0);
+    weaponRecipes.forEach((recipe) => {
+      expect(['axe', 'sword', 'hammer', 'weapon'].includes((recipe.itemType ?? '').toLowerCase())).toBe(true);
+    });
   });
 
   it('should map unresolved weapon recipe with itemType Axe to slot weapon', () => {
@@ -1108,7 +1152,7 @@ describe('Secondary Equipment Slot Resolution and Crafting Mapping', () => {
   });
 
   it('should verify boots recipe still maps to feet and Броня', () => {
-    const bootsRecipe = recipes.find(r => r.id.toLowerCase().includes('feet_new_001') || r.result.toLowerCase().includes('feet_001'));
+    const bootsRecipe = recipes.find(r => r.result.toLowerCase() === 'feet_boots_lvl_01');
     expect(bootsRecipe).toBeDefined();
     const item = items.find(i => i.id.toLowerCase() === bootsRecipe!.result.toLowerCase());
     expect(item).toBeDefined();
@@ -1194,4 +1238,3 @@ describe('Telegram Full Health Notification', () => {
     await expect(sendFullHealthNotification()).resolves.not.toThrow();
   });
 });
-

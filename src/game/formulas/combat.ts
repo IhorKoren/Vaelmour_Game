@@ -1,15 +1,6 @@
-import type { Armor, Enemy, HeroState, Skill, Weapon, EquipmentSlot } from '../types';
+import type { Armor, Enemy, HeroState, Skill, Weapon } from '../types';
 import { calculateDerivedStats } from './stats';
-import { armors } from '../../data/armors';
-import { items } from '../../data/items';
 import { calculateSecondaryStats } from './secondaryStats';
-import { shields } from '../../data/shields';
-
-type CombatItemStats = {
-  defense?: number;
-  armor?: number;
-  damageBonus?: number;
-};
 
 export type DamageResult = {
   hit: boolean;
@@ -26,6 +17,18 @@ export type DamageResult = {
   poiseShred?: number;
 };
 
+const CRIT_SOFT_CAP = 0.25;
+const CRIT_HARD_CAP = 0.4;
+const DODGE_CAP = 0.35;
+const BLOCK_CAP = 0.45;
+const ARMOR_PEN_CAP = 0.6;
+const STUN_CHANCE_CAP = 0.3;
+const BLEED_CHANCE_CAP = 0.45;
+const LIFE_STEAL_CAP = 0.15;
+const DAMAGE_REDUCTION_CAP = 0.65;
+const MIN_HIT_CHANCE = 0.65;
+const MAX_HIT_CHANCE = 0.98;
+
 export function calculateHeroDamage(params: {
   hero: HeroState;
   weapon: Weapon;
@@ -39,11 +42,14 @@ export function calculateHeroDamage(params: {
   const random = params.random ?? Math.random;
   const derived = calculateDerivedStats(params.hero.stats, params.hero.baseHp, undefined, params.hero);
   const secondary = calculateSecondaryStats(params.hero);
+  const skillProfile = getSkillProfile(params.skill.id);
 
-  const hitRoll = random();
-  const enemyDodgeRoll = random();
-
-  if (hitRoll > derived.accuracy || enemyDodgeRoll < params.enemy.dodgeChance) {
+  const hitChance = clamp(
+    derived.accuracy - Math.max(0, params.enemy.dodgeChance ?? 0),
+    MIN_HIT_CHANCE,
+    MAX_HIT_CHANCE
+  );
+  if (random() > hitChance) {
     return {
       hit: false,
       crit: false,
@@ -52,51 +58,19 @@ export function calculateHeroDamage(params: {
     };
   }
 
-  // Calculate sum of damage bonus from all slots
-  let totalDamageBonus = secondary.damageBonus;
-  const slots: EquipmentSlot[] = ['head', 'chest', 'legs', 'hands', 'feet', 'ring1', 'ring2', 'amulet', 'shield'];
-  for (const slot of slots) {
-    const itemId = params.hero.equipment?.[slot];
-    if (!itemId || itemId.startsWith('fallback_') || itemId.startsWith('blank_')) {
-      continue;
-    }
-    const durability = params.hero.equipmentDurability?.[slot] ?? 100;
-    const factor = durability <= 0 ? 0 : 1.0;
-
-    let itemStats: CombatItemStats | undefined = armors.find((a) => a.id.toLowerCase() === itemId.toLowerCase()) as CombatItemStats | undefined;
-    if (!itemStats) {
-      itemStats = shields.find((s) => s.id.toLowerCase() === itemId.toLowerCase()) as CombatItemStats | undefined;
-    }
-    if (!itemStats) {
-      const it = items.find((entry) => entry.id.toLowerCase() === itemId.toLowerCase());
-      if (it) {
-        if (it.damageBonus !== undefined || it.defense !== undefined || it.armor !== undefined) {
-          itemStats = it;
-        } else {
-          const tier = it.tier || 1;
-          let multiplier = 1.0;
-          if (slot === 'head' || slot === 'legs') multiplier = 0.7;
-          if (slot === 'hands' || slot === 'feet') multiplier = 0.5;
-          if (slot === 'ring1' || slot === 'ring2' || slot === 'amulet') multiplier = 0.2;
-
-          itemStats = { damageBonus: tier * 0.01 * multiplier };
-        }
-      }
-    }
-    if (itemStats) {
-      totalDamageBonus += (itemStats.damageBonus ?? 0) * factor;
-    }
-  }
-
   const weaponRoll = roll(params.weapon.minDamage, params.weapon.maxDamage, random);
-  const skillProfile = getSkillProfile(params.skill.id);
   const rawDamage = weaponRoll + derived.attackPower * 0.25;
   const baseSkillDamage = rawDamage * skillProfile.damageMultiplier;
-  const enemyDefense = Math.max(0, params.enemy.defense);
-  const effectiveArmorPenetration = clampSecondaryValue(secondary.armorPenetration + skillProfile.armorPenetration, 0, 0.6);
-  const effectiveEnemyDefense = Math.max(0, enemyDefense * (1 - effectiveArmorPenetration));
-  const armorReduction = Math.min(effectiveEnemyDefense / (effectiveEnemyDefense + 100), 0.6);
-  let conditionalMultiplier = 1 + totalDamageBonus;
+  const effectiveArmorPenetration = clamp(
+    secondary.armorPenetration + skillProfile.armorPenetration,
+    0,
+    ARMOR_PEN_CAP
+  );
+  const targetArmor = Number(params.enemy.armor ?? params.enemy.defense ?? 0);
+  const effectiveArmor = Math.max(0, targetArmor * (1 - effectiveArmorPenetration));
+  const armorReduction = getArmorDamageReduction(effectiveArmor, params.enemy.level ?? 1);
+
+  let conditionalMultiplier = 1 + secondary.damageBonus;
   const enemyHpRatio = (params.currentEnemyHp ?? params.enemy.hp) / Math.max(1, params.enemy.hp);
   if (skillProfile.bonusVsBleeding && params.targetBleeding) {
     conditionalMultiplier *= 1 + skillProfile.bonusVsBleeding;
@@ -104,34 +78,32 @@ export function calculateHeroDamage(params: {
   if (skillProfile.executeBelowHp && enemyHpRatio <= skillProfile.executeBelowHp) {
     conditionalMultiplier *= 1 + skillProfile.executeBonus + secondary.executeDamage;
   }
-  const mitigatedDamage = Math.max(1, Math.round(baseSkillDamage * (1 - armorReduction) * conditionalMultiplier));
 
-  // Sum critDamage affixes from all slots
-  let critDamageBonus = 0;
-  if (params.hero.equipmentAffixes) {
-    const slots: EquipmentSlot[] = ['head', 'chest', 'legs', 'hands', 'feet', 'ring1', 'ring2', 'amulet', 'shield', 'weapon'];
-    for (const slot of slots) {
-      const durability = params.hero.equipmentDurability?.[slot] ?? 100;
-      const factor = durability <= 0 ? 0 : 1.0;
-      const slotAffixes = params.hero.equipmentAffixes[slot] ?? [];
-      for (const affix of slotAffixes) {
-        if (affix.type === 'critDamage') {
-          critDamageBonus += affix.value * factor;
-        }
-      }
-    }
-  }
+  const mitigatedDamage = Math.max(
+    1,
+    Math.round(baseSkillDamage * (1 - armorReduction) * conditionalMultiplier)
+  );
 
-  const crit = random() < derived.critChance;
-  const critMultiplier = crit ? Math.min(2.2, 1.5 + critDamageBonus + secondary.critDamageBonus) : 1;
+  const critChance = applySoftCap(derived.critChance, CRIT_SOFT_CAP, CRIT_HARD_CAP);
+  const crit = random() < critChance;
+  const critMultiplier = crit ? 1.5 + secondary.critDamageBonus : 1;
   const finalDamage = Math.max(1, Math.round(mitigatedDamage * critMultiplier));
-  const lifesteal = secondary.lifesteal > 0 ? Math.max(0, Math.round(finalDamage * secondary.lifesteal)) : 0;
-  const bleedApplied = skillProfile.bleedChance > 0
-    ? random() < skillProfile.bleedChance
-      ? { damage: Math.max(1, Math.round(finalDamage * (skillProfile.bleedDamageRatio + secondary.bleedDamage))), ticks: skillProfile.bleedTicks }
-      : undefined
+  const lifesteal = Math.max(0, Math.round(finalDamage * clamp(secondary.lifesteal, 0, LIFE_STEAL_CAP)));
+
+  const finalBleedChance = clamp(
+    (secondary.bleedChance + skillProfile.bleedChance) * (1 - Math.max(0, params.enemy.bleedResist ?? 0)),
+    0,
+    BLEED_CHANCE_CAP
+  );
+  const bleedApplied = finalBleedChance > 0 && random() < finalBleedChance
+    ? {
+        damage: Math.max(1, Math.round(rawDamage * (skillProfile.bleedDamageRatio + 0.2 + secondary.bleedDamage))),
+        ticks: Math.max(1, skillProfile.bleedTicks || 5)
+      }
     : undefined;
-  const staggerApplied = skillProfile.staggerPower > 0 ? skillProfile.staggerPower + secondary.staggerPower : undefined;
+
+  const finalStunChance = clamp(skillProfile.staggerPower, 0, STUN_CHANCE_CAP);
+  const staggerApplied = finalStunChance > 0 && random() < finalStunChance ? 1 : 0;
   const rageRefund = crit && skillProfile.rageRefundOnCrit > 0 ? skillProfile.rageRefundOnCrit : 0;
 
   return {
@@ -158,7 +130,9 @@ export function calculateEnemyDamage(params: {
   const derived = calculateDerivedStats(params.hero.stats, params.hero.baseHp, undefined, params.hero);
   const secondary = calculateSecondaryStats(params.hero);
 
-  if (random() < derived.dodgeChance) {
+  const dodgeChance = clamp(derived.dodgeChance, 0, DODGE_CAP);
+  const hitChance = clamp(1 - dodgeChance, MIN_HIT_CHANCE, MAX_HIT_CHANCE);
+  if (random() > hitChance) {
     return {
       hit: false,
       crit: false,
@@ -167,74 +141,40 @@ export function calculateEnemyDamage(params: {
     };
   }
 
-  // Calculate sum of defense from all slots
-  let totalDefense = secondary.defense;
-  const slots: EquipmentSlot[] = ['head', 'chest', 'legs', 'hands', 'feet', 'ring1', 'ring2', 'amulet', 'shield'];
-  for (const slot of slots) {
-    const itemId = params.hero.equipment?.[slot];
-    if (!itemId || itemId.startsWith('fallback_') || itemId.startsWith('blank_')) {
-      continue;
-    }
-    const durability = params.hero.equipmentDurability?.[slot] ?? 100;
-    const factor = durability <= 0 ? 0 : 1.0;
-
-    let itemStats: CombatItemStats | undefined = armors.find((a) => a.id.toLowerCase() === itemId.toLowerCase()) as CombatItemStats | undefined;
-    if (!itemStats) {
-      itemStats = shields.find((s) => s.id.toLowerCase() === itemId.toLowerCase()) as CombatItemStats | undefined;
-    }
-    if (!itemStats) {
-      const it = items.find((entry) => entry.id.toLowerCase() === itemId.toLowerCase());
-      if (it) {
-        if (it.defense !== undefined || it.armor !== undefined || it.damageBonus !== undefined) {
-          itemStats = it;
-        } else {
-          const tier = it.tier || 1;
-          let multiplier = 1.0;
-          if (slot === 'head' || slot === 'legs') multiplier = 0.7;
-          if (slot === 'hands' || slot === 'feet') multiplier = 0.5;
-          if (slot === 'ring1' || slot === 'ring2' || slot === 'amulet') multiplier = 0.2;
-
-          itemStats = { defense: Math.round(tier * 5 * multiplier) };
-        }
-      }
-    }
-    if (itemStats) {
-      totalDefense += (itemStats.defense ?? itemStats.armor ?? 0) * factor;
-    }
-
-    // Sum armor affixes from slots
-    const slotAffixes = params.hero.equipmentAffixes?.[slot] ?? [];
-    for (const affix of slotAffixes) {
-      if (affix.type === 'armor') {
-        totalDefense += affix.value * factor;
-      }
-    }
-  }
-
-  let effectiveDefense = totalDefense;
+  let effectiveDefense = secondary.defense;
   if (params.hero.currentHp / Math.max(1, params.hero.maxHp) <= 0.3) {
-    effectiveDefense += Math.round(totalDefense * secondary.lowHpArmorBonus);
+    effectiveDefense += Math.round(secondary.defense * secondary.lowHpArmorBonus);
   }
 
-  const armorReduction = Math.min(Math.max(0, effectiveDefense) / (Math.max(0, effectiveDefense) + 100), 0.6);
-  const mitigatedDamage = Math.max(1, Math.round(params.enemy.attack * (1 - armorReduction)));
-  const crit = random() < params.enemy.critChance;
-  const critMultiplier = crit ? 1.4 : 1;
+  const armorReduction = getArmorDamageReduction(effectiveDefense, params.enemy.level ?? 1);
+  const enemyDamageBase =
+    params.enemy.damageMin !== undefined && params.enemy.damageMax !== undefined
+      ? roll(params.enemy.damageMin, params.enemy.damageMax, random)
+      : params.enemy.attack;
+  const mitigatedDamage = Math.max(1, Math.round(enemyDamageBase * (1 - armorReduction)));
+
+  const crit = random() < Math.max(0, params.enemy.critChance ?? 0);
+  const critMultiplier = crit ? 1.5 : 1;
   let damage = Math.max(1, Math.round(mitigatedDamage * critMultiplier));
   let blocked = false;
 
-  if (secondary.blockChance > 0 && random() < secondary.blockChance) {
+  const blockChance = clamp(secondary.blockChance, 0, BLOCK_CAP);
+  if (blockChance > 0 && random() < blockChance) {
     blocked = true;
     damage = Math.max(1, damage - Math.round(secondary.blockValue));
   }
 
-  if (secondary.damageReductionHighHp > 0 && params.hero.currentHp / Math.max(1, params.hero.maxHp) > 0.7) {
-    damage = Math.max(1, Math.round(damage * (1 - secondary.damageReductionHighHp)));
+  const flatReduction = clamp(secondary.damageReductionHighHp, 0, DAMAGE_REDUCTION_CAP);
+  if (flatReduction > 0) {
+    damage = Math.max(1, Math.round(damage * (1 - flatReduction)));
   }
 
   const counterTriggered = secondary.counterChance > 0 && random() < secondary.counterChance;
   const counterDamage = counterTriggered
-    ? Math.max(1, Math.round(calculateDerivedStats(params.hero.stats, params.hero.baseHp, undefined, params.hero).attackPower * (0.35 + secondary.counterDamage)))
+    ? Math.max(
+        1,
+        Math.round(calculateDerivedStats(params.hero.stats, params.hero.baseHp, undefined, params.hero).attackPower * (0.35 + secondary.counterDamage))
+      )
     : 0;
 
   return {
@@ -273,7 +213,7 @@ function getSkillProfile(skillId: string): SkillProfile {
     case 'skill_25_sword_blade_flurry':
       return { damageMultiplier: 2.2, armorPenetration: 0, bleedChance: 0, bleedDamageRatio: 0, bleedTicks: 0, bonusVsBleeding: 0, rageRefundOnCrit: 0, staggerPower: 0, nextHitDamageReduction: 0, poiseShred: 0, executeBelowHp: 0, executeBonus: 0 };
     case 'skill_03_axe_cleave':
-      return { damageMultiplier: 1.15, armorPenetration: 0, bleedChance: 0.25, bleedDamageRatio: 0.12, bleedTicks: 3, bonusVsBleeding: 0, rageRefundOnCrit: 0, staggerPower: 0, nextHitDamageReduction: 0, poiseShred: 0, executeBelowHp: 0, executeBonus: 0 };
+      return { damageMultiplier: 1.15, armorPenetration: 0, bleedChance: 0.25, bleedDamageRatio: 0.12, bleedTicks: 5, bonusVsBleeding: 0, rageRefundOnCrit: 0, staggerPower: 0, nextHitDamageReduction: 0, poiseShred: 0, executeBelowHp: 0, executeBonus: 0 };
     case 'skill_08_axe_frenzied_swings':
       return { damageMultiplier: 1, armorPenetration: 0, bleedChance: 0, bleedDamageRatio: 0, bleedTicks: 0, bonusVsBleeding: 0, rageRefundOnCrit: 0, staggerPower: 0, nextHitDamageReduction: 0, poiseShred: 0, executeBelowHp: 0, executeBonus: 0 };
     case 'skill_15_axe_executioner_strike':
@@ -293,10 +233,23 @@ function getSkillProfile(skillId: string): SkillProfile {
   }
 }
 
-function clampSecondaryValue(value: number, min: number, max: number): number {
+function getArmorDamageReduction(armor: number, attackerLevel: number): number {
+  const reduction = armor / (armor + Math.max(1, attackerLevel) * 50);
+  return clamp(reduction, 0, DAMAGE_REDUCTION_CAP);
+}
+
+function applySoftCap(value: number, softCap: number, hardCap: number): number {
+  if (value <= softCap) {
+    return value;
+  }
+  return Math.min(hardCap, softCap + (value - softCap) * 0.5);
+}
+
+function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
 function roll(min: number, max: number, random: () => number): number {
   return Math.floor(random() * (max - min + 1)) + min;
 }
+

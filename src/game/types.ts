@@ -38,6 +38,10 @@ export type SecondaryStats = {
   rageFromAttacks: number;
   blockChance: number;
   blockValue: number;
+  goldFindBonus: number;
+  lootChanceBonus: number;
+  rarityFindBonus: number;
+  durabilityLossReduction: number;
   counterChance: number;
   counterDamage: number;
   executeDamage: number;
@@ -65,6 +69,12 @@ export type Weapon = {
   effect: string;
   description: string;
   healthRegen?: number;
+  accuracy?: number;
+  critChance?: number;
+  critDamage?: number;
+  attackSpeedBonus?: number;
+  armorPenetration?: number;
+  damageBonus?: number;
 };
 
 export type Armor = {
@@ -84,6 +94,18 @@ export type Armor = {
   hpBonus: number;
   description: string;
   healthRegen?: number;
+  accuracy?: number;
+  critChance?: number;
+  critDamage?: number;
+  attackSpeedBonus?: number;
+  armorPenetration?: number;
+  dodgeChance?: number;
+  maxHp?: number;
+  maxHealth?: number;
+  damageReduction?: number;
+  blockChance?: number;
+  blockPower?: number;
+  lifeSteal?: number;
 };
 
 export type Shield = {
@@ -100,6 +122,7 @@ export type Shield = {
   maxHealth: number;
   staggerResist: number;
   description: string;
+  damageReduction?: number;
 };
 
 export type Material = {
@@ -222,12 +245,28 @@ export type Recipe = {
 export type ItemAffixType =
   | 'attackPower'
   | 'maxHealth'
+  | 'maxHp'
   | 'armor'
+  | 'damageBonus'
   | 'critChance'
   | 'critDamage'
   | 'dodgeChance'
   | 'accuracy'
-  | 'healthRegen';
+  | 'healthRegen'
+  | 'attackSpeedBonus'
+  | 'armorPenetration'
+  | 'stunChance'
+  | 'bleedChance'
+  | 'stunResist'
+  | 'bleedResist'
+  | 'blockChance'
+  | 'blockPower'
+  | 'damageReduction'
+  | 'lifeSteal'
+  | 'goldFindBonus'
+  | 'lootChanceBonus'
+  | 'rarityFindBonus'
+  | 'durabilityLossReduction';
 
 export type ItemAffix = {
   id: string;
@@ -237,11 +276,70 @@ export type ItemAffix = {
   valueType: 'flat' | 'percent';
 };
 
+export type GeneratedEquipmentStats = Partial<{
+  minDamage: number;
+  maxDamage: number;
+  attackSpeed: number;
+  attackSpeedBonus: number;
+  armor: number;
+  defense: number;
+  maxHp: number;
+  maxHealth: number;
+  damageBonus: number;
+  critChance: number;
+  critDamage: number;
+  accuracy: number;
+  healthRegen: number;
+  armorPenetration: number;
+  stunChance: number;
+  bleedChance: number;
+  stunResist: number;
+  bleedResist: number;
+  blockChance: number;
+  blockPower: number;
+  blockValue: number;
+  damageReduction: number;
+  lifeSteal: number;
+  dodgeChance: number;
+  dodgeBonus: number;
+  hpBonus: number;
+  lootChanceBonus: number;
+  rarityFindBonus: number;
+  goldFindBonus: number;
+  durabilityLossReduction: number;
+}>;
+
+export type GeneratedEquipmentSource = {
+  type: 'enemy_drop';
+  enemyId?: string;
+  enemyName?: string;
+  locationId?: string;
+};
+
+export type GeneratedEquipmentItem = {
+  id: string;
+  templateId: string;
+  name: string;
+  category: ItemCategory;
+  slot: EquipmentSlot;
+  level: number;
+  tier: number;
+  tierIndex: number;
+  rarity: Rarity;
+  stats: GeneratedEquipmentStats;
+  affixes: ItemAffix[];
+  durability: number;
+  maxDurability: number;
+  source?: GeneratedEquipmentSource;
+};
+
 export type InventoryStack = {
   itemId: string;
   qty: number;
   affixes?: ItemAffix[];
   durability?: number;
+  rerollCount?: number;
+  generatedItem?: GeneratedEquipmentItem;
 };
 
 export type EquipmentSlot = 'weapon' | 'shield' | 'head' | 'chest' | 'legs' | 'hands' | 'feet' | 'ring1' | 'ring2' | 'amulet';
@@ -278,6 +376,7 @@ export type HeroState = {
   inventory: InventoryStack[];
   equipmentDurability?: Record<string, number>;
   equipmentAffixes?: Record<string, ItemAffix[]>;
+  equippedGeneratedItems?: Partial<Record<EquipmentSlot, GeneratedEquipmentItem | null>>;
   quests?: ActiveQuest[];
   defeatedBossIds?: string[];
 };

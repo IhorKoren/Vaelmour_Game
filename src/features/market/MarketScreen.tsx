@@ -62,6 +62,18 @@ export function MarketScreen({ hero, onHeroChange }: Props) {
     }
 
     let item = items.find((entry) => entry.id.toLowerCase() === itemId.toLowerCase());
+    if (!item && stack.generatedItem) {
+      item = {
+        id: stack.generatedItem.id,
+        name: stack.generatedItem.name,
+        category: stack.generatedItem.category,
+        rarity: stack.generatedItem.rarity,
+        tier: stack.generatedItem.tier,
+        level: stack.generatedItem.level,
+        description: 'Generated equipment drop.',
+        ...stack.generatedItem.stats
+      };
+    }
     if (!item) {
       const w = weapons.find((entry) => entry.id.toLowerCase() === itemId.toLowerCase());
       if (w) {
@@ -83,9 +95,11 @@ export function MarketScreen({ hero, onHeroChange }: Props) {
       itemId: item.id,
       category: item.category,
       rarity: item.rarity,
+      level: stack.generatedItem?.level ?? item.level ?? item.tier,
       tier: item.tier,
       affixesCount: stack.affixes?.length || 0,
-      baseValueGold: item.sellValueGold
+      baseValueGold: item.sellValueGold,
+      stats: stack.generatedItem?.stats
     });
 
     const nextInventory = [...hero.inventory];
@@ -106,7 +120,7 @@ export function MarketScreen({ hero, onHeroChange }: Props) {
 
     setMarketMessage({
       success: true,
-      text: `Продано: ${getDisplayItemName(item.id)} за ${value} золота.`
+      text: `Продано: ${stack.generatedItem?.name ?? getDisplayItemName(item.id)} за ${value} золота.`
     });
   }
 
@@ -115,6 +129,18 @@ export function MarketScreen({ hero, onHeroChange }: Props) {
     return hero.inventory
       .map((stack, idx) => {
         let item = items.find((entry) => entry.id.toLowerCase() === stack.itemId.toLowerCase());
+        if (!item && stack.generatedItem) {
+          item = {
+            id: stack.generatedItem.id,
+            name: stack.generatedItem.name,
+            category: stack.generatedItem.category,
+            rarity: stack.generatedItem.rarity,
+            tier: stack.generatedItem.tier,
+            level: stack.generatedItem.level,
+            description: 'Generated equipment drop.',
+            ...stack.generatedItem.stats
+          };
+        }
         if (!item) {
           const w = weapons.find((entry) => entry.id.toLowerCase() === stack.itemId.toLowerCase());
           if (w) {
@@ -220,9 +246,11 @@ export function MarketScreen({ hero, onHeroChange }: Props) {
                 itemId: item.id,
                 category: item.category,
                 rarity: item.rarity,
+                level: stack.generatedItem?.level ?? item.level ?? item.tier,
                 tier: item.tier,
                 affixesCount: stack.affixes?.length || 0,
-                baseValueGold: item.sellValueGold
+                baseValueGold: item.sellValueGold,
+                stats: stack.generatedItem?.stats
               });
 
               return (
@@ -260,7 +288,7 @@ export function MarketScreen({ hero, onHeroChange }: Props) {
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '4px' }}>
                         <strong style={{ fontSize: '13px', color: 'var(--color-text-dark)', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {getDisplayItemName(item.id)} {stack.qty > 1 && `(x${stack.qty})`}
+                          {stack.generatedItem?.name ?? getDisplayItemName(item.id)} {stack.qty > 1 && `(x${stack.qty})`}
                         </strong>
                         <span style={{
                           fontSize: '8px',
@@ -277,7 +305,7 @@ export function MarketScreen({ hero, onHeroChange }: Props) {
                       </div>
 
                       <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
-                        Ранг {item.tier} · {formatItemType(item.category)}
+                        Ранг {stack.generatedItem?.level ?? item.level ?? item.tier} · {formatItemType(item.category)}
                       </div>
                     </div>
                   </div>

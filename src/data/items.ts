@@ -1,8 +1,5 @@
-import rawData from './generated/items.json';
-import minorArmorRawData from './generated/minorArmor.json';
-import shieldRawData from './generated/shields.json';
-import ringRawData from './generated/rings.json';
-import amuletRawData from './generated/amulets.json';
+import rawMaterials from './generated/materials.json';
+import { equipmentItems } from './equipmentCatalog';
 import type { ItemCategory, Rarity } from '../game/types';
 
 export type ItemDefinition = {
@@ -12,153 +9,53 @@ export type ItemDefinition = {
   rarity: Rarity;
   tier: number;
   description: string;
+  sourceSheet?: string;
+  level?: number;
+  templateId?: string;
+  codeName?: string;
+  minDamage?: number;
+  maxDamage?: number;
+  attackSpeed?: number;
   defense?: number;
   armor?: number;
   damageBonus?: number;
   dodgeBonus?: number;
+  dodgeChance?: number;
   hpBonus?: number;
   maxHealth?: number;
+  maxHp?: number;
   healthRegen?: number;
-  sourceSheet?: string;
-  sellValueGold?: number;
+  accuracy?: number;
+  critChance?: number;
+  critDamage?: number;
+  attackSpeedBonus?: number;
+  armorPenetration?: number;
+  stunChance?: number;
+  bleedChance?: number;
+  stunResist?: number;
+  bleedResist?: number;
   blockChance?: number;
   blockValue?: number;
+  blockPower?: number;
   staggerResist?: number;
+  damageReduction?: number;
+  lifeSteal?: number;
+  goldFindBonus?: number;
+  lootChanceBonus?: number;
+  rarityFindBonus?: number;
+  durabilityLossReduction?: number;
+  sellValueGold?: number;
 };
 
-const shieldItems: ItemDefinition[] = (shieldRawData as Array<{
-  id: string;
-  name: string;
-  category: 'shield';
-  rarity: Rarity;
-  tier: number;
-  description: string;
-  defense?: number;
-  armor?: number;
-  damageBonus?: number;
-  dodgeBonus?: number;
-  hpBonus?: number;
-  maxHealth?: number;
-  healthRegen?: number;
-  sourceSheet?: string;
-  blockChance?: number;
-  blockValue?: number;
-  staggerResist?: number;
-}>).map((item) => ({
-  id: item.id,
-  name: item.name,
-  category: item.category,
-  rarity: item.rarity,
-  tier: item.tier,
-  description: item.description,
-  defense: item.defense,
-  armor: item.armor,
-  damageBonus: item.damageBonus,
-  dodgeBonus: item.dodgeBonus,
-  hpBonus: item.hpBonus,
-  maxHealth: item.maxHealth,
-  healthRegen: item.healthRegen,
-  sourceSheet: item.sourceSheet,
-  blockChance: item.blockChance,
-  blockValue: item.blockValue,
-  staggerResist: item.staggerResist
+const materialItems: ItemDefinition[] = (rawMaterials as Array<Record<string, unknown>>).map((item) => ({
+  id: String(item.id),
+  name: String(item.name),
+  category: 'material',
+  rarity: String(item.rarity ?? 'common'),
+  tier: Number(item.tier ?? 1),
+  description: String(item.notes ?? item.source ?? item.primaryUsage ?? item.name),
+  sourceSheet: String(item.sourceSheet ?? 'Materials'),
+  sellValueGold: Number(item.sellValueGold ?? 0)
 }));
 
-const ringItems: ItemDefinition[] = (ringRawData as Array<{
-  id: string;
-  name: string;
-  category: 'ring';
-  rarity: Rarity;
-  tier: number;
-  description: string;
-  defense?: number;
-  armor?: number;
-  damageBonus?: number;
-  dodgeBonus?: number;
-  hpBonus?: number;
-  maxHealth?: number;
-  healthRegen?: number;
-  sourceSheet?: string;
-}>).map((item) => ({
-  id: item.id,
-  name: item.name,
-  category: item.category,
-  rarity: item.rarity,
-  tier: item.tier,
-  description: item.description,
-  defense: item.defense,
-  armor: item.armor,
-  damageBonus: item.damageBonus,
-  dodgeBonus: item.dodgeBonus,
-  hpBonus: item.hpBonus,
-  maxHealth: item.maxHealth,
-  healthRegen: item.healthRegen,
-  sourceSheet: item.sourceSheet
-}));
-
-const minorArmorItems: ItemDefinition[] = (minorArmorRawData as Array<{
-  id: string;
-  name: string;
-  category: ItemCategory;
-  rarity: Rarity;
-  tier: number;
-  description: string;
-  defense?: number;
-  armor?: number;
-  damageBonus?: number;
-  dodgeBonus?: number;
-  hpBonus?: number;
-  maxHealth?: number;
-  healthRegen?: number;
-  sourceSheet?: string;
-}>).map((item) => ({
-  id: item.id,
-  name: item.name,
-  category: item.category,
-  rarity: item.rarity,
-  tier: item.tier,
-  description: item.description,
-  defense: item.defense,
-  armor: item.armor,
-  damageBonus: item.damageBonus,
-  dodgeBonus: item.dodgeBonus,
-  hpBonus: item.hpBonus,
-  maxHealth: item.maxHealth,
-  healthRegen: item.healthRegen,
-  sourceSheet: item.sourceSheet
-}));
-
-const amuletItems: ItemDefinition[] = (amuletRawData as Array<{
-  id: string;
-  name: string;
-  category: 'amulet';
-  rarity: Rarity;
-  tier: number;
-  description: string;
-  defense?: number;
-  armor?: number;
-  damageBonus?: number;
-  dodgeBonus?: number;
-  hpBonus?: number;
-  maxHealth?: number;
-  healthRegen?: number;
-  sourceSheet?: string;
-}>).map((item) => ({
-  id: item.id,
-  name: item.name,
-  category: item.category,
-  rarity: item.rarity,
-  tier: item.tier,
-  description: item.description,
-  defense: item.defense,
-  armor: item.armor,
-  damageBonus: item.damageBonus,
-  dodgeBonus: item.dodgeBonus,
-  hpBonus: item.hpBonus,
-  maxHealth: item.maxHealth,
-  healthRegen: item.healthRegen,
-  sourceSheet: item.sourceSheet
-}));
-
-export const items: ItemDefinition[] = [...(rawData as ItemDefinition[]), ...shieldItems, ...ringItems, ...minorArmorItems, ...amuletItems];
-
+export const items: ItemDefinition[] = [...materialItems, ...equipmentItems];

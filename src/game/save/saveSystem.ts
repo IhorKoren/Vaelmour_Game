@@ -1,6 +1,6 @@
 import { SAVE_KEY } from '../constants';
 import { calculateDerivedStats } from '../formulas/stats';
-import type { HeroState, ItemAffix, ActiveQuest } from '../types';
+import type { HeroState, ItemAffix, ActiveQuest, EquipmentSlot, GeneratedEquipmentItem } from '../types';
 import { initializeQuests } from '../formulas/quests';
 
 export type GameSave = {
@@ -39,13 +39,36 @@ export function normalizeHeroState(savedHero: unknown): HeroState {
   
   const rawInventory = (heroObj.inventory ?? []) as Array<Record<string, unknown>>;
   const inventory = rawInventory.map((stack) => {
+    const rawGeneratedItem = stack.generatedItem as GeneratedEquipmentItem | undefined;
     return {
       itemId: String(stack.itemId ?? ''),
       qty: Number(stack.qty ?? 0),
       affixes: (stack.affixes ?? []) as ItemAffix[],
-      durability: typeof stack.durability === 'number' ? Number(stack.durability) : undefined
+      durability: typeof stack.durability === 'number' ? Number(stack.durability) : undefined,
+      rerollCount: typeof stack.rerollCount === 'number' ? Number(stack.rerollCount) : 0,
+      generatedItem: rawGeneratedItem
+        ? {
+            ...rawGeneratedItem,
+            affixes: (rawGeneratedItem.affixes ?? []) as ItemAffix[],
+            stats: { ...(rawGeneratedItem.stats ?? {}) }
+          }
+        : undefined
     };
   });
+
+  const rawEquippedGeneratedItems = (heroObj.equippedGeneratedItems ?? {}) as Partial<Record<EquipmentSlot, GeneratedEquipmentItem | null>>;
+  const equippedGeneratedItems: Partial<Record<EquipmentSlot, GeneratedEquipmentItem | null>> = {};
+  for (const [slot, generatedItem] of Object.entries(rawEquippedGeneratedItems)) {
+    if (!generatedItem) {
+      equippedGeneratedItems[slot as EquipmentSlot] = null;
+      continue;
+    }
+    equippedGeneratedItems[slot as EquipmentSlot] = {
+      ...generatedItem,
+      affixes: (generatedItem.affixes ?? []) as ItemAffix[],
+      stats: { ...(generatedItem.stats ?? {}) }
+    };
+  }
 
   const level = Number(heroObj.level ?? 1);
   const defaultQuests = initializeQuests(level);
@@ -98,6 +121,7 @@ export function normalizeHeroState(savedHero: unknown): HeroState {
     inventory,
     equipmentAffixes,
     equipmentDurability,
+    equippedGeneratedItems,
     quests,
     defeatedBossIds
   } as unknown as HeroState;

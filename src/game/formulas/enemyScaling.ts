@@ -1,5 +1,5 @@
 import type { Enemy, Location, HeroState, EncounterRank } from '../types';
-import { getEquippedWeaponStats, getEquippedArmorStats } from './equipment';
+import { calculateEnemyPower, calculateHeroPower } from './power';
 
 /**
  * Dynamically scales an enemy's statistics based on the location's level range.
@@ -53,15 +53,7 @@ export function scaleEnemyForLocation(enemy: Enemy, location: Location, presetLe
  * Computes the hero's current approximate power level based on core stats and equipped items.
  */
 export function getHeroPower(hero: HeroState): number {
-  const weapon = getEquippedWeaponStats(hero);
-  const armor = getEquippedArmorStats(hero);
-
-  const levelPower = hero.level * 10;
-  const statsPower = (hero.stats.strength + hero.stats.vitality + hero.stats.agility) * 2;
-  const weaponPower = (weapon.minDamage + weapon.maxDamage) * 1.5;
-  const armorPower = armor.defense * 2;
-
-  return Math.round(levelPower + statsPower + weaponPower + armorPower);
+  return calculateHeroPower(hero);
 }
 
 /**
@@ -69,8 +61,24 @@ export function getHeroPower(hero: HeroState): number {
  */
 export function getLocationThreat(location: Location): number {
   const maxLevel = location.levelRange[1];
-  // Base threat factor: 15 points of threat per level
-  return maxLevel * 15;
+  const proxyEnemy: Enemy = {
+    id: `threat_${location.id}`,
+    name: location.name,
+    level: maxLevel,
+    levelRange: [maxLevel, maxLevel],
+    hp: maxLevel * 35,
+    attack: maxLevel * 4,
+    defense: maxLevel * 3,
+    critChance: 0.08,
+    dodgeChance: 0.04,
+    xp: maxLevel * 10,
+    gold: maxLevel * 5,
+    location: location.name,
+    lootTable: 'threat',
+    behavior: 'threat',
+    notes: 'Threat proxy'
+  };
+  return calculateEnemyPower(proxyEnemy);
 }
 
 /**

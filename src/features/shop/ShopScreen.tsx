@@ -146,8 +146,8 @@ export function ShopScreen({ hero, onHeroChange }: Props) {
                     </h4>
                     <div style={{ display: 'grid', gap: '6px', marginTop: '4px' }}>
                       {openedRewards.map((reward, idx) => {
-                        const itemName = getDisplayItemName(reward.itemId);
-                        const isEquip = reward.rarity !== 'common' && (reward.itemId.includes('weapon') || reward.itemId.includes('armor') || reward.itemId.includes('ring') || reward.itemId.includes('amulet'));
+                        const itemName = reward.generatedItem?.name ?? getDisplayItemName(reward.itemId);
+                        const isEquip = Boolean(reward.generatedItem) || (reward.rarity !== 'common' && (reward.itemId.includes('weapon') || reward.itemId.includes('armor') || reward.itemId.includes('ring') || reward.itemId.includes('amulet')));
                         const rarityLabel = formatRarity(reward.rarity);
                         
                         return (
@@ -165,7 +165,7 @@ export function ShopScreen({ hero, onHeroChange }: Props) {
                             }}
                           >
                             <span>
-                              🎁 {itemName} {reward.qty > 1 && `x${reward.qty}`}
+                              🎁 {itemName} {reward.generatedItem ? `(lvl ${reward.generatedItem.level})` : ''} {reward.qty > 1 && `x${reward.qty}`}
                             </span>
                             <span style={{
                               fontSize: '9px',

@@ -1,12 +1,16 @@
 import { armors } from '../data/armors';
 import { weapons } from '../data/weapons';
+import { recipes } from '../data/recipes';
 import { calculateDerivedStats } from './formulas/stats';
 import { initializeQuests } from './formulas/quests';
 import type { HeroState } from './types';
 
 export function createInitialHero(): HeroState {
-  const startingWeapon = weapons.find((weapon) => weapon.id === 'weapon_01_axe_hatchet_tier_1_001') ?? weapons[0];
-  const startingArmor = armors.find((armor) => armor.id === 'armor_01_skirmisher_skirmisher_vest_tier_1_001') ?? armors[0];
+  const startingWeapon = weapons.find((weapon) => weapon.id === 'weapon_blade_lvl_01') ?? weapons[0];
+  const startingArmor = armors.find((armor) => armor.id === 'chest_armor_lvl_01') ?? armors[0];
+  const autoKnownRecipes = recipes
+    .filter((recipe) => recipe.unlockMethod?.toLowerCase().includes('auto-known'))
+    .map((recipe) => recipe.id);
 
   const baseHero = {
     id: 'player',
@@ -15,7 +19,7 @@ export function createInitialHero(): HeroState {
     level: 1,
     xp: 0,
     gold: 40,
-    knownRecipeIds: ['REC_001', 'REC_002'],
+    knownRecipeIds: autoKnownRecipes,
     baseHp: 100,
     stats: {
       strength: 5,
