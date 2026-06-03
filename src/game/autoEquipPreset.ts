@@ -86,7 +86,7 @@ export type AutoEquipPresetItem = {
  * true = preset активний.
  * false = preset повністю вимкнений.
  */
-export const AUTO_EQUIP_PRESET_ENABLED = true;
+export const AUTO_EQUIP_PRESET_ENABLED = false;
 
 /**
  * Міняй це значення кожного разу, коли хочеш,
@@ -97,7 +97,7 @@ export const AUTO_EQUIP_PRESET_ENABLED = true;
  * 'test_loadout_v2'
  * 'epic_level_12_test_v1'
  */
-export const AUTO_EQUIP_PRESET_VERSION = false;
+export const AUTO_EQUIP_PRESET_VERSION = 'test_loadout_v1';
 
 /**
  * false = застосувати тільки 1 раз для поточної AUTO_EQUIP_PRESET_VERSION.
