@@ -291,6 +291,39 @@ function getEquipmentItem(itemId: string | null | undefined): EquipmentItemDefin
 
   return equipmentCatalog.find((item) => item.id === itemId) ?? null;
 }
+function getEquippedGeneratedItem(
+  hero: HeroDraft,
+  slot: EquipmentSlot
+): GeneratedEquipmentItem | null {
+  if (!isRecord(hero.equippedGeneratedItems)) return null;
+
+  const generatedItem = hero.equippedGeneratedItems[slot];
+
+  if (!isRecord(generatedItem)) return null;
+
+  return generatedItem as unknown as GeneratedEquipmentItem;
+}
+
+function getDisplayEquipmentItem(
+  hero: HeroDraft,
+  slot: EquipmentSlot,
+  itemId: string | null | undefined
+): EquipmentItemDefinition | null {
+  const generatedItem = getEquippedGeneratedItem(hero, slot);
+
+  if (generatedItem) {
+    return {
+      id: generatedItem.id,
+      name: generatedItem.name,
+      slot: catalogSlot(slot),
+      level: generatedItem.level,
+      rarity: generatedItem.rarity,
+      stats: generatedItem.stats
+    } as EquipmentItemDefinition;
+  }
+
+  return getEquipmentItem(itemId);
+}
 
 function summarizeEquipmentItem(item: EquipmentItemDefinition | null): string {
   if (!item) return 'Слот порожній.';
