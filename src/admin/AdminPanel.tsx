@@ -662,4 +662,505 @@ export function AdminPanel() {
 
     setFields((current) => ({
       ...current,
-      currentHp: String(m
+      currentHp: String(maxHp),
+    }));
+
+    applyHeroDraft(nextHero);
+  }
+
+  async function savePlayer() {
+    if (!selectedPlayerId) {
+      setError('Гравець не вибраний.');
+      return;
+    }
+
+    const parsedHero = parseHeroJson(heroJsonText);
+
+    if (!parsedHero) {
+      setError('hero_json має бути валідним JSON-обʼєктом.');
+      return;
+    }
+
+    setIsSaving(true);
+    setError(null);
+    setMessage(null);
+
+    const finalHero = mergeFieldsIntoHero(parsedHero);
+
+    try {
+      await postJson('/.netlify/functions/adminUpdatePlayer', {
+        adminSecret,
+        playerId: selectedPlayerId,
+        updates: {
+          level: fieldNumber(fields.level),
+          xp: fieldNumber(fields.xp),
+          gold: fieldNumber(fields.gold),
+          currentHp: fieldNumber(fields.currentHp),
+          maxHp: fieldNumber(fields.maxHp),
+          selectedLocationId: fields.selectedLocationId || undefined,
+          isBanned: fields.isBanned,
+          adminNotes: fields.adminNotes,
+          hero: finalHero,
+        },
+      });
+
+      setMessage('Гравця оновлено.');
+      applyHeroDraft(finalHero);
+      await loadPlayers();
+      await loadPlayerDetails(selectedPlayerId);
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : String(saveError));
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  useEffect(() => {
+    if (isUnlocked) {
+      void loadPlayers();
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isUnlocked]);
+
+  useEffect(() => {
+    if (isUnlocked && selectedPlayerId) {
+      void loadPlayerDetails(selectedPlayerId);
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isUnlocked, selectedPlayerId]);
+
+  if (!isUnlocked) {
+    return (
+      <div className="admin-page">
+        <div className="admin-login">
+          <h1>Vaelmour Admin</h1>
+          <p>Введи ADMIN_SECRET, який збережений у Netlify Environment Variables.</p>
+
+          <input
+            value={adminSecret}
+            onChange={(event) => setAdminSecret(event.target.value)}
+            placeholder="ADMIN_SECRET"
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                void unlockAdmin();
+              }
+            }}
+          />
+
+          <button type="button" onClick={() => void unlockAdmin()}>
+            Увійти
+          </button>
+
+          {error && <div className="admin-error">{error}</div>}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="admin-page">
+      <header className="admin-header">
+        <div>
+          <h1>Vaelmour Admin</h1>
+          <p>Гравці, характеристики, екіпірування і cloud save.</p>
+        </div>
+
+        <div className="admin-header__actions">
+          <button type="button" onClick={() => void loadPlayers()} disabled={isLoadingList}>
+            {isLoadingList ? 'Оновлення...' : 'Оновити'}
+          </button>
+
+          <button type="button" onClick={logout}>
+            Вийти
+          </button>
+        </div>
+      </header>
+
+      {message && <div className="admin-message">{message}</div>}
+      {error && <div className="admin-error">{error}</div>}
+
+      <main className="admin-layout">
+        <section className="admin-card">
+          <h2>Гравці</h2>
+
+          <div className="admin-table-wrap">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>Telegram</th>
+                  <th>Імʼя</th>
+                  <th>Lvl</th>
+                  <th>Gold</th>
+                  <th>HP</th>
+                  <th>Last seen</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {players.map((player) => (
+                  <tr
+                    key={player.id}
+                    className={player.id === selectedPlayerId ? 'is-selected' : undefined}
+                    onClick={() => setSelectedPlayerId(player.id)}
+                  >
+                    <td>
+                      {player.telegramUserId}
+                      <span>@{player.username ?? '—'}</span>
+                    </td>
+                    <td>{player.firstName ?? '—'}</td>
+                    <td>{player.save?.level ?? '—'}</td>
+                    <td>{player.save?.gold ?? '—'}</td>
+                    <td>{player.save ? `${player.save.current_hp}/${player.save.max_hp}` : '—'}</td>
+                    <td>{formatDate(player.lastSeenAt)}</td>
+                  </tr>
+                ))}
+
+                {players.length === 0 && (
+                  <tr>
+                    <td colSpan={6}>Гравців ще немає.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section className="admin-card">
+          <h2>Деталі гравця</h2>
+
+          {!selectedListPlayer && <p>Вибери гравця зі списку.</p>}
+
+          {selectedListPlayer && (
+            <>
+              <div className="admin-player-summary">
+                <div>
+                  <span>Telegram ID</span>
+                  <strong>{selectedListPlayer.telegramUserId}</strong>
+                </div>
+
+                <div>
+                  <span>Username</span>
+                  <strong>@{selectedListPlayer.username ?? '—'}</strong>
+                </div>
+
+                <div>
+                  <span>Player ID</span>
+                  <strong>{selectedListPlayer.id}</strong>
+                </div>
+
+                <div>
+                  <span>Save updated</span>
+                  <strong>{formatDate(selectedListPlayer.save?.updated_at)}</strong>
+                </div>
+              </div>
+
+              {isLoadingDetails && <p>Завантаження деталей...</p>}
+
+              {details?.save && (
+                <>
+                  <section className="admin-section">
+                    <div className="admin-section__header">
+                      <h3>Основні параметри</h3>
+
+                      <div className="admin-inline-actions">
+                        <button type="button" onClick={fillHpToMax}>
+                          HP = Max
+                        </button>
+
+                        <button type="button" onClick={recalculateMaxHp}>
+                          Перерахувати Max HP
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="admin-form-grid">
+                      <label>
+                        Level
+                        <input
+                          type="number"
+                          value={fields.level}
+                          onChange={(event) => updateNumberField('level', event.target.value)}
+                        />
+                      </label>
+
+                      <label>
+                        XP
+                        <input
+                          type="number"
+                          value={fields.xp}
+                          onChange={(event) => updateNumberField('xp', event.target.value)}
+                        />
+                      </label>
+
+                      <label>
+                        Gold
+                        <input
+                          type="number"
+                          value={fields.gold}
+                          onChange={(event) => updateNumberField('gold', event.target.value)}
+                        />
+                      </label>
+
+                      <label>
+                        Current HP
+                        <input
+                          type="number"
+                          value={fields.currentHp}
+                          onChange={(event) => updateNumberField('currentHp', event.target.value)}
+                        />
+                      </label>
+
+                      <label>
+                        Max HP
+                        <input
+                          type="number"
+                          value={fields.maxHp}
+                          onChange={(event) => updateNumberField('maxHp', event.target.value)}
+                        />
+                      </label>
+
+                      <label>
+                        Base HP
+                        <input
+                          type="number"
+                          value={fields.baseHp}
+                          onChange={(event) => updateNumberField('baseHp', event.target.value)}
+                        />
+                      </label>
+
+                      <label>
+                        Strength
+                        <input
+                          type="number"
+                          value={fields.strength}
+                          onChange={(event) => updateNumberField('strength', event.target.value)}
+                        />
+                      </label>
+
+                      <label>
+                        Vitality
+                        <input
+                          type="number"
+                          value={fields.vitality}
+                          onChange={(event) => updateNumberField('vitality', event.target.value)}
+                        />
+                      </label>
+
+                      <label>
+                        Agility
+                        <input
+                          type="number"
+                          value={fields.agility}
+                          onChange={(event) => updateNumberField('agility', event.target.value)}
+                        />
+                      </label>
+
+                      <label>
+                        Вільні очки статів
+                        <input
+                          type="number"
+                          value={fields.unspentStatPoints}
+                          onChange={(event) =>
+                            updateNumberField('unspentStatPoints', event.target.value)
+                          }
+                        />
+                      </label>
+
+                      <label>
+                        Location
+                        <select
+                          value={fields.selectedLocationId}
+                          onChange={(event) =>
+                            setFields((current) => ({
+                              ...current,
+                              selectedLocationId: event.target.value,
+                            }))
+                          }
+                        >
+                          <option value="">Не змінювати</option>
+
+                          {locations.map((location) => (
+                            <option key={location.id} value={location.id}>
+                              {location.id} — {location.name}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    </div>
+                  </section>
+
+                  <section className="admin-section">
+                    <h3>Другорядні / розраховані параметри</h3>
+
+                    <div className="admin-stat-grid">
+                      <div className="admin-stat-card">
+                        <span>Attack Power</span>
+                        <strong>{derivedStats ? formatNumber(derivedStats.attackPower) : '—'}</strong>
+                      </div>
+
+                      <div className="admin-stat-card">
+                        <span>Calculated Max HP</span>
+                        <strong>{derivedStats ? derivedStats.maxHp : '—'}</strong>
+                      </div>
+
+                      <div className="admin-stat-card">
+                        <span>Crit Chance</span>
+                        <strong>{derivedStats ? formatPercent(derivedStats.critChance) : '—'}</strong>
+                      </div>
+
+                      <div className="admin-stat-card">
+                        <span>Dodge Chance</span>
+                        <strong>{derivedStats ? formatPercent(derivedStats.dodgeChance) : '—'}</strong>
+                      </div>
+
+                      <div className="admin-stat-card">
+                        <span>Accuracy</span>
+                        <strong>{derivedStats ? formatPercent(derivedStats.accuracy) : '—'}</strong>
+                      </div>
+
+                      <div className="admin-stat-card">
+                        <span>Health Regen</span>
+                        <strong>{derivedStats ? `${derivedStats.healthRegen} HP / 5 сек.` : '—'}</strong>
+                      </div>
+
+                      <div className="admin-stat-card">
+                        <span>Equipment Armor</span>
+                        <strong>{formatNumber(equipmentTotals.armor)}</strong>
+                      </div>
+
+                      <div className="admin-stat-card">
+                        <span>Weapon Damage</span>
+                        <strong>{equipmentTotals.weaponDamage}</strong>
+                      </div>
+
+                      <div className="admin-stat-card">
+                        <span>Weapon Speed</span>
+                        <strong>{equipmentTotals.weaponSpeed}</strong>
+                      </div>
+
+                      <div className="admin-stat-card">
+                        <span>Equipment HP</span>
+                        <strong>+{formatNumber(equipmentTotals.maxHp)}</strong>
+                      </div>
+
+                      <div className="admin-stat-card">
+                        <span>Block Chance</span>
+                        <strong>{formatPercent(equipmentTotals.blockChance)}</strong>
+                      </div>
+
+                      <div className="admin-stat-card">
+                        <span>Block Power</span>
+                        <strong>{formatNumber(equipmentTotals.blockPower)}</strong>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section className="admin-section">
+                    <h3>Екіпірування по слотах</h3>
+
+                    <div className="admin-equipment-grid">
+                      {EQUIPMENT_SLOTS.map(({ slot, label }) => {
+                        const selectedItemId = equipment[slot] ?? '';
+                        const selectedItem = getEquipmentItem(selectedItemId);
+                        const options = equipmentOptionsBySlot[slot] ?? [];
+
+                        return (
+                          <div key={slot} className="admin-equipment-row">
+                            <label>
+                              {label}
+                              <select
+                                value={selectedItemId}
+                                onChange={(event) => updateEquipmentSlot(slot, event.target.value)}
+                              >
+                                <option value="">— Порожній слот —</option>
+
+                                {options.map((item) => (
+                                  <option key={item.id} value={item.id}>
+                                    Lvl {item.level} · {item.name} · {item.id}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+
+                            <div className="admin-equipment-description">
+                              <strong>{selectedItem?.name ?? 'Порожньо'}</strong>
+                              <span>{summarizeEquipmentItem(selectedItem)}</span>
+                              {selectedItem && <code>{selectedItem.id}</code>}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </section>
+
+                  <section className="admin-section">
+                    <h3>Стан акаунта</h3>
+
+                    <label className="admin-checkbox">
+                      <input
+                        type="checkbox"
+                        checked={fields.isBanned}
+                        onChange={(event) =>
+                          setFields((current) => ({
+                            ...current,
+                            isBanned: event.target.checked,
+                          }))
+                        }
+                      />
+                      Заблокований гравець
+                    </label>
+
+                    <label className="admin-full-label">
+                      Admin notes
+                      <textarea
+                        value={fields.adminNotes}
+                        onChange={(event) =>
+                          setFields((current) => ({
+                            ...current,
+                            adminNotes: event.target.value,
+                          }))
+                        }
+                        rows={3}
+                      />
+                    </label>
+                  </section>
+
+                  <section className="admin-section">
+                    <details>
+                      <summary>Raw hero_json — ручне редагування</summary>
+
+                      <label className="admin-full-label">
+                        hero_json
+                        <textarea
+                          className="admin-json-editor"
+                          value={heroJsonText}
+                          onChange={(event) => updateHeroJsonText(event.target.value)}
+                          spellCheck={false}
+                        />
+                      </label>
+                    </details>
+                  </section>
+
+                  <div className="admin-actions">
+                    <button type="button" onClick={() => void savePlayer()} disabled={isSaving}>
+                      {isSaving ? 'Збереження...' : 'Зберегти зміни'}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => selectedPlayerId && void loadPlayerDetails(selectedPlayerId)}
+                    >
+                      Скасувати локальні зміни
+                    </button>
+                  </div>
+                </>
+              )}
+            </>
+          )}
+        </section>
+      </main>
+    </div>
+  );
+}
