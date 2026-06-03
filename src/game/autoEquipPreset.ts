@@ -197,7 +197,7 @@ function clampNumber(value: number, min: number, max: number): number {
 function normalizeVersionForId(value: string): string {
   return value
     .toLowerCase()
-    .replace(/[^a-z0-9_\-]/g, '_')
+    .replace(/[^a-z0-9_-]/g, '_')
     .replace(/_+/g, '_')
     .slice(0, 48);
 }
