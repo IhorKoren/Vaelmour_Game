@@ -76,4 +76,41 @@ describe('displayHelpers formatting and localization', () => {
     const legsName = getDisplayItemName('generated_legs_3_common_12345');
     expect(legsName).toBe('Укріплені поножі');
   });
+
+  it('should deduplicate equipment stats by Ukrainian name in formatEquipmentSummary', () => {
+    // Mock item containing duplicate-meaning keys, e.g., maxHp and maxHealth on the root
+    const mockItemWithRootDuplicates = {
+      maxHp: 10,
+      maxHealth: 10,
+      flatMaxHealth: 10,
+      armor: 5,
+      defense: 5
+    };
+    const summary1 = formatEquipmentSummary(mockItemWithRootDuplicates);
+    // Count occurrences of "Максимальне HP"
+    const hpCount1 = (summary1.match(/Максимальне HP/g) || []).length;
+    expect(hpCount1).toBe(1);
+    // Count occurrences of "Броня"
+    const armorCount1 = (summary1.match(/Броня/g) || []).length;
+    expect(armorCount1).toBe(1);
+
+    // Mock generated item shape where stats contain maxHp and maxHealth and affixes contain maxHealth
+    const mockGeneratedItem = {
+      stats: {
+        maxHp: 15,
+        maxHealth: 15,
+        armor: 12,
+        defense: 12
+      },
+      affixes: [
+        { id: 'affix_1', type: 'maxHealth' as const, value: 5, label: 'здоров\'я', valueType: 'flat' as const }
+      ]
+    };
+    const summary2 = formatEquipmentSummary(mockGeneratedItem);
+    // Should check final generated stats object (statsSource) and output "Максимальне HP" only once
+    const hpCount2 = (summary2.match(/Максимальне HP/g) || []).length;
+    expect(hpCount2).toBe(1);
+    const armorCount2 = (summary2.match(/Броня/g) || []).length;
+    expect(armorCount2).toBe(1);
+  });
 });

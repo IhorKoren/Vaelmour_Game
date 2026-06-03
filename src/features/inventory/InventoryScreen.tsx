@@ -12,7 +12,7 @@ import {
 } from '../../game/formulas/equipment';
 import { getItemBaseStats } from '../../game/equipment/generatedEquipment';
 import type { HeroState, EquipmentSlot, Weapon, Armor } from '../../game/types';
-import { getDisplayItemDescription, getDisplayItemName, formatRarity, formatItemType, formatStatDisplay } from '../../utils/displayHelpers';
+import { getDisplayItemDescription, getDisplayItemName, formatRarity, formatItemType, formatStatDisplay, formatStatName } from '../../utils/displayHelpers';
 import { calculateRerollCost, rerollItemAffix } from '../../game/formulas/reroll';
 import { calculateItemSellValue } from '../../game/formulas/sellValue';
 
@@ -623,6 +623,8 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
         const baseStats = generated ? getItemBaseStats(generated) : null;
 
         const baseLines: string[] = [];
+        const renderedLabels = new Set<string>();
+
         if (baseStats) {
           if (baseStats.minDamage !== undefined && baseStats.maxDamage !== undefined) {
             baseLines.push(`⚔️ Шкода: ${baseStats.minDamage}-${baseStats.maxDamage}`);
@@ -634,8 +636,13 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
           const skipKeys = ['minDamage', 'maxDamage', 'attackSpeed', 'defense', 'maxHealth', 'blockValue', 'dodgeBonus', 'hpBonus'];
           for (const [k, v] of Object.entries(baseStats)) {
             if (skipKeys.includes(k)) continue;
+            const label = formatStatName(k);
+            if (renderedLabels.has(label)) continue;
             const formatted = formatStatDisplay(k, Number(v));
-            if (formatted) baseLines.push(formatted);
+            if (formatted) {
+              baseLines.push(formatted);
+              renderedLabels.add(label);
+            }
           }
         } else {
           if (item.minDamage !== undefined && item.maxDamage !== undefined) {
@@ -646,16 +653,23 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
           }
           if (item.armor !== undefined || item.defense !== undefined) {
             baseLines.push(`🛡️ Броня: +${item.armor ?? item.defense}`);
+            renderedLabels.add(formatStatName('armor'));
           }
           if (item.maxHp !== undefined || item.maxHealth !== undefined) {
             baseLines.push(`🩸 HP: +${item.maxHp ?? item.maxHealth}`);
+            renderedLabels.add(formatStatName('maxHp'));
           }
 
           const skipKeys = ['minDamage', 'maxDamage', 'attackSpeed', 'armor', 'defense', 'maxHp', 'maxHealth', 'id', 'name', 'category', 'rarity', 'tier', 'description', 'sourceSheet', 'level', 'templateId', 'codeName', 'sellValueGold'];
           for (const [k, v] of Object.entries(item)) {
             if (skipKeys.includes(k) || typeof v !== 'number') continue;
+            const label = formatStatName(k);
+            if (renderedLabels.has(label)) continue;
             const formatted = formatStatDisplay(k, v);
-            if (formatted) baseLines.push(formatted);
+            if (formatted) {
+              baseLines.push(formatted);
+              renderedLabels.add(label);
+            }
           }
         }
 

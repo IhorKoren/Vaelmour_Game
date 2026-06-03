@@ -482,9 +482,14 @@ export function CharacterScreen({ hero, onHeroChange }: Props) {
               }
 
               // Render active modifiers dynamically
+              const renderedLabels = new Set<string>();
               Object.entries(itemStats).forEach(([k, v]) => {
                 if (excludedKeys.includes(k)) return;
                 if (typeof v !== 'number' || v === 0 || Number.isNaN(v)) return;
+
+                const labelPart = formatStatName(k);
+                if (renderedLabels.has(labelPart)) return;
+                renderedLabels.add(labelPart);
 
                 const emojis: Record<string, string> = {
                   defense: '🛡️',
@@ -536,7 +541,6 @@ export function CharacterScreen({ hero, onHeroChange }: Props) {
                     </div>
                   );
                 } else {
-                  const labelPart = formatStatName(k);
                   const valuePart = formatStatValueOnly(k, v);
                   displayStats.push(
                     <div key={k}>

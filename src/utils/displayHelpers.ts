@@ -907,79 +907,83 @@ export function formatStatDisplay(key: string, value: number): string {
   return `${formattedVal} ${name}`;
 }
 
-export function formatEquipmentSummary(item: Record<string, number | string | undefined | null>): string {
+export function formatEquipmentSummary(item: Record<string, unknown>): string {
   if (!item) return '';
 
+  const statsSource = (item.stats && typeof item.stats === 'object')
+    ? (item.stats as Record<string, unknown>)
+    : item;
   const parts: string[] = [];
 
-  const minDamage = Number(item.minDamage ?? 0);
-  const maxDamage = Number(item.maxDamage ?? 0);
+  const minDamage = Number(statsSource.minDamage ?? 0);
+  const maxDamage = Number(statsSource.maxDamage ?? 0);
   if (minDamage > 0) {
     parts.push(`Шкода: ${minDamage}–${maxDamage}`);
   }
 
   const keysToSummary = [
-    { key: 'defense', normGroup: 'armor' },
-    { key: 'armor', normGroup: 'armor' },
-    { key: 'maxHp', normGroup: 'hp' },
-    { key: 'maxHealth', normGroup: 'hp' },
-    { key: 'flatMaxHealth', normGroup: 'hp' },
-    { key: 'hpBonus', normGroup: 'hpBonus' },
-    { key: 'blockChance', normGroup: 'blockChance' },
-    { key: 'blockPower', normGroup: 'blockPower' },
-    { key: 'blockValue', normGroup: 'blockPower' },
-    { key: 'critChance', normGroup: 'critChance' },
-    { key: 'critDamage', normGroup: 'critDamage' },
-    { key: 'critDamageBonus', normGroup: 'critDamage' },
-    { key: 'damageBonus', normGroup: 'damageBonus' },
-    { key: 'lifeSteal', normGroup: 'lifesteal' },
-    { key: 'lifesteal', normGroup: 'lifesteal' },
-    { key: 'healthRegen', normGroup: 'healthRegen' },
-    { key: 'dodgeChance', normGroup: 'dodge' },
-    { key: 'dodgeBonus', normGroup: 'dodge' },
-    { key: 'evasion', normGroup: 'dodge' },
-    { key: 'attackSpeed', normGroup: 'attackSpeed' },
-    { key: 'attackSpeedBonus', normGroup: 'attackSpeed' },
-    { key: 'accuracy', normGroup: 'accuracy' },
-    { key: 'goldFindBonus', normGroup: 'goldFind' },
-    { key: 'goldBonus', normGroup: 'goldFind' },
-    { key: 'xpBonus', normGroup: 'xpBonus' },
-    { key: 'lootChanceBonus', normGroup: 'lootChance' },
-    { key: 'itemFind', normGroup: 'lootChance' },
-    { key: 'rarityFindBonus', normGroup: 'rarityFind' },
-    { key: 'rarityFind', normGroup: 'rarityFind' },
-    { key: 'bleedChance', normGroup: 'bleedChance' },
-    { key: 'bleedChanceBonus', normGroup: 'bleedChance' },
-    { key: 'bleedDamage', normGroup: 'bleedDamage' },
-    { key: 'stunChance', normGroup: 'stunChance' },
-    { key: 'stunChanceBonus', normGroup: 'stunChance' },
-    { key: 'counterChance', normGroup: 'counterChance' },
-    { key: 'thorns', normGroup: 'thorns' },
-    { key: 'fireDamage', normGroup: 'fireDamage' },
-    { key: 'frostDamage', normGroup: 'frostDamage' },
-    { key: 'poisonDamage', normGroup: 'poisonDamage' },
-    { key: 'bleedResist', normGroup: 'bleedResist' },
-    { key: 'bleedResistance', normGroup: 'bleedResist' },
-    { key: 'stunResist', normGroup: 'stunResist' },
-    { key: 'staggerResistance', normGroup: 'stunResist' }
+    { key: 'defense' },
+    { key: 'armor' },
+    { key: 'maxHp' },
+    { key: 'maxHealth' },
+    { key: 'flatMaxHealth' },
+    { key: 'hpBonus' },
+    { key: 'blockChance' },
+    { key: 'blockPower' },
+    { key: 'blockValue' },
+    { key: 'critChance' },
+    { key: 'critDamage' },
+    { key: 'critDamageBonus' },
+    { key: 'damageBonus' },
+    { key: 'lifeSteal' },
+    { key: 'lifesteal' },
+    { key: 'healthRegen' },
+    { key: 'dodgeChance' },
+    { key: 'dodgeBonus' },
+    { key: 'evasion' },
+    { key: 'attackSpeed' },
+    { key: 'attackSpeedBonus' },
+    { key: 'accuracy' },
+    { key: 'goldFindBonus' },
+    { key: 'goldBonus' },
+    { key: 'xpBonus' },
+    { key: 'lootChanceBonus' },
+    { key: 'itemFind' },
+    { key: 'rarityFindBonus' },
+    { key: 'rarityFind' },
+    { key: 'bleedChance' },
+    { key: 'bleedChanceBonus' },
+    { key: 'bleedDamage' },
+    { key: 'stunChance' },
+    { key: 'stunChanceBonus' },
+    { key: 'counterChance' },
+    { key: 'thorns' },
+    { key: 'fireDamage' },
+    { key: 'frostDamage' },
+    { key: 'poisonDamage' },
+    { key: 'bleedResist' },
+    { key: 'bleedResistance' },
+    { key: 'stunResist' },
+    { key: 'staggerResistance' }
   ];
 
   const processed = new Set<string>();
 
-  for (const { key, normGroup } of keysToSummary) {
-    const rawVal = item[key];
+  for (const { key } of keysToSummary) {
+    const rawVal = statsSource[key];
     if (rawVal === undefined || rawVal === null || rawVal === '') continue;
     const val = Number(rawVal);
     if (val === 0 || Number.isNaN(val)) continue;
-    if (processed.has(normGroup)) continue;
-    processed.add(normGroup);
 
-    if (normGroup === 'armor') {
+    const name = formatStatName(key);
+    if (processed.has(name)) continue;
+    processed.add(name);
+
+    if (key === 'armor' || key === 'defense') {
       parts.push(`Броня: +${val}`);
-    } else if (normGroup === 'healthRegen') {
-      parts.push(`Регенерація +${val}`);
+    } else if (key === 'healthRegen') {
+      parts.push(`Відновлення HP: ${formatStatValueOnly(key, val)}`);
     } else {
-      const name = formatStatName(key);
       const formatted = formatStatValueOnly(key, val);
       if (formatted.startsWith('+') || formatted.startsWith('-')) {
         parts.push(`${name} ${formatted}`);
