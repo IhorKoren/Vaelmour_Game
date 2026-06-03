@@ -2,34 +2,25 @@ import { Suspense, lazy, startTransition, useEffect, useMemo, useState } from 'r
 
 import { BottomNavigation } from '../components/layout/BottomNavigation';
 import { TopStatusBar } from '../components/layout/TopStatusBar';
-
 import { createInitialHero } from '../game/createInitialHero';
-
 import {
   applyOfflineHealthRegen,
   flushPendingSaveGame,
   loadGame,
   scheduleSaveGame,
 } from '../game/save/saveSystem';
-
 import { locations } from '../data/locations';
-
 import { calculateDerivedStats, xpToNextLevel } from '../game/formulas/stats';
-
 import { checkLevelUp } from '../game/formulas/progression';
 import { updateQuestProgressOnLocationChanged } from '../game/formulas/quests';
-
 import type { AppTab } from './tabs';
-
 import { sendFullHealthNotification } from '../telegram/telegramNotifications';
-
 import {
   flushCloudPlayerSave,
   forceCloudPlayerSave,
   loadCloudPlayerSave,
   scheduleCloudPlayerSave,
 } from '../telegram/playerCloudSave';
-
 import type { HeroState } from '../game/types';
 
 const CombatScreen = lazy(async () => {
@@ -64,7 +55,6 @@ const ShopScreen = lazy(async () => {
 
 function getCriticalHeroSnapshot(hero: HeroState): string {
   const { currentHp, maxHp, ...criticalHeroState } = hero;
-
   return JSON.stringify(criticalHeroState);
 }
 
@@ -89,7 +79,6 @@ export default function AppShell() {
 
     if (save?.hero) {
       const derived = calculateDerivedStats(save.hero.stats, save.hero.baseHp, undefined, save.hero);
-
       return save.hero.currentHp >= derived.maxHp;
     }
 
@@ -109,27 +98,57 @@ export default function AppShell() {
       }
 
       if (cloudSave?.hero) {
-        setHero(cloudSave.hero);
+        const regeneratedCloudSave =
+          applyOfflineHealthRegen({
+            hero: cloudSave.hero,
+            updatedAt: cloudSave.updatedAt,
+          }) ?? {
+            hero: cloudSave.hero,
+            updatedAt: cloudSave.updatedAt,
+          };
 
-        if (cloudSave.selectedLocationId) {
-          setSelectedLocationId(cloudSave.selectedLocationId);
-        }
+        const restoredHero = regeneratedCloudSave.hero;
+        const restoredUpdatedAt = regeneratedCloudSave.updatedAt;
+        const restoredLocationId = cloudSave.selectedLocationId ?? locations[0].id;
+
+        setHero(restoredHero);
+        setSelectedLocationId(restoredLocationId);
 
         scheduleSaveGame({
-          hero: cloudSave.hero,
-          updatedAt: cloudSave.updatedAt,
+          hero: restoredHero,
+          updatedAt: restoredUpdatedAt,
         });
 
         const derived = calculateDerivedStats(
-          cloudSave.hero.stats,
-          cloudSave.hero.baseHp,
+          restoredHero.stats,
+          restoredHero.baseHp,
           undefined,
-          cloudSave.hero,
+          restoredHero,
         );
 
-        setFullHealthNotificationSent(cloudSave.hero.currentHp >= derived.maxHp);
+        setFullHealthNotificationSent(restoredHero.currentHp >= derived.maxHp);
 
-        console.info('[Cloud Save] Applied cloud save to game state.');
+        const cloudSaveWasUpdatedByOfflineRegen =
+          restoredHero.currentHp !== cloudSave.hero.currentHp ||
+          restoredHero.maxHp !== cloudSave.hero.maxHp ||
+          restoredUpdatedAt !== cloudSave.updatedAt;
+
+        if (cloudSaveWasUpdatedByOfflineRegen) {
+          void forceCloudPlayerSave({
+            hero: restoredHero,
+            selectedLocationId: restoredLocationId,
+            updatedAt: restoredUpdatedAt,
+          });
+        }
+
+        console.info('[Cloud Save] Applied cloud save with offline HP regen.', {
+          beforeHp: cloudSave.hero.currentHp,
+          afterHp: restoredHero.currentHp,
+          maxHp: derived.maxHp,
+          selectedLocationId: restoredLocationId,
+          cloudSaveWasUpdatedByOfflineRegen,
+          updatedAt: restoredUpdatedAt,
+        });
       }
 
       setCloudSaveChecked(true);
@@ -180,7 +199,6 @@ export default function AppShell() {
       console.info(
         '[Telegram Notifications] Full HP reached, but player is active. Notification skipped.',
       );
-
       return;
     }
 
@@ -234,7 +252,6 @@ export default function AppShell() {
       setHero((currentHero) => {
         // Regeneration is blocked during active combat
         if (isFighting) return currentHero;
-
         if (currentHero.currentHp <= 0) return currentHero;
 
         const currentDerived = calculateDerivedStats(
@@ -245,7 +262,6 @@ export default function AppShell() {
         );
 
         if (currentDerived.healthRegen <= 0) return currentHero;
-
         if (currentHero.currentHp >= currentDerived.maxHp) return currentHero;
 
         const nextHp = Math.min(currentDerived.maxHp, currentHero.currentHp + currentDerived.healthRegen);
