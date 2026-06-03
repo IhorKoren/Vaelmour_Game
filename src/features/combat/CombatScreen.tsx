@@ -51,8 +51,11 @@ import {
   getDisplayLocationName,
   getDisplayItemName,
   formatRarity,
+  formatItemType,
+  formatEquipmentSummary,
   getDisplaySkillName
 } from '../../utils/displayHelpers';
+import type { GeneratedEquipmentItem } from '../../game/types';
 
 import arenaBg from '../../assets/generated/blackfang_gate_background_mobile.jpg';
 import heroWanderer from '../../assets/generated/hero_vaelmour_back_mobile.png';
@@ -151,6 +154,13 @@ type Props = {
 };
 
 type HuntState = 'idle' | 'searching' | 'fighting' | 'victory' | 'defeat';
+
+type VictoryRewards = {
+  gold: number;
+  xp: number;
+  material?: { id: string; name: string; rarity: string } | null;
+  equipment?: GeneratedEquipmentItem | null;
+};
 type BleedState = { damage: number; ticksRemaining: number };
 type StaggerState = { skipsRemaining: number };
 type TimedBuffState = { expiresAt: number; value: number };
@@ -211,6 +221,7 @@ export function CombatScreen({ hero, onHeroChange, selectedLocationId, onCombatS
   const [skillCooldowns, setSkillCooldowns] = useState<Record<string, number>>({});
   const flashIdCounter = useRef(0);
   const rewardGrantedRef = useRef(false);
+  const [victoryRewards, setVictoryRewards] = useState<VictoryRewards | null>(null);
   const appendCombatLog = useCallback((entry: string, maxEntries = MAX_COMBAT_LOG_ENTRIES) => {
     setLog((previous) => [entry, ...previous].slice(0, maxEntries));
   }, []);
@@ -240,6 +251,7 @@ export function CombatScreen({ hero, onHeroChange, selectedLocationId, onCombatS
       setEnemyPoiseShred(null);
       setSkillCooldowns({});
       rewardGrantedRef.current = false;
+      setVictoryRewards(null);
     }, 0);
 
     return () => clearTimeout(resetTimer);
@@ -295,6 +307,7 @@ export function CombatScreen({ hero, onHeroChange, selectedLocationId, onCombatS
     if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
     if (victoryTimeoutRef.current) clearTimeout(victoryTimeoutRef.current);
     
+    setVictoryRewards(null);
     setHuntState('searching');
     setLog(['Шукаємо ворога...']);
     
@@ -335,6 +348,7 @@ export function CombatScreen({ hero, onHeroChange, selectedLocationId, onCombatS
     if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
     if (victoryTimeoutRef.current) clearTimeout(victoryTimeoutRef.current);
 
+    setVictoryRewards(null);
     setHuntState('searching');
     setLog([`Викликаємо боса локації: ${locationBoss.name}...`]);
 
@@ -493,6 +507,17 @@ export function CombatScreen({ hero, onHeroChange, selectedLocationId, onCombatS
           ? `👑 ЛЕГЕНДАРНА ПЕРЕМОГА НАД БОСОМ ${latestEnemy.current.name}! Отримано ${xpReward} XP, ${goldReward} золота.`
           : `Перемога! Отримано ${xpReward} XP, ${goldReward} золота.`);
 
+    setVictoryRewards({
+      gold: goldReward,
+      xp: xpReward,
+      material: (lootResult.dropped && lootResult.itemId)
+        ? { id: lootResult.itemId, name: lootResult.itemName ?? lootResult.itemId, rarity: lootResult.itemRarity ?? 'common' }
+        : null,
+      equipment: (generatedEquipmentDrop.dropped && generatedEquipmentDrop.item)
+        ? generatedEquipmentDrop.item
+        : null
+    });
+
     const logLines = [
       victoryMessage,
       lootMessage
@@ -517,6 +542,7 @@ export function CombatScreen({ hero, onHeroChange, selectedLocationId, onCombatS
 
     // Automatically hunt the next enemy in 2 seconds
     const id = setTimeout(() => {
+      setVictoryRewards(null);
       setHuntState('searching');
       const nextId = setTimeout(() => {
         const enemyPool = currentLocation?.enemies && currentLocation.enemies.length > 0 ? currentLocation.enemies : [];
@@ -1203,6 +1229,93 @@ export function CombatScreen({ hero, onHeroChange, selectedLocationId, onCombatS
 
           {/* ACTIVE STATE ACTIONS CONTROL BUTTON ROW */}
           <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {huntState === 'victory' && victoryRewards && (
+              <Panel title="🏆 Нагорода за перемогу">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', padding: '4px 0' }}>
+                  {/* Gold & XP row */}
+                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '13px', color: '#dfa84c', fontWeight: 'bold' }}>
+                      💰 {victoryRewards.gold} золота
+                    </span>
+                    <span style={{ fontSize: '13px', color: '#6ec1e4', fontWeight: 'bold' }}>
+                      ✨ {victoryRewards.xp} XP
+                    </span>
+                  </div>
+
+                  {/* Material drop */}
+                  {victoryRewards.material && (
+                    <div style={{ fontSize: '12px', color: '#eed1b3', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span>📦</span>
+                      <span>{getDisplayItemName(victoryRewards.material.id)}</span>
+                      <span style={{
+                        fontSize: '10px',
+                        fontWeight: 'bold',
+                        padding: '1px 5px',
+                        borderRadius: '3px',
+                        border: `1px solid ${({'common':'#8c7865','uncommon':'#2d8249','rare':'#1e70a6','epic':'#9b4dca','legendary':'#dfa84c'} as Record<string,string>)[victoryRewards.material.rarity] ?? '#8c7865'}`,
+                        color: ({'common':'#8c7865','uncommon':'#2d8249','rare':'#1e70a6','epic':'#9b4dca','legendary':'#dfa84c'} as Record<string,string>)[victoryRewards.material.rarity] ?? '#8c7865',
+                        background: 'rgba(0,0,0,0.2)'
+                      }}>
+                        {formatRarity(victoryRewards.material.rarity)}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Generated equipment drop */}
+                  {victoryRewards.equipment && (() => {
+                    const eq = victoryRewards.equipment!;
+                    const rarityColor = ({'common':'#8c7865','uncommon':'#2d8249','rare':'#1e70a6','epic':'#9b4dca','legendary':'#dfa84c'} as Record<string,string>)[eq.rarity] ?? '#8c7865';
+                    const summary = formatEquipmentSummary(eq as unknown as Record<string, unknown>);
+                    return (
+                      <div style={{
+                        marginTop: '4px',
+                        padding: '8px',
+                        borderRadius: '6px',
+                        border: `1px solid ${rarityColor}`,
+                        background: 'rgba(0,0,0,0.25)'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginBottom: '4px' }}>
+                          <span style={{ fontSize: '13px' }}>⚔️</span>
+                          <span style={{ fontSize: '13px', fontWeight: 'bold', color: rarityColor }}>
+                            {getDisplayItemName(eq.id, eq)}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: summary ? '4px' : '0' }}>
+                          <span style={{
+                            fontSize: '10px',
+                            fontWeight: 'bold',
+                            padding: '1px 5px',
+                            borderRadius: '3px',
+                            border: `1px solid ${rarityColor}`,
+                            color: rarityColor,
+                            background: 'rgba(0,0,0,0.2)'
+                          }}>
+                            {formatRarity(eq.rarity)}
+                          </span>
+                          <span style={{
+                            fontSize: '10px',
+                            fontWeight: 'bold',
+                            padding: '1px 5px',
+                            borderRadius: '3px',
+                            border: '1px solid rgba(212,163,115,0.25)',
+                            color: 'var(--color-bronze-light)',
+                            background: 'rgba(0,0,0,0.15)'
+                          }}>
+                            {formatItemType(eq.slot)}
+                          </span>
+                        </div>
+                        {summary && (
+                          <div style={{ fontSize: '11px', color: '#eed1b3', lineHeight: '1.4' }}>
+                            {summary}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
+              </Panel>
+            )}
+
             {huntState === 'victory' && (
               <button
                 className="secondary-button"
