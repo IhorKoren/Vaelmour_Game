@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-
 import './AdminPanel.css';
+
 import { equipmentCatalog, type EquipmentItemDefinition } from '../data/equipmentCatalog';
 import { locations } from '../data/locations';
 import { calculateDerivedStats } from '../game/formulas/stats';
@@ -110,7 +110,7 @@ const EQUIPMENT_SLOTS: Array<{ slot: EquipmentSlot; label: string }> = [
   { slot: 'feet', label: 'Чоботи' },
   { slot: 'ring1', label: 'Кільце 1' },
   { slot: 'ring2', label: 'Кільце 2' },
-  { slot: 'amulet', label: 'Амулет' },
+  { slot: 'amulet', label: 'Амулет' }
 ];
 
 const EMPTY_FIELDS: AdminUpdateFields = {
@@ -126,7 +126,7 @@ const EMPTY_FIELDS: AdminUpdateFields = {
   unspentStatPoints: '',
   selectedLocationId: '',
   isBanned: false,
-  adminNotes: '',
+  adminNotes: ''
 };
 
 function isRecord(value: unknown): value is JsonRecord {
@@ -144,7 +144,6 @@ function toNumber(value: unknown, fallback = 0): number {
 
 function fieldNumber(value: string): number | undefined {
   if (value.trim() === '') return undefined;
-
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : undefined;
 }
@@ -182,7 +181,7 @@ function normalizeStats(value: unknown): CoreStats {
   return {
     strength: toNumber(source.strength, 5),
     vitality: toNumber(source.vitality, 5),
-    agility: toNumber(source.agility, 5),
+    agility: toNumber(source.agility, 5)
   };
 }
 
@@ -199,7 +198,7 @@ function normalizeEquipment(value: unknown): EquipmentState {
     feet: nullableString(source.feet),
     ring1: nullableString(source.ring1),
     ring2: nullableString(source.ring2),
-    amulet: nullableString(source.amulet),
+    amulet: nullableString(source.amulet)
   };
 }
 
@@ -221,13 +220,9 @@ function normalizeHero(hero: HeroDraft): HeroState {
     stats,
     unspentStatPoints: toNumber(hero.unspentStatPoints, 0),
     equippedWeaponId:
-      typeof hero.equippedWeaponId === 'string'
-        ? hero.equippedWeaponId
-        : equipment.weapon ?? '',
+      typeof hero.equippedWeaponId === 'string' ? hero.equippedWeaponId : equipment.weapon ?? '',
     equippedArmorId:
-      typeof hero.equippedArmorId === 'string'
-        ? hero.equippedArmorId
-        : equipment.chest ?? '',
+      typeof hero.equippedArmorId === 'string' ? hero.equippedArmorId : equipment.chest ?? '',
     equipment,
     inventory: Array.isArray(hero.inventory) ? hero.inventory : [],
     equipmentDurability: isRecord(hero.equipmentDurability)
@@ -243,14 +238,14 @@ function normalizeHero(hero: HeroDraft): HeroState {
     defeatedBossIds: Array.isArray(hero.defeatedBossIds) ? hero.defeatedBossIds : [],
     migrationFlags: isRecord(hero.migrationFlags)
       ? (hero.migrationFlags as HeroState['migrationFlags'])
-      : {},
+      : {}
   };
 }
 
 function buildFields(
   hero: HeroDraft,
   save: PlayerDetails['save'] | null,
-  player: PlayerDetails['player'] | null,
+  player: PlayerDetails['player'] | null
 ): AdminUpdateFields {
   const stats = normalizeStats(hero.stats);
 
@@ -267,7 +262,7 @@ function buildFields(
     unspentStatPoints: String(hero.unspentStatPoints ?? 0),
     selectedLocationId: save?.selected_location_id ?? '',
     isBanned: Boolean(player?.is_banned),
-    adminNotes: player?.admin_notes ?? '',
+    adminNotes: player?.admin_notes ?? ''
   };
 }
 
@@ -281,16 +276,14 @@ function parseHeroJson(text: string): HeroDraft | null {
 }
 
 function catalogSlot(slot: EquipmentSlot): EquipmentItemDefinition['slot'] {
-  return slot === 'ring1' || slot === 'ring2'
-    ? 'ring'
-    : (slot as EquipmentItemDefinition['slot']);
+  return slot === 'ring1' || slot === 'ring2' ? 'ring' : (slot as EquipmentItemDefinition['slot']);
 }
 
 function getEquipmentItem(itemId: string | null | undefined): EquipmentItemDefinition | null {
   if (!itemId) return null;
-
   return equipmentCatalog.find((item) => item.id === itemId) ?? null;
 }
+
 function getEquippedGeneratedItem(
   hero: HeroDraft,
   slot: EquipmentSlot
@@ -298,7 +291,6 @@ function getEquippedGeneratedItem(
   if (!isRecord(hero.equippedGeneratedItems)) return null;
 
   const generatedItem = hero.equippedGeneratedItems[slot];
-
   if (!isRecord(generatedItem)) return null;
 
   return generatedItem as unknown as GeneratedEquipmentItem;
@@ -344,14 +336,12 @@ function summarizeEquipmentItem(item: EquipmentItemDefinition | null): string {
   if (stats.blockPower) parts.push(`сила блоку +${stats.blockPower}`);
   if (stats.healthRegen) parts.push(`реген +${stats.healthRegen}`);
   if (stats.damageBonus) parts.push(`шкода +${formatPercent(stats.damageBonus)}`);
-  if (stats.attackSpeedBonus) {
-    parts.push(`швидкість атаки +${formatPercent(stats.attackSpeedBonus)}`);
-  }
+  if (stats.attackSpeedBonus) parts.push(`швидкість атаки +${formatPercent(stats.attackSpeedBonus)}`);
 
   return parts.length ? parts.join(' · ') : 'Базових статів немає.';
 }
 
-function calculateEquipmentTotals(equipment: EquipmentState) {
+function calculateEquipmentTotals(hero: HeroDraft, equipment: EquipmentState) {
   const totals = {
     armor: 0,
     maxHp: 0,
@@ -363,11 +353,11 @@ function calculateEquipmentTotals(equipment: EquipmentState) {
     damageBonus: 0,
     attackSpeedBonus: 0,
     weaponDamage: '—',
-    weaponSpeed: '—',
+    weaponSpeed: '—'
   };
 
-  Object.values(equipment).forEach((itemId) => {
-    const item = getEquipmentItem(itemId);
+  EQUIPMENT_SLOTS.forEach(({ slot }) => {
+    const item = getDisplayEquipmentItem(hero, slot, equipment[slot]);
     if (!item) return;
 
     const stats = item.stats;
@@ -395,13 +385,12 @@ async function postJson<TResponse>(url: string, body: unknown): Promise<TRespons
   const response = await fetch(url, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/json'
     },
-    body: JSON.stringify(body),
+    body: JSON.stringify(body)
   });
 
   const text = await response.text();
-
   let data: unknown;
 
   try {
@@ -414,7 +403,7 @@ async function postJson<TResponse>(url: string, body: unknown): Promise<TRespons
     throw new Error(
       isRecord(data) && 'error' in data
         ? String(data.error)
-        : text || `Request failed with status ${response.status}`,
+        : text || `Request failed with status ${response.status}`
     );
   }
 
@@ -423,13 +412,11 @@ async function postJson<TResponse>(url: string, body: unknown): Promise<TRespons
 
 export function AdminPanel() {
   const [adminSecret, setAdminSecret] = useState(
-    () => window.sessionStorage.getItem(ADMIN_SECRET_STORAGE_KEY) ?? '',
+    () => window.sessionStorage.getItem(ADMIN_SECRET_STORAGE_KEY) ?? ''
   );
-
   const [isUnlocked, setIsUnlocked] = useState(() =>
-    Boolean(window.sessionStorage.getItem(ADMIN_SECRET_STORAGE_KEY)),
+    Boolean(window.sessionStorage.getItem(ADMIN_SECRET_STORAGE_KEY))
   );
-
   const [players, setPlayers] = useState<PlayerListItem[]>([]);
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [details, setDetails] = useState<PlayerDetails | null>(null);
@@ -444,28 +431,26 @@ export function AdminPanel() {
 
   const selectedListPlayer = useMemo(
     () => players.find((player) => player.id === selectedPlayerId) ?? null,
-    [players, selectedPlayerId],
+    [players, selectedPlayerId]
   );
 
   const normalizedHero = useMemo(() => normalizeHero(heroDraft), [heroDraft]);
   const equipment = useMemo(() => normalizeEquipment(heroDraft.equipment), [heroDraft.equipment]);
-  const equipmentTotals = useMemo(() => calculateEquipmentTotals(equipment), [equipment]);
+  const equipmentTotals = useMemo(
+    () => calculateEquipmentTotals(heroDraft, equipment),
+    [heroDraft, equipment]
+  );
 
   const derivedStats = useMemo(() => {
     try {
-      return calculateDerivedStats(
-        normalizedHero.stats,
-        normalizedHero.baseHp,
-        undefined,
-        normalizedHero,
-      );
+      return calculateDerivedStats(normalizedHero.stats, normalizedHero.baseHp, undefined, normalizedHero);
     } catch {
       return null;
     }
   }, [normalizedHero]);
 
   const equipmentOptionsBySlot = useMemo(() => {
-    const map = {} as Record<EquipmentSlot, EquipmentItemDefinition[]>;
+    const map: Partial<Record<EquipmentSlot, EquipmentItemDefinition[]>> = {};
 
     EQUIPMENT_SLOTS.forEach(({ slot }) => {
       map[slot] = equipmentCatalog
@@ -535,7 +520,7 @@ export function AdminPanel() {
     try {
       const data = await postJson<{ success: boolean; players: PlayerListItem[] }>(
         '/.netlify/functions/adminListPlayers',
-        { adminSecret: secret },
+        { adminSecret: secret }
       );
 
       setPlayers(data.players ?? []);
@@ -557,7 +542,7 @@ export function AdminPanel() {
     try {
       const data = await postJson<PlayerDetails>('/.netlify/functions/adminGetPlayer', {
         adminSecret: secret,
-        playerId,
+        playerId
       });
 
       const nextHero = (data.save?.hero_json ?? {}) as HeroDraft;
@@ -591,7 +576,6 @@ export function AdminPanel() {
 
   function logout() {
     window.sessionStorage.removeItem(ADMIN_SECRET_STORAGE_KEY);
-
     setIsUnlocked(false);
     setAdminSecret('');
     setPlayers([]);
@@ -605,7 +589,7 @@ export function AdminPanel() {
   function updateNumberField(field: EditableNumberField, value: string) {
     setFields((current) => ({
       ...current,
-      [field]: value,
+      [field]: value
     }));
 
     if (value.trim() === '') return;
@@ -623,6 +607,7 @@ export function AdminPanel() {
     if (field === 'maxHp') nextHero.maxHp = parsed;
     if (field === 'baseHp') nextHero.baseHp = parsed;
     if (field === 'unspentStatPoints') nextHero.unspentStatPoints = parsed;
+
     if (field === 'strength') nextStats.strength = parsed;
     if (field === 'vitality') nextStats.vitality = parsed;
     if (field === 'agility') nextStats.agility = parsed;
@@ -651,9 +636,7 @@ export function AdminPanel() {
     nextHero.equippedWeaponId = nextEquipment.weapon ?? '';
     nextHero.equippedArmorId = nextEquipment.chest ?? '';
 
-    const durability = isRecord(nextHero.equipmentDurability)
-      ? { ...nextHero.equipmentDurability }
-      : {};
+    const durability = isRecord(nextHero.equipmentDurability) ? { ...nextHero.equipmentDurability } : {};
 
     if (nextItemId) {
       durability[slot] = toNumber(durability[slot], 100);
@@ -662,6 +645,13 @@ export function AdminPanel() {
     }
 
     nextHero.equipmentDurability = durability as HeroState['equipmentDurability'];
+
+    const generatedItems = isRecord(nextHero.equippedGeneratedItems)
+      ? { ...nextHero.equippedGeneratedItems }
+      : {};
+
+    delete generatedItems[slot];
+    nextHero.equippedGeneratedItems = generatedItems as HeroState['equippedGeneratedItems'];
 
     applyHeroDraft(nextHero);
   }
@@ -672,14 +662,10 @@ export function AdminPanel() {
       currentHero.stats,
       currentHero.baseHp,
       undefined,
-      currentHero,
+      currentHero
     );
-
     const nextHero = cloneHeroDraft();
-    const nextCurrentHp = Math.min(
-      toNumber(nextHero.currentHp, nextDerived.maxHp),
-      nextDerived.maxHp,
-    );
+    const nextCurrentHp = Math.min(toNumber(nextHero.currentHp, nextDerived.maxHp), nextDerived.maxHp);
 
     nextHero.maxHp = nextDerived.maxHp;
     nextHero.currentHp = nextCurrentHp;
@@ -687,7 +673,7 @@ export function AdminPanel() {
     setFields((current) => ({
       ...current,
       maxHp: String(nextDerived.maxHp),
-      currentHp: String(nextCurrentHp),
+      currentHp: String(nextCurrentHp)
     }));
 
     applyHeroDraft(nextHero);
@@ -701,7 +687,7 @@ export function AdminPanel() {
 
     setFields((current) => ({
       ...current,
-      currentHp: String(maxHp),
+      currentHp: String(maxHp)
     }));
 
     applyHeroDraft(nextHero);
@@ -739,8 +725,8 @@ export function AdminPanel() {
           selectedLocationId: fields.selectedLocationId || undefined,
           isBanned: fields.isBanned,
           adminNotes: fields.adminNotes,
-          hero: finalHero,
-        },
+          hero: finalHero
+        }
       });
 
       setMessage('Гравця оновлено.');
@@ -758,7 +744,6 @@ export function AdminPanel() {
     if (isUnlocked) {
       void loadPlayers();
     }
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isUnlocked]);
 
@@ -766,34 +751,35 @@ export function AdminPanel() {
     if (isUnlocked && selectedPlayerId) {
       void loadPlayerDetails(selectedPlayerId);
     }
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isUnlocked, selectedPlayerId]);
 
   if (!isUnlocked) {
     return (
       <div className="admin-page">
-        <div className="admin-login">
+        <main className="admin-card admin-login-card">
           <h1>Vaelmour Admin</h1>
           <p>Введи ADMIN_SECRET, який збережений у Netlify Environment Variables.</p>
 
-          <input
-            value={adminSecret}
-            onChange={(event) => setAdminSecret(event.target.value)}
-            placeholder="ADMIN_SECRET"
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                void unlockAdmin();
-              }
-            }}
-          />
-
-          <button type="button" onClick={() => void unlockAdmin()}>
-            Увійти
-          </button>
+          <div className="admin-secret-form">
+            <input
+              type="password"
+              value={adminSecret}
+              onChange={(event) => setAdminSecret(event.target.value)}
+              placeholder="ADMIN_SECRET"
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  void unlockAdmin();
+                }
+              }}
+            />
+            <button type="button" onClick={() => void unlockAdmin()}>
+              Увійти
+            </button>
+          </div>
 
           {error && <div className="admin-error">{error}</div>}
-        </div>
+        </main>
       </div>
     );
   }
@@ -806,11 +792,10 @@ export function AdminPanel() {
           <p>Гравці, характеристики, екіпірування і cloud save.</p>
         </div>
 
-        <div className="admin-header__actions">
+        <div className="admin-header-actions">
           <button type="button" onClick={() => void loadPlayers()} disabled={isLoadingList}>
             {isLoadingList ? 'Оновлення...' : 'Оновити'}
           </button>
-
           <button type="button" onClick={logout}>
             Вийти
           </button>
@@ -821,7 +806,7 @@ export function AdminPanel() {
       {error && <div className="admin-error">{error}</div>}
 
       <main className="admin-layout">
-        <section className="admin-card">
+        <section className="admin-section">
           <h2>Гравці</h2>
 
           <div className="admin-table-wrap">
@@ -836,22 +821,25 @@ export function AdminPanel() {
                   <th>Last seen</th>
                 </tr>
               </thead>
-
               <tbody>
                 {players.map((player) => (
                   <tr
                     key={player.id}
-                    className={player.id === selectedPlayerId ? 'is-selected' : undefined}
+                    className={player.id === selectedPlayerId ? 'admin-selected-row' : undefined}
                     onClick={() => setSelectedPlayerId(player.id)}
                   >
                     <td>
-                      {player.telegramUserId}
-                      <span>@{player.username ?? '—'}</span>
+                      <button type="button" className="admin-link-button">
+                        {player.telegramUserId}
+                      </button>
+                      <div>@{player.username ?? '—'}</div>
                     </td>
                     <td>{player.firstName ?? '—'}</td>
                     <td>{player.save?.level ?? '—'}</td>
                     <td>{player.save?.gold ?? '—'}</td>
-                    <td>{player.save ? `${player.save.current_hp}/${player.save.max_hp}` : '—'}</td>
+                    <td>
+                      {player.save ? `${player.save.current_hp}/${player.save.max_hp}` : '—'}
+                    </td>
                     <td>{formatDate(player.lastSeenAt)}</td>
                   </tr>
                 ))}
@@ -866,32 +854,29 @@ export function AdminPanel() {
           </div>
         </section>
 
-        <section className="admin-card">
+        <section className="admin-section">
           <h2>Деталі гравця</h2>
 
           {!selectedListPlayer && <p>Вибери гравця зі списку.</p>}
 
           {selectedListPlayer && (
             <>
-              <div className="admin-player-summary">
+              <div className="admin-meta-grid">
                 <div>
-                  <span>Telegram ID</span>
-                  <strong>{selectedListPlayer.telegramUserId}</strong>
+                  <strong>Telegram ID</strong>
+                  <span>{selectedListPlayer.telegramUserId}</span>
                 </div>
-
                 <div>
-                  <span>Username</span>
-                  <strong>@{selectedListPlayer.username ?? '—'}</strong>
+                  <strong>Username</strong>
+                  <span>@{selectedListPlayer.username ?? '—'}</span>
                 </div>
-
                 <div>
-                  <span>Player ID</span>
-                  <strong>{selectedListPlayer.id}</strong>
+                  <strong>Player ID</strong>
+                  <span>{selectedListPlayer.id}</span>
                 </div>
-
                 <div>
-                  <span>Save updated</span>
-                  <strong>{formatDate(selectedListPlayer.save?.updated_at)}</strong>
+                  <strong>Save updated</strong>
+                  <span>{formatDate(selectedListPlayer.save?.updated_at)}</span>
                 </div>
               </div>
 
@@ -899,26 +884,23 @@ export function AdminPanel() {
 
               {details?.save && (
                 <>
-                  <section className="admin-section">
-                    <div className="admin-section__header">
+                  <section className="admin-subsection">
+                    <div className="admin-section-title-row">
                       <h3>Основні параметри</h3>
-
-                      <div className="admin-inline-actions">
+                      <div className="admin-actions-inline">
                         <button type="button" onClick={fillHpToMax}>
                           HP = Max
                         </button>
-
                         <button type="button" onClick={recalculateMaxHp}>
                           Перерахувати Max HP
                         </button>
                       </div>
                     </div>
 
-                    <div className="admin-form-grid">
+                    <div className="admin-grid">
                       <label>
                         Level
                         <input
-                          type="number"
                           value={fields.level}
                           onChange={(event) => updateNumberField('level', event.target.value)}
                         />
@@ -927,7 +909,6 @@ export function AdminPanel() {
                       <label>
                         XP
                         <input
-                          type="number"
                           value={fields.xp}
                           onChange={(event) => updateNumberField('xp', event.target.value)}
                         />
@@ -936,7 +917,6 @@ export function AdminPanel() {
                       <label>
                         Gold
                         <input
-                          type="number"
                           value={fields.gold}
                           onChange={(event) => updateNumberField('gold', event.target.value)}
                         />
@@ -945,7 +925,6 @@ export function AdminPanel() {
                       <label>
                         Current HP
                         <input
-                          type="number"
                           value={fields.currentHp}
                           onChange={(event) => updateNumberField('currentHp', event.target.value)}
                         />
@@ -954,7 +933,6 @@ export function AdminPanel() {
                       <label>
                         Max HP
                         <input
-                          type="number"
                           value={fields.maxHp}
                           onChange={(event) => updateNumberField('maxHp', event.target.value)}
                         />
@@ -963,7 +941,6 @@ export function AdminPanel() {
                       <label>
                         Base HP
                         <input
-                          type="number"
                           value={fields.baseHp}
                           onChange={(event) => updateNumberField('baseHp', event.target.value)}
                         />
@@ -972,7 +949,6 @@ export function AdminPanel() {
                       <label>
                         Strength
                         <input
-                          type="number"
                           value={fields.strength}
                           onChange={(event) => updateNumberField('strength', event.target.value)}
                         />
@@ -981,7 +957,6 @@ export function AdminPanel() {
                       <label>
                         Vitality
                         <input
-                          type="number"
                           value={fields.vitality}
                           onChange={(event) => updateNumberField('vitality', event.target.value)}
                         />
@@ -990,7 +965,6 @@ export function AdminPanel() {
                       <label>
                         Agility
                         <input
-                          type="number"
                           value={fields.agility}
                           onChange={(event) => updateNumberField('agility', event.target.value)}
                         />
@@ -999,7 +973,6 @@ export function AdminPanel() {
                       <label>
                         Вільні очки статів
                         <input
-                          type="number"
                           value={fields.unspentStatPoints}
                           onChange={(event) =>
                             updateNumberField('unspentStatPoints', event.target.value)
@@ -1014,12 +987,11 @@ export function AdminPanel() {
                           onChange={(event) =>
                             setFields((current) => ({
                               ...current,
-                              selectedLocationId: event.target.value,
+                              selectedLocationId: event.target.value
                             }))
                           }
                         >
                           <option value="">Не змінювати</option>
-
                           {locations.map((location) => (
                             <option key={location.id} value={location.id}>
                               {location.id} — {location.name}
@@ -1030,90 +1002,91 @@ export function AdminPanel() {
                     </div>
                   </section>
 
-                  <section className="admin-section">
+                  <section className="admin-subsection">
                     <h3>Другорядні / розраховані параметри</h3>
 
                     <div className="admin-stat-grid">
-                      <div className="admin-stat-card">
-                        <span>Attack Power</span>
-                        <strong>{derivedStats ? formatNumber(derivedStats.attackPower) : '—'}</strong>
+                      <div>
+                        <strong>Attack Power</strong>
+                        <span>{derivedStats ? formatNumber(derivedStats.attackPower) : '—'}</span>
                       </div>
-
-                      <div className="admin-stat-card">
-                        <span>Calculated Max HP</span>
-                        <strong>{derivedStats ? derivedStats.maxHp : '—'}</strong>
+                      <div>
+                        <strong>Calculated Max HP</strong>
+                        <span>{derivedStats ? derivedStats.maxHp : '—'}</span>
                       </div>
-
-                      <div className="admin-stat-card">
-                        <span>Crit Chance</span>
-                        <strong>{derivedStats ? formatPercent(derivedStats.critChance) : '—'}</strong>
+                      <div>
+                        <strong>Crit Chance</strong>
+                        <span>{derivedStats ? formatPercent(derivedStats.critChance) : '—'}</span>
                       </div>
-
-                      <div className="admin-stat-card">
-                        <span>Dodge Chance</span>
-                        <strong>{derivedStats ? formatPercent(derivedStats.dodgeChance) : '—'}</strong>
+                      <div>
+                        <strong>Dodge Chance</strong>
+                        <span>{derivedStats ? formatPercent(derivedStats.dodgeChance) : '—'}</span>
                       </div>
-
-                      <div className="admin-stat-card">
-                        <span>Accuracy</span>
-                        <strong>{derivedStats ? formatPercent(derivedStats.accuracy) : '—'}</strong>
+                      <div>
+                        <strong>Accuracy</strong>
+                        <span>{derivedStats ? formatPercent(derivedStats.accuracy) : '—'}</span>
                       </div>
-
-                      <div className="admin-stat-card">
-                        <span>Health Regen</span>
-                        <strong>{derivedStats ? `${derivedStats.healthRegen} HP / 5 сек.` : '—'}</strong>
+                      <div>
+                        <strong>Health Regen</strong>
+                        <span>{derivedStats ? `${derivedStats.healthRegen} HP / 5 сек.` : '—'}</span>
                       </div>
-
-                      <div className="admin-stat-card">
-                        <span>Equipment Armor</span>
-                        <strong>{formatNumber(equipmentTotals.armor)}</strong>
+                      <div>
+                        <strong>Equipment Armor</strong>
+                        <span>{formatNumber(equipmentTotals.armor)}</span>
                       </div>
-
-                      <div className="admin-stat-card">
-                        <span>Weapon Damage</span>
-                        <strong>{equipmentTotals.weaponDamage}</strong>
+                      <div>
+                        <strong>Weapon Damage</strong>
+                        <span>{equipmentTotals.weaponDamage}</span>
                       </div>
-
-                      <div className="admin-stat-card">
-                        <span>Weapon Speed</span>
-                        <strong>{equipmentTotals.weaponSpeed}</strong>
+                      <div>
+                        <strong>Weapon Speed</strong>
+                        <span>{equipmentTotals.weaponSpeed}</span>
                       </div>
-
-                      <div className="admin-stat-card">
-                        <span>Equipment HP</span>
-                        <strong>+{formatNumber(equipmentTotals.maxHp)}</strong>
+                      <div>
+                        <strong>Equipment HP</strong>
+                        <span>+{formatNumber(equipmentTotals.maxHp)}</span>
                       </div>
-
-                      <div className="admin-stat-card">
-                        <span>Block Chance</span>
-                        <strong>{formatPercent(equipmentTotals.blockChance)}</strong>
+                      <div>
+                        <strong>Block Chance</strong>
+                        <span>{formatPercent(equipmentTotals.blockChance)}</span>
                       </div>
-
-                      <div className="admin-stat-card">
-                        <span>Block Power</span>
-                        <strong>{formatNumber(equipmentTotals.blockPower)}</strong>
+                      <div>
+                        <strong>Block Power</strong>
+                        <span>{formatNumber(equipmentTotals.blockPower)}</span>
                       </div>
                     </div>
                   </section>
 
-                  <section className="admin-section">
+                  <section className="admin-subsection">
                     <h3>Екіпірування по слотах</h3>
 
                     <div className="admin-equipment-grid">
                       {EQUIPMENT_SLOTS.map(({ slot, label }) => {
                         const selectedItemId = equipment[slot] ?? '';
-                        const selectedItem = getEquipmentItem(selectedItemId);
+                        const selectedGeneratedItem = getEquippedGeneratedItem(heroDraft, slot);
+                        const selectedItem = getDisplayEquipmentItem(heroDraft, slot, selectedItemId);
                         const options = equipmentOptionsBySlot[slot] ?? [];
+                        const selectValue = selectedItemId || selectedGeneratedItem?.id || '';
+                        const shouldShowGeneratedOption =
+                          Boolean(selectedGeneratedItem) &&
+                          !options.some((item) => item.id === selectedGeneratedItem?.id);
 
                         return (
-                          <div key={slot} className="admin-equipment-row">
+                          <div key={slot} className="admin-equipment-card">
                             <label>
                               {label}
                               <select
-                                value={selectedItemId}
+                                value={selectValue}
                                 onChange={(event) => updateEquipmentSlot(slot, event.target.value)}
                               >
                                 <option value="">— Порожній слот —</option>
+
+                                {shouldShowGeneratedOption && selectedGeneratedItem && (
+                                  <option value={selectedGeneratedItem.id}>
+                                    Lvl {selectedGeneratedItem.level} · {selectedGeneratedItem.name} ·{' '}
+                                    {selectedGeneratedItem.id}
+                                  </option>
+                                )}
 
                                 {options.map((item) => (
                                   <option key={item.id} value={item.id}>
@@ -1123,10 +1096,13 @@ export function AdminPanel() {
                               </select>
                             </label>
 
-                            <div className="admin-equipment-description">
+                            <div className="admin-equipment-summary">
                               <strong>{selectedItem?.name ?? 'Порожньо'}</strong>
                               <span>{summarizeEquipmentItem(selectedItem)}</span>
-                              {selectedItem && <code>{selectedItem.id}</code>}
+                              {selectedGeneratedItem && (
+                                <code>{selectedGeneratedItem.id}</code>
+                              )}
+                              {!selectedGeneratedItem && selectedItem && <code>{selectedItem.id}</code>}
                             </div>
                           </div>
                         );
@@ -1134,39 +1110,41 @@ export function AdminPanel() {
                     </div>
                   </section>
 
-                  <section className="admin-section">
+                  <section className="admin-subsection">
                     <h3>Стан акаунта</h3>
 
-                    <label className="admin-checkbox">
-                      <input
-                        type="checkbox"
-                        checked={fields.isBanned}
-                        onChange={(event) =>
-                          setFields((current) => ({
-                            ...current,
-                            isBanned: event.target.checked,
-                          }))
-                        }
-                      />
-                      Заблокований гравець
-                    </label>
+                    <div className="admin-grid">
+                      <label className="admin-checkbox-label">
+                        <input
+                          type="checkbox"
+                          checked={fields.isBanned}
+                          onChange={(event) =>
+                            setFields((current) => ({
+                              ...current,
+                              isBanned: event.target.checked
+                            }))
+                          }
+                        />
+                        Заблокований гравець
+                      </label>
 
-                    <label className="admin-full-label">
-                      Admin notes
-                      <textarea
-                        value={fields.adminNotes}
-                        onChange={(event) =>
-                          setFields((current) => ({
-                            ...current,
-                            adminNotes: event.target.value,
-                          }))
-                        }
-                        rows={3}
-                      />
-                    </label>
+                      <label className="admin-full-label">
+                        Admin notes
+                        <textarea
+                          value={fields.adminNotes}
+                          onChange={(event) =>
+                            setFields((current) => ({
+                              ...current,
+                              adminNotes: event.target.value
+                            }))
+                          }
+                          rows={3}
+                        />
+                      </label>
+                    </div>
                   </section>
 
-                  <section className="admin-section">
+                  <section className="admin-subsection">
                     <details>
                       <summary>Raw hero_json — ручне редагування</summary>
 
@@ -1186,7 +1164,6 @@ export function AdminPanel() {
                     <button type="button" onClick={() => void savePlayer()} disabled={isSaving}>
                       {isSaving ? 'Збереження...' : 'Зберегти зміни'}
                     </button>
-
                     <button
                       type="button"
                       onClick={() => selectedPlayerId && void loadPlayerDetails(selectedPlayerId)}
