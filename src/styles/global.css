@@ -1092,18 +1092,22 @@ h1, h2, h3, h4, h5, h6 {
 /* --- Premium RPG Inventory Slots & Grids --- */
 .inventory-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3 columns on mobile by default */
+  grid-template-columns: repeat(2, minmax(0, 1fr)); /* 2 columns maximum on narrow mobile */
   gap: 8px;
 }
 
-@media (min-width: 375px) {
+@media (min-width: 390px) {
   .inventory-grid {
-    grid-template-columns: repeat(4, 1fr); /* 4 columns on slightly wider viewports */
-    gap: 10px;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important; /* 3 columns allowed only on wider screens */
+    gap: 10px !important;
   }
 }
 
 .inventory-slot {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box !important;
   aspect-ratio: 1;
   border-radius: 12px;
   position: relative;
@@ -1163,6 +1167,8 @@ h1, h2, h3, h4, h5, h6 {
   text-align: center;
   margin-top: 2px;
   line-height: 1.1;
+  word-break: break-all;
+  overflow-wrap: break-word;
 }
 
 .inventory-slot__qty {

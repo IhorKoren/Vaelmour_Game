@@ -462,7 +462,7 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
   }, [filteredStacks]);
 
   return (
-    <div className="screen" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+    <div className="screen" style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%', maxWidth: '100%', overflowX: 'hidden' }}>
       {/* Top main sub-tabs: Backpack vs Forge */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '4px', width: '100%' }}>
         {([
