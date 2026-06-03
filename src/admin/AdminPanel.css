@@ -31,7 +31,9 @@
 
 .admin-login input,
 .admin-form-grid input,
-.admin-full-label textarea {
+.admin-form-grid select,
+.admin-full-label textarea,
+.admin-equipment-row select {
   width: 100%;
   box-sizing: border-box;
   border: 1px solid rgba(221, 184, 111, 0.28);
@@ -42,9 +44,15 @@
   outline: none;
 }
 
+.admin-form-grid select,
+.admin-equipment-row select {
+  cursor: pointer;
+}
+
 .admin-login button,
 .admin-header__actions button,
-.admin-actions button {
+.admin-actions button,
+.admin-inline-actions button {
   border: 1px solid rgba(242, 207, 141, 0.4);
   border-radius: 10px;
   padding: 10px 14px;
@@ -74,7 +82,7 @@
 
 .admin-layout {
   display: grid;
-  grid-template-columns: minmax(420px, 0.9fr) minmax(520px, 1.1fr);
+  grid-template-columns: minmax(420px, 0.9fr) minmax(640px, 1.2fr);
   gap: 18px;
 }
 
@@ -86,10 +94,42 @@
   background: rgba(35, 27, 19, 0.94);
 }
 
-.admin-card h2 {
+.admin-card h2,
+.admin-section h3 {
   margin: 0 0 14px;
   font-family: Cinzel, serif;
   color: #f2cf8d;
+}
+
+.admin-section {
+  margin-bottom: 18px;
+  padding: 14px;
+  border: 1px solid rgba(221, 184, 111, 0.16);
+  border-radius: 16px;
+  background: rgba(12, 10, 8, 0.28);
+}
+
+.admin-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.admin-section__header h3 {
+  margin-bottom: 0;
+}
+
+.admin-inline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-inline-actions button {
+  padding: 8px 10px;
+  font-size: 12px;
 }
 
 .admin-table-wrap {
@@ -146,14 +186,16 @@
   background: rgba(12, 10, 8, 0.48);
 }
 
-.admin-player-summary span {
+.admin-player-summary span,
+.admin-stat-card span {
   display: block;
   margin-bottom: 4px;
   color: #a9987d;
   font-size: 12px;
 }
 
-.admin-player-summary strong {
+.admin-player-summary strong,
+.admin-stat-card strong {
   display: block;
   overflow-wrap: anywhere;
 }
@@ -166,12 +208,81 @@
 }
 
 .admin-form-grid label,
-.admin-full-label {
+.admin-full-label,
+.admin-equipment-row label {
   display: grid;
   gap: 6px;
   color: #d8be8c;
   font-size: 13px;
   font-weight: 700;
+}
+
+.admin-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.admin-stat-card {
+  padding: 12px;
+  border: 1px solid rgba(221, 184, 111, 0.16);
+  border-radius: 12px;
+  background: rgba(12, 10, 8, 0.52);
+}
+
+.admin-stat-card strong {
+  color: #f4ead7;
+  font-size: 16px;
+}
+
+.admin-muted {
+  margin: 12px 0 0;
+  color: #aa9a82;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.admin-equipment-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-equipment-row {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.9fr) minmax(260px, 1.1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 12px;
+  border: 1px solid rgba(221, 184, 111, 0.14);
+  border-radius: 14px;
+  background: rgba(12, 10, 8, 0.35);
+}
+
+.admin-equipment-description {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.admin-equipment-description strong {
+  color: #f2cf8d;
+}
+
+.admin-equipment-description span {
+  color: #c8b89e;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.admin-equipment-description code {
+  width: fit-content;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  padding: 4px 6px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.34);
+  color: #d8be8c;
+  font-size: 11px;
 }
 
 .admin-checkbox {
@@ -198,6 +309,15 @@
   font-family: Consolas, Monaco, monospace;
   font-size: 12px;
   line-height: 1.45;
+}
+
+.admin-section details {
+  color: #d8be8c;
+}
+
+.admin-section summary {
+  cursor: pointer;
+  font-weight: 800;
 }
 
 .admin-actions {
@@ -231,13 +351,15 @@ button:disabled {
   cursor: not-allowed;
 }
 
-@media (max-width: 980px) {
-  .admin-page {
-    padding: 14px;
-  }
-
+@media (max-width: 1100px) {
   .admin-layout {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .admin-page {
+    padding: 14px;
   }
 
   .admin-header {
@@ -246,7 +368,14 @@ button:disabled {
   }
 
   .admin-form-grid,
-  .admin-player-summary {
+  .admin-player-summary,
+  .admin-stat-grid,
+  .admin-equipment-row {
     grid-template-columns: 1fr;
+  }
+
+  .admin-section__header {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
