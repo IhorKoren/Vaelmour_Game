@@ -1,14 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import './AdminPanel.css';
-import { equipmentCatalog } from '../data/equipmentCatalog';
+import { equipmentCatalog, type EquipmentItemDefinition } from '../data/equipmentCatalog';
 import { locations } from '../data/locations';
 import { calculateDerivedStats } from '../game/formulas/stats';
-import type { CoreStats, EquipmentSlot, HeroState } from '../game/types';
+import type { CoreStats, EquipmentSlot, EquipmentState, HeroState } from '../game/types';
 
 type JsonRecord = Record<string, unknown>;
 type HeroDraft = Partial<HeroState> & JsonRecord;
-type EquipmentCatalogItem = (typeof equipmentCatalog)[number];
 
 type PlayerListItem = {
   id: string;
@@ -103,32 +102,49 @@ const EQUIPMENT_SLOTS: Array<{ slot: EquipmentSlot; label: string }> = [
   { slot: 'hands', label: 'Рукавиці' },
   { slot: 'legs', label: 'Поножі' },
   { slot: 'feet', label: 'Чоботи' },
-  { slot: 'ring1', label: 'Кільце I' },
-  { slot: 'ring2', label: 'Кільце II' },
+  { slot: 'ring1', label: 'Кільце 1' },
+  { slot: 'ring2', label: 'Кільце 2' },
   { slot: 'amulet', label: 'Амулет' },
 ];
+
+const EMPTY_FIELDS: AdminUpdateFields = {
+  level: '',
+  xp: '',
+  gold: '',
+  currentHp: '',
+  maxHp: '',
+  baseHp: '',
+  strength: '',
+  vitality: '',
+  agility: '',
+  unspentStatPoints: '',
+  selectedLocationId: '',
+  isBanned: false,
+  adminNotes: '',
+};
 
 function isRecord(value: unknown): value is JsonRecord {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function getNumber(value: unknown, fallback = 0): number {
-  const numberValue = Number(value);
-  return Number.isFinite(numberValue) ? numberValue : fallback;
+function clone<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
 }
 
-function optionalNumber(value: string): number | undefined {
+function toNumber(value: unknown, fallback = 0): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function fieldNumber(value: string): number | undefined {
   if (value.trim() === '') return undefined;
 
-  const numberValue = Number(value);
-  return Number.isFinite(numberValue) ? numberValue : undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
 }
 
-function getNullableString(value: unknown): string | null {
-  if (typeof value !== 'string') return null;
-
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : null;
+function nullableString(value: unknown): string | null {
+  return typeof value === 'string' && value.trim() ? value : null;
 }
 
 function formatDate(value: string | null | undefined) {
@@ -140,63 +156,72 @@ function formatDate(value: string | null | undefined) {
   return date.toLocaleString();
 }
 
-function formatPercent(value: number): string {
-  if (!Number.isFinite(value)) return '0%';
+function formatNumber(value: unknown): string {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return '0';
 
-  return `${Math.round(value * 1000) / 10}%`;
+  return String(Math.round(parsed * 100) / 100);
 }
 
-function formatNumber(value: number): string {
-  if (!Number.isFinite(value)) return '0';
+function formatPercent(value: unknown): string {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return '0%';
 
-  return String(Math.round(value * 100) / 100);
+  return `${Math.round(parsed * 1000) / 10}%`;
 }
 
 function normalizeStats(value: unknown): CoreStats {
   const source = isRecord(value) ? value : {};
 
   return {
-    strength: getNumber(source.strength, 5),
-    vitality: getNumber(source.vitality, 5),
-    agility: getNumber(source.agility, 5),
+    strength: toNumber(source.strength, 5),
+    vitality: toNumber(source.vitality, 5),
+    agility: toNumber(source.agility, 5),
   };
 }
 
-function normalizeEquipment(value: unknown): HeroState['equipment'] {
+function normalizeEquipment(value: unknown): EquipmentState {
   const source = isRecord(value) ? value : {};
 
   return {
-    weapon: getNullableString(source.weapon),
-    shield: getNullableString(source.shield),
-    head: getNullableString(source.head),
-    chest: getNullableString(source.chest),
-    legs: getNullableString(source.legs),
-    hands: getNullableString(source.hands),
-    feet: getNullableString(source.feet),
-    ring1: getNullableString(source.ring1),
-    ring2: getNullableString(source.ring2),
-    amulet: getNullableString(source.amulet),
+    weapon: nullableString(source.weapon),
+    shield: nullableString(source.shield),
+    head: nullableString(source.head),
+    chest: nullableString(source.chest),
+    legs: nullableString(source.legs),
+    hands: nullableString(source.hands),
+    feet: nullableString(source.feet),
+    ring1: nullableString(source.ring1),
+    ring2: nullableString(source.ring2),
+    amulet: nullableString(source.amulet),
   };
 }
 
-function normalizeHeroForStats(hero: HeroDraft): HeroState {
+function normalizeHero(hero: HeroDraft): HeroState {
   const equipment = normalizeEquipment(hero.equipment);
   const stats = normalizeStats(hero.stats);
 
   return {
-    ...hero,
     id: typeof hero.id === 'string' ? hero.id : 'player',
     name: typeof hero.name === 'string' ? hero.name : 'Wanderer',
-    level: getNumber(hero.level, 1),
-    xp: getNumber(hero.xp, 0),
-    gold: getNumber(hero.gold, 0),
-    baseHp: getNumber(hero.baseHp, 100),
-    currentHp: getNumber(hero.currentHp, 100),
-    maxHp: getNumber(hero.maxHp, 100),
+    nameSource: hero.nameSource as HeroState['nameSource'],
+    level: toNumber(hero.level, 1),
+    xp: toNumber(hero.xp, 0),
+    gold: toNumber(hero.gold, 0),
+    knownRecipeIds: Array.isArray(hero.knownRecipeIds) ? hero.knownRecipeIds : [],
+    baseHp: toNumber(hero.baseHp, 100),
+    currentHp: toNumber(hero.currentHp, 100),
+    maxHp: toNumber(hero.maxHp, 100),
     stats,
-    unspentStatPoints: getNumber(hero.unspentStatPoints, 0),
-    equippedWeaponId: equipment.weapon ?? String(hero.equippedWeaponId ?? ''),
-    equippedArmorId: equipment.chest ?? String(hero.equippedArmorId ?? ''),
+    unspentStatPoints: toNumber(hero.unspentStatPoints, 0),
+    equippedWeaponId:
+      typeof hero.equippedWeaponId === 'string'
+        ? hero.equippedWeaponId
+        : equipment.weapon ?? '',
+    equippedArmorId:
+      typeof hero.equippedArmorId === 'string'
+        ? hero.equippedArmorId
+        : equipment.chest ?? '',
     equipment,
     inventory: Array.isArray(hero.inventory) ? hero.inventory : [],
     equipmentDurability: isRecord(hero.equipmentDurability)
@@ -205,23 +230,21 @@ function normalizeHeroForStats(hero: HeroDraft): HeroState {
     equipmentAffixes: isRecord(hero.equipmentAffixes)
       ? (hero.equipmentAffixes as HeroState['equipmentAffixes'])
       : {},
+    equippedGeneratedItems: isRecord(hero.equippedGeneratedItems)
+      ? (hero.equippedGeneratedItems as HeroState['equippedGeneratedItems'])
+      : {},
     quests: Array.isArray(hero.quests) ? hero.quests : [],
-  } as HeroState;
+    defeatedBossIds: Array.isArray(hero.defeatedBossIds) ? hero.defeatedBossIds : [],
+    migrationFlags: isRecord(hero.migrationFlags)
+      ? (hero.migrationFlags as HeroState['migrationFlags'])
+      : {},
+  };
 }
 
-function parseHeroJsonText(text: string): HeroDraft | null {
-  try {
-    const parsed = JSON.parse(text) as unknown;
-    return isRecord(parsed) ? (parsed as HeroDraft) : null;
-  } catch {
-    return null;
-  }
-}
-
-function buildFieldsFromHero(
+function buildFields(
   hero: HeroDraft,
-  save: PlayerDetails['save'] | null | undefined,
-  player: PlayerDetails['player'] | null | undefined,
+  save: PlayerDetails['save'] | null,
+  player: PlayerDetails['player'] | null,
 ): AdminUpdateFields {
   const stats = normalizeStats(hero.stats);
 
@@ -242,20 +265,29 @@ function buildFieldsFromHero(
   };
 }
 
-function catalogSlotForEquipmentSlot(slot: EquipmentSlot): EquipmentCatalogItem['slot'] {
-  if (slot === 'ring1' || slot === 'ring2') return 'ring';
-
-  return slot as EquipmentCatalogItem['slot'];
+function parseHeroJson(text: string): HeroDraft | null {
+  try {
+    const parsed = JSON.parse(text) as unknown;
+    return isRecord(parsed) ? (parsed as HeroDraft) : null;
+  } catch {
+    return null;
+  }
 }
 
-function getEquipmentItem(itemId: string | null | undefined): EquipmentCatalogItem | null {
+function catalogSlot(slot: EquipmentSlot): EquipmentItemDefinition['slot'] {
+  return slot === 'ring1' || slot === 'ring2'
+    ? 'ring'
+    : (slot as EquipmentItemDefinition['slot']);
+}
+
+function getEquipmentItem(itemId: string | null | undefined): EquipmentItemDefinition | null {
   if (!itemId) return null;
 
-  return equipmentCatalog.find((item) => item.id.toLowerCase() === itemId.toLowerCase()) ?? null;
+  return equipmentCatalog.find((item) => item.id === itemId) ?? null;
 }
 
-function summarizeEquipmentItem(item: EquipmentCatalogItem | null): string {
-  if (!item) return 'Нічого не екіпіровано.';
+function summarizeEquipmentItem(item: EquipmentItemDefinition | null): string {
+  if (!item) return 'Слот порожній.';
 
   const stats = item.stats;
   const parts: string[] = [];
@@ -264,10 +296,7 @@ function summarizeEquipmentItem(item: EquipmentCatalogItem | null): string {
     parts.push(`шкода ${stats.minDamage ?? 0}-${stats.maxDamage ?? 0}`);
   }
 
-  if (stats.attackSpeed !== undefined) {
-    parts.push(`швидкість ${stats.attackSpeed}`);
-  }
-
+  if (stats.attackSpeed !== undefined) parts.push(`швидкість ${stats.attackSpeed}`);
   if (stats.armor) parts.push(`броня +${stats.armor}`);
   if (stats.maxHp) parts.push(`HP +${stats.maxHp}`);
   if (stats.accuracy) parts.push(`влучність +${formatPercent(stats.accuracy)}`);
@@ -276,14 +305,15 @@ function summarizeEquipmentItem(item: EquipmentCatalogItem | null): string {
   if (stats.blockPower) parts.push(`сила блоку +${stats.blockPower}`);
   if (stats.healthRegen) parts.push(`реген +${stats.healthRegen}`);
   if (stats.damageBonus) parts.push(`шкода +${formatPercent(stats.damageBonus)}`);
-  if (stats.attackSpeedBonus) parts.push(`швидкість атаки +${formatPercent(stats.attackSpeedBonus)}`);
-  if (stats.armorPenetration) parts.push(`пробиття броні +${stats.armorPenetration}`);
+  if (stats.attackSpeedBonus) {
+    parts.push(`швидкість атаки +${formatPercent(stats.attackSpeedBonus)}`);
+  }
 
-  return parts.length > 0 ? parts.join(' · ') : 'Предмет без базових статів.';
+  return parts.length ? parts.join(' · ') : 'Базових статів немає.';
 }
 
-function calculateEquipmentSummary(equipment: HeroState['equipment']) {
-  const summary = {
+function calculateEquipmentTotals(equipment: EquipmentState) {
+  const totals = {
     armor: 0,
     maxHp: 0,
     accuracy: 0,
@@ -293,35 +323,33 @@ function calculateEquipmentSummary(equipment: HeroState['equipment']) {
     healthRegen: 0,
     damageBonus: 0,
     attackSpeedBonus: 0,
-    armorPenetration: 0,
     weaponDamage: '—',
     weaponSpeed: '—',
   };
 
-  for (const itemId of Object.values(equipment)) {
+  Object.values(equipment).forEach((itemId) => {
     const item = getEquipmentItem(itemId);
-    if (!item) continue;
+    if (!item) return;
 
     const stats = item.stats;
 
     if (item.slot === 'weapon') {
-      summary.weaponDamage = `${stats.minDamage ?? 0}-${stats.maxDamage ?? 0}`;
-      summary.weaponSpeed = String(stats.attackSpeed ?? '—');
+      totals.weaponDamage = `${stats.minDamage ?? 0}-${stats.maxDamage ?? 0}`;
+      totals.weaponSpeed = String(stats.attackSpeed ?? '—');
     }
 
-    summary.armor += getNumber(stats.armor, 0);
-    summary.maxHp += getNumber(stats.maxHp, 0);
-    summary.accuracy += getNumber(stats.accuracy, 0);
-    summary.dodgeChance += getNumber(stats.dodgeChance, 0);
-    summary.blockChance += getNumber(stats.blockChance, 0);
-    summary.blockPower += getNumber(stats.blockPower, 0);
-    summary.healthRegen += getNumber(stats.healthRegen, 0);
-    summary.damageBonus += getNumber(stats.damageBonus, 0);
-    summary.attackSpeedBonus += getNumber(stats.attackSpeedBonus, 0);
-    summary.armorPenetration += getNumber(stats.armorPenetration, 0);
-  }
+    totals.armor += toNumber(stats.armor, 0);
+    totals.maxHp += toNumber(stats.maxHp, 0);
+    totals.accuracy += toNumber(stats.accuracy, 0);
+    totals.dodgeChance += toNumber(stats.dodgeChance, 0);
+    totals.blockChance += toNumber(stats.blockChance, 0);
+    totals.blockPower += toNumber(stats.blockPower, 0);
+    totals.healthRegen += toNumber(stats.healthRegen, 0);
+    totals.damageBonus += toNumber(stats.damageBonus, 0);
+    totals.attackSpeedBonus += toNumber(stats.attackSpeedBonus, 0);
+  });
 
-  return summary;
+  return totals;
 }
 
 async function postJson<TResponse>(url: string, body: unknown): Promise<TResponse> {
@@ -345,8 +373,8 @@ async function postJson<TResponse>(url: string, body: unknown): Promise<TRespons
 
   if (!response.ok) {
     throw new Error(
-      typeof data === 'object' && data !== null && 'error' in data
-        ? String((data as { error: unknown }).error)
+      isRecord(data) && 'error' in data
+        ? String(data.error)
         : text || `Request failed with status ${response.status}`,
     );
   }
@@ -366,23 +394,7 @@ export function AdminPanel() {
   const [players, setPlayers] = useState<PlayerListItem[]>([]);
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [details, setDetails] = useState<PlayerDetails | null>(null);
-
-  const [fields, setFields] = useState<AdminUpdateFields>({
-    level: '',
-    xp: '',
-    gold: '',
-    currentHp: '',
-    maxHp: '',
-    baseHp: '',
-    strength: '',
-    vitality: '',
-    agility: '',
-    unspentStatPoints: '',
-    selectedLocationId: '',
-    isBanned: false,
-    adminNotes: '',
-  });
-
+  const [fields, setFields] = useState<AdminUpdateFields>(EMPTY_FIELDS);
   const [heroDraft, setHeroDraft] = useState<HeroDraft>({});
   const [heroJsonText, setHeroJsonText] = useState('');
   const [isLoadingList, setIsLoadingList] = useState(false);
@@ -396,9 +408,9 @@ export function AdminPanel() {
     [players, selectedPlayerId],
   );
 
-  const normalizedHero = useMemo(() => normalizeHeroForStats(heroDraft), [heroDraft]);
-
+  const normalizedHero = useMemo(() => normalizeHero(heroDraft), [heroDraft]);
   const equipment = useMemo(() => normalizeEquipment(heroDraft.equipment), [heroDraft.equipment]);
+  const equipmentTotals = useMemo(() => calculateEquipmentTotals(equipment), [equipment]);
 
   const derivedStats = useMemo(() => {
     try {
@@ -413,53 +425,49 @@ export function AdminPanel() {
     }
   }, [normalizedHero]);
 
-  const equipmentSummary = useMemo(() => calculateEquipmentSummary(equipment), [equipment]);
-
   const equipmentOptionsBySlot = useMemo(() => {
-    const map = {} as Record<EquipmentSlot, EquipmentCatalogItem[]>;
+    const map = {} as Record<EquipmentSlot, EquipmentItemDefinition[]>;
 
-    for (const { slot } of EQUIPMENT_SLOTS) {
-      const catalogSlot = catalogSlotForEquipmentSlot(slot);
-
+    EQUIPMENT_SLOTS.forEach(({ slot }) => {
       map[slot] = equipmentCatalog
-        .filter((item) => item.slot === catalogSlot)
+        .filter((item) => item.slot === catalogSlot(slot))
         .sort((a, b) => {
           if (a.level !== b.level) return a.level - b.level;
           return a.name.localeCompare(b.name);
         });
-    }
+    });
 
     return map;
   }, []);
 
-  function applyHeroDraft(nextHero: HeroDraft, shouldSyncFields = false) {
+  function applyHeroDraft(nextHero: HeroDraft, syncFields = false) {
     setHeroDraft(nextHero);
     setHeroJsonText(JSON.stringify(nextHero, null, 2));
 
-    if (shouldSyncFields) {
-      setFields(buildFieldsFromHero(nextHero, details?.save, details?.player));
+    if (syncFields) {
+      setFields(buildFields(nextHero, details?.save ?? null, details?.player ?? null));
     }
   }
 
   function cloneHeroDraft(): HeroDraft {
-    return JSON.parse(JSON.stringify(heroDraft ?? {})) as HeroDraft;
+    return clone(heroDraft);
   }
 
   function mergeFieldsIntoHero(hero: HeroDraft): HeroDraft {
     const nextHero = { ...hero };
-
     const nextStats = normalizeStats(nextHero.stats);
+    const nextEquipment = normalizeEquipment(nextHero.equipment);
 
-    const level = optionalNumber(fields.level);
-    const xp = optionalNumber(fields.xp);
-    const gold = optionalNumber(fields.gold);
-    const currentHp = optionalNumber(fields.currentHp);
-    const maxHp = optionalNumber(fields.maxHp);
-    const baseHp = optionalNumber(fields.baseHp);
-    const strength = optionalNumber(fields.strength);
-    const vitality = optionalNumber(fields.vitality);
-    const agility = optionalNumber(fields.agility);
-    const unspentStatPoints = optionalNumber(fields.unspentStatPoints);
+    const level = fieldNumber(fields.level);
+    const xp = fieldNumber(fields.xp);
+    const gold = fieldNumber(fields.gold);
+    const currentHp = fieldNumber(fields.currentHp);
+    const maxHp = fieldNumber(fields.maxHp);
+    const baseHp = fieldNumber(fields.baseHp);
+    const strength = fieldNumber(fields.strength);
+    const vitality = fieldNumber(fields.vitality);
+    const agility = fieldNumber(fields.agility);
+    const unspentStatPoints = fieldNumber(fields.unspentStatPoints);
 
     if (level !== undefined) nextHero.level = level;
     if (xp !== undefined) nextHero.xp = xp;
@@ -474,17 +482,9 @@ export function AdminPanel() {
     if (agility !== undefined) nextStats.agility = agility;
 
     nextHero.stats = nextStats;
-    nextHero.equipment = normalizeEquipment(nextHero.equipment);
-
-    const nextEquipment = nextHero.equipment;
-
-    if (nextEquipment.weapon) {
-      nextHero.equippedWeaponId = nextEquipment.weapon;
-    }
-
-    if (nextEquipment.chest) {
-      nextHero.equippedArmorId = nextEquipment.chest;
-    }
+    nextHero.equipment = nextEquipment;
+    nextHero.equippedWeaponId = nextEquipment.weapon ?? '';
+    nextHero.equippedArmorId = nextEquipment.chest ?? '';
 
     return nextHero;
   }
@@ -496,9 +496,7 @@ export function AdminPanel() {
     try {
       const data = await postJson<{ success: boolean; players: PlayerListItem[] }>(
         '/.netlify/functions/adminListPlayers',
-        {
-          adminSecret: secret,
-        },
+        { adminSecret: secret },
       );
 
       setPlayers(data.players ?? []);
@@ -523,14 +521,12 @@ export function AdminPanel() {
         playerId,
       });
 
-      const save = data.save;
-      const player = data.player;
-      const nextHero = (save?.hero_json ?? {}) as HeroDraft;
+      const nextHero = (data.save?.hero_json ?? {}) as HeroDraft;
 
       setDetails(data);
-      setFields(buildFieldsFromHero(nextHero, save, player));
       setHeroDraft(nextHero);
       setHeroJsonText(JSON.stringify(nextHero, null, 2));
+      setFields(buildFields(nextHero, data.save, data.player));
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : String(loadError));
     } finally {
@@ -547,15 +543,11 @@ export function AdminPanel() {
     setError(null);
     setMessage(null);
 
-    try {
-      await loadPlayers(adminSecret.trim());
+    await loadPlayers(adminSecret.trim());
 
-      window.sessionStorage.setItem(ADMIN_SECRET_STORAGE_KEY, adminSecret.trim());
-      setIsUnlocked(true);
-      setMessage('Адмінку відкрито.');
-    } catch {
-      // loadPlayers already sets error
-    }
+    window.sessionStorage.setItem(ADMIN_SECRET_STORAGE_KEY, adminSecret.trim());
+    setIsUnlocked(true);
+    setMessage('Адмінку відкрито.');
   }
 
   function logout() {
@@ -568,6 +560,7 @@ export function AdminPanel() {
     setSelectedPlayerId(null);
     setHeroDraft({});
     setHeroJsonText('');
+    setFields(EMPTY_FIELDS);
   }
 
   function updateNumberField(field: EditableNumberField, value: string) {
@@ -578,105 +571,95 @@ export function AdminPanel() {
 
     if (value.trim() === '') return;
 
-    const numberValue = Number(value);
-
-    if (!Number.isFinite(numberValue)) return;
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return;
 
     const nextHero = cloneHeroDraft();
     const nextStats = normalizeStats(nextHero.stats);
 
-    if (field === 'level') nextHero.level = numberValue;
-    if (field === 'xp') nextHero.xp = numberValue;
-    if (field === 'gold') nextHero.gold = numberValue;
-    if (field === 'currentHp') nextHero.currentHp = numberValue;
-    if (field === 'maxHp') nextHero.maxHp = numberValue;
-    if (field === 'baseHp') nextHero.baseHp = numberValue;
-    if (field === 'unspentStatPoints') nextHero.unspentStatPoints = numberValue;
-
-    if (field === 'strength') nextStats.strength = numberValue;
-    if (field === 'vitality') nextStats.vitality = numberValue;
-    if (field === 'agility') nextStats.agility = numberValue;
+    if (field === 'level') nextHero.level = parsed;
+    if (field === 'xp') nextHero.xp = parsed;
+    if (field === 'gold') nextHero.gold = parsed;
+    if (field === 'currentHp') nextHero.currentHp = parsed;
+    if (field === 'maxHp') nextHero.maxHp = parsed;
+    if (field === 'baseHp') nextHero.baseHp = parsed;
+    if (field === 'unspentStatPoints') nextHero.unspentStatPoints = parsed;
+    if (field === 'strength') nextStats.strength = parsed;
+    if (field === 'vitality') nextStats.vitality = parsed;
+    if (field === 'agility') nextStats.agility = parsed;
 
     nextHero.stats = nextStats;
-
     applyHeroDraft(nextHero);
   }
 
   function updateHeroJsonText(nextText: string) {
     setHeroJsonText(nextText);
 
-    const parsedHero = parseHeroJsonText(nextText);
-
+    const parsedHero = parseHeroJson(nextText);
     if (!parsedHero) return;
 
     setHeroDraft(parsedHero);
-    setFields(buildFieldsFromHero(parsedHero, details?.save, details?.player));
+    setFields(buildFields(parsedHero, details?.save ?? null, details?.player ?? null));
   }
 
   function updateEquipmentSlot(slot: EquipmentSlot, itemId: string) {
     const nextHero = cloneHeroDraft();
     const nextEquipment = normalizeEquipment(nextHero.equipment);
-    const nextItemId = itemId.trim() || null;
+    const nextItemId = itemId || null;
 
     nextEquipment[slot] = nextItemId;
     nextHero.equipment = nextEquipment;
-
-    if (slot === 'weapon') {
-      nextHero.equippedWeaponId = nextItemId ?? '';
-    }
-
-    if (slot === 'chest') {
-      nextHero.equippedArmorId = nextItemId ?? '';
-    }
+    nextHero.equippedWeaponId = nextEquipment.weapon ?? '';
+    nextHero.equippedArmorId = nextEquipment.chest ?? '';
 
     const durability = isRecord(nextHero.equipmentDurability)
       ? { ...nextHero.equipmentDurability }
       : {};
 
     if (nextItemId) {
-      durability[slot] = getNumber(durability[slot], 100);
+      durability[slot] = toNumber(durability[slot], 100);
     } else {
       delete durability[slot];
     }
 
     nextHero.equipmentDurability = durability as HeroState['equipmentDurability'];
 
-    const affixes = isRecord(nextHero.equipmentAffixes) ? { ...nextHero.equipmentAffixes } : {};
-
-    if (nextItemId && !Array.isArray(affixes[slot])) {
-      affixes[slot] = [];
-    }
-
-    nextHero.equipmentAffixes = affixes as HeroState['equipmentAffixes'];
-
     applyHeroDraft(nextHero);
   }
 
   function recalculateMaxHp() {
-  const currentHero = normalizeHeroForStats(heroDraft);
+    const currentHero = normalizeHero(heroDraft);
+    const nextDerived = calculateDerivedStats(
+      currentHero.stats,
+      currentHero.baseHp,
+      undefined,
+      currentHero,
+    );
 
-  const nextDerived = calculateDerivedStats(
-    currentHero.stats,
-    currentHero.baseHp,
-    undefined,
-    currentHero,
-  );
+    const nextHero = cloneHeroDraft();
+    const nextCurrentHp = Math.min(
+      toNumber(nextHero.currentHp, nextDerived.maxHp),
+      nextDerived.maxHp,
+    );
 
-  const nextHero = cloneHeroDraft();
+    nextHero.maxHp = nextDerived.maxHp;
+    nextHero.currentHp = nextCurrentHp;
 
-  const nextCurrentHp = Math.min(
-    getNumber(nextHero.currentHp, nextDerived.maxHp),
-    nextDerived.maxHp,
-  );
+    setFields((current) => ({
+      ...current,
+      maxHp: String(nextDerived.maxHp),
+      currentHp: String(nextCurrentHp),
+    }));
 
-  nextHero.maxHp = nextDerived.maxHp;
-  nextHero.currentHp = nextCurrentHp;
+    applyHeroDraft(nextHero);
+  }
 
-  setFields((current) => ({
-    ...current,
-    maxHp: String(nextDerived.maxHp),
-    currentHp: String(nextCurrentHp),
-  }));
+  function fillHpToMax() {
+    const maxHp = fieldNumber(fields.maxHp) ?? toNumber(heroDraft.maxHp, 0);
+    const nextHero = cloneHeroDraft();
 
-  applyHeroDraft(nextHero);
-}
+    nextHero.currentHp = maxHp;
+
+    setFields((current) => ({
+      ...current,
+      currentHp: String(m
