@@ -3,17 +3,17 @@ export const shieldUniqueItemDrops = [
     "item_name": "Roadwatch Buckler",
     "required_level": "2",
     "rarity": "Common",
-    "drops_from": "Road Thug",
+    "drops_from": "Blackfang Brigand",
     "location": "LOC_001",
-    "drop_chance": "6.0"
+    "drop_chance": "4.0"
   },
   {
     "item_name": "Splinterhide Guard",
     "required_level": "4",
     "rarity": "Common",
-    "drops_from": "Broken Shield Guard",
-    "location": "LOC_001",
-    "drop_chance": "6.0"
+    "drops_from": "Young Wolf",
+    "location": "LOC_002",
+    "drop_chance": "4.0"
   },
   {
     "item_name": "Blackfang Hide Shield",
@@ -100,11 +100,11 @@ export const shieldUniqueItemDrops = [
 export const shieldLocationLoot = [
   {
     "location_id": "LOC_001",
-    "notable_items": "Roadwatch Buckler, Splinterhide Guard"
+    "notable_items": "Roadwatch Buckler"
   },
   {
     "location_id": "LOC_002",
-    "notable_items": "Blackfang Hide Shield"
+    "notable_items": "Splinterhide Guard, Blackfang Hide Shield"
   },
   {
     "location_id": "LOC_004",

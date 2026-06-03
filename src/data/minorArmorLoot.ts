@@ -3,28 +3,28 @@ export const minorArmorUniqueItemDrops = [
     "item_name": "Roadside Hood",
     "required_level": "2",
     "rarity": "Common",
-    "drops_from": "Road Thug",
+    "drops_from": "Blackfang Brigand",
     "location": "LOC_001",
-    "drop_chance": "6.0"
+    "drop_chance": "4.0"
   },
   {
     "item_name": "Scout Hood",
     "required_level": "4",
     "rarity": "Common",
-    "drops_from": "Broken Shield Guard",
-    "location": "LOC_001",
-    "drop_chance": "6.0"
+    "drops_from": "Young Wolf",
+    "location": "LOC_002",
+    "drop_chance": "4.0"
   },
   {
     "item_name": "Raider Iron Cap",
     "required_level": "6",
     "rarity": "Uncommon",
-    "drops_from": "Young Wolf",
-    "location": "LOC_002",
+    "drops_from": "Wild Raider",
+    "location": "LOC_003",
     "drop_chance": "4.5"
   },
   {
-    "item_name": "Watch Captain Helm",
+    "item_name": "Watchtower Helm",
     "required_level": "8",
     "rarity": "Uncommon",
     "drops_from": "Tower Shield Veteran",
@@ -99,24 +99,24 @@ export const minorArmorUniqueItemDrops = [
     "item_name": "Torn Road Wraps",
     "required_level": "2",
     "rarity": "Common",
-    "drops_from": "Road Thug",
+    "drops_from": "Blackfang Brigand",
     "location": "LOC_001",
-    "drop_chance": "6.0"
+    "drop_chance": "4.0"
   },
   {
     "item_name": "Raider Grips",
     "required_level": "4",
     "rarity": "Common",
-    "drops_from": "Broken Shield Guard",
-    "location": "LOC_001",
-    "drop_chance": "6.0"
+    "drops_from": "Young Wolf",
+    "location": "LOC_002",
+    "drop_chance": "4.0"
   },
   {
     "item_name": "Blackfang Claws",
     "required_level": "6",
     "rarity": "Uncommon",
-    "drops_from": "Young Wolf",
-    "location": "LOC_002",
+    "drops_from": "Wild Raider",
+    "location": "LOC_003",
     "drop_chance": "4.5"
   },
   {
@@ -195,24 +195,24 @@ export const minorArmorUniqueItemDrops = [
     "item_name": "Patchwork Greaves",
     "required_level": "2",
     "rarity": "Common",
-    "drops_from": "Road Thug",
+    "drops_from": "Blackfang Brigand",
     "location": "LOC_001",
-    "drop_chance": "6.0"
+    "drop_chance": "4.0"
   },
   {
     "item_name": "Roadworn Trousers",
     "required_level": "4",
     "rarity": "Common",
-    "drops_from": "Broken Shield Guard",
-    "location": "LOC_001",
-    "drop_chance": "6.0"
+    "drops_from": "Young Wolf",
+    "location": "LOC_002",
+    "drop_chance": "4.0"
   },
   {
     "item_name": "Blackfang Leather Greaves",
     "required_level": "6",
     "rarity": "Uncommon",
-    "drops_from": "Young Wolf",
-    "location": "LOC_002",
+    "drops_from": "Wild Raider",
+    "location": "LOC_003",
     "drop_chance": "4.5"
   },
   {
@@ -291,24 +291,24 @@ export const minorArmorUniqueItemDrops = [
     "item_name": "Roadworn Boots",
     "required_level": "2",
     "rarity": "Common",
-    "drops_from": "Road Thug",
+    "drops_from": "Blackfang Brigand",
     "location": "LOC_001",
-    "drop_chance": "6.0"
+    "drop_chance": "4.0"
   },
   {
     "item_name": "Mudstalker Boots",
     "required_level": "4",
     "rarity": "Common",
-    "drops_from": "Broken Shield Guard",
-    "location": "LOC_001",
-    "drop_chance": "6.0"
+    "drops_from": "Young Wolf",
+    "location": "LOC_002",
+    "drop_chance": "4.0"
   },
   {
     "item_name": "Blackfang Trail Boots",
     "required_level": "6",
     "rarity": "Uncommon",
-    "drops_from": "Young Wolf",
-    "location": "LOC_002",
+    "drops_from": "Wild Raider",
+    "location": "LOC_003",
     "drop_chance": "4.5"
   },
   {
@@ -388,15 +388,19 @@ export const minorArmorUniqueItemDrops = [
 export const minorArmorLocationLoot = [
   {
     "location_id": "LOC_001",
-    "notable_items": "Roadside Hood, Scout Hood, Torn Road Wraps, Raider Grips, Patchwork Greaves, Roadworn Trousers, Roadworn Boots, Mudstalker Boots"
+    "notable_items": "Roadside Hood, Torn Road Wraps, Patchwork Greaves, Roadworn Boots"
   },
   {
     "location_id": "LOC_002",
+    "notable_items": "Scout Hood, Raider Grips, Roadworn Trousers, Mudstalker Boots"
+  },
+  {
+    "location_id": "LOC_003",
     "notable_items": "Raider Iron Cap, Blackfang Claws, Blackfang Leather Greaves, Blackfang Trail Boots"
   },
   {
     "location_id": "LOC_004",
-    "notable_items": "Watch Captain Helm, Watchtower Bracers, Gatewarden Greaves, Watchtower March Boots"
+    "notable_items": "Watchtower Helm, Watchtower Bracers, Gatewarden Greaves, Watchtower March Boots"
   },
   {
     "location_id": "LOC_005",

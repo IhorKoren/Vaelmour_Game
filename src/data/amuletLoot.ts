@@ -3,48 +3,48 @@ export const amuletUniqueItemDrops = [
     "item_name": "Wolf Fang Charm",
     "required_level": "2",
     "rarity": "Common",
-    "drops_from": "Road Thug",
+    "drops_from": "Thorn Rot Hound",
     "location": "LOC_001",
-    "drop_chance": "6.0"
+    "drop_chance": "4.0"
   },
   {
     "item_name": "Road Saint Pendant",
     "required_level": "4",
     "rarity": "Common",
-    "drops_from": "Broken Shield Guard",
-    "location": "LOC_001",
-    "drop_chance": "6.0"
+    "drops_from": "Young Wolf",
+    "location": "LOC_002",
+    "drop_chance": "4.0"
   },
   {
     "item_name": "Iron Sigil",
     "required_level": "6",
     "rarity": "Uncommon",
-    "drops_from": "Young Wolf",
-    "location": "LOC_002",
+    "drops_from": "Iron Guard",
+    "location": "LOC_004",
     "drop_chance": "4.5"
   },
   {
     "item_name": "Ash-Touched Charm",
     "required_level": "8",
     "rarity": "Uncommon",
-    "drops_from": "Tower Shield Veteran",
-    "location": "LOC_004",
+    "drops_from": "Ash Disciple",
+    "location": "LOC_006",
     "drop_chance": "4.5"
   },
   {
     "item_name": "Blood Priest's Charm",
     "required_level": "11",
     "rarity": "Uncommon",
-    "drops_from": "Iron Gate Warden",
-    "location": "LOC_005",
+    "drops_from": "Blood Priest",
+    "location": "LOC_006",
     "drop_chance": "4.5"
   },
   {
     "item_name": "Mercenary Luck Talisman",
     "required_level": "14",
     "rarity": "Rare",
-    "drops_from": "Ash Disciple",
-    "location": "LOC_006",
+    "drops_from": "Wild Raider",
+    "location": "LOC_007",
     "drop_chance": "2.5"
   },
   {
@@ -100,27 +100,23 @@ export const amuletUniqueItemDrops = [
 export const amuletLocationLoot = [
   {
     "location_id": "LOC_001",
-    "notable_items": "Wolf Fang Charm, Road Saint Pendant"
+    "notable_items": "Wolf Fang Charm"
   },
   {
     "location_id": "LOC_002",
-    "notable_items": "Iron Sigil"
+    "notable_items": "Road Saint Pendant"
   },
   {
     "location_id": "LOC_004",
-    "notable_items": "Ash-Touched Charm"
-  },
-  {
-    "location_id": "LOC_005",
-    "notable_items": "Blood Priest's Charm"
+    "notable_items": "Iron Sigil"
   },
   {
     "location_id": "LOC_006",
-    "notable_items": "Mercenary Luck Talisman"
+    "notable_items": "Ash-Touched Charm, Blood Priest's Charm"
   },
   {
     "location_id": "LOC_007",
-    "notable_items": "Executioner's Mark"
+    "notable_items": "Mercenary Luck Talisman, Executioner's Mark"
   },
   {
     "location_id": "LOC_008",

@@ -3,24 +3,24 @@ export const ringUniqueItemDrops = [
     "item_name": "Traveler's Ring",
     "required_level": "2",
     "rarity": "Common",
-    "drops_from": "Road Thug",
+    "drops_from": "Blackfang Brigand",
     "location": "LOC_001",
-    "drop_chance": "6.0"
+    "drop_chance": "4.0"
   },
   {
     "item_name": "Wolfbite Band",
     "required_level": "4",
     "rarity": "Common",
-    "drops_from": "Broken Shield Guard",
-    "location": "LOC_001",
-    "drop_chance": "6.0"
+    "drops_from": "Young Wolf",
+    "location": "LOC_002",
+    "drop_chance": "4.0"
   },
   {
     "item_name": "Marauder's Iron Band",
     "required_level": "6",
     "rarity": "Uncommon",
-    "drops_from": "Young Wolf",
-    "location": "LOC_002",
+    "drops_from": "Savage Marauder",
+    "location": "LOC_003",
     "drop_chance": "4.5"
   },
   {
@@ -100,10 +100,14 @@ export const ringUniqueItemDrops = [
 export const ringLocationLoot = [
   {
     "location_id": "LOC_001",
-    "notable_items": "Traveler's Ring, Wolfbite Band"
+    "notable_items": "Traveler's Ring"
   },
   {
     "location_id": "LOC_002",
+    "notable_items": "Wolfbite Band"
+  },
+  {
+    "location_id": "LOC_003",
     "notable_items": "Marauder's Iron Band"
   },
   {
