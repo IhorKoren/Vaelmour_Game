@@ -44,11 +44,6 @@
   outline: none;
 }
 
-.admin-form-grid select,
-.admin-equipment-row select {
-  cursor: pointer;
-}
-
 .admin-login button,
 .admin-header__actions button,
 .admin-actions button,
@@ -235,13 +230,6 @@
   font-size: 16px;
 }
 
-.admin-muted {
-  margin: 12px 0 0;
-  color: #aa9a82;
-  font-size: 12px;
-  line-height: 1.45;
-}
-
 .admin-equipment-grid {
   display: grid;
   gap: 12px;
@@ -311,13 +299,10 @@
   line-height: 1.45;
 }
 
-.admin-section details {
-  color: #d8be8c;
-}
-
 .admin-section summary {
   cursor: pointer;
   font-weight: 800;
+  color: #d8be8c;
 }
 
 .admin-actions {
