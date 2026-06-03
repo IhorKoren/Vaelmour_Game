@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Panel } from '../../components/ui/Panel';
 import { StatBar } from '../../components/ui/StatBar';
 import { calculateDerivedStats } from '../../game/formulas/stats';
+import { useDerivedStats } from '../../game/hooks/useDerivedStats';
 import { 
   getEquippedItemStats,
   equipInventoryItem,
@@ -38,7 +39,7 @@ export function CharacterScreen({ hero, onHeroChange }: Props) {
   const [skillFilter, setSkillFilter] = useState<'equipped' | 'all'>('equipped');
   const [isEditingName, setIsEditingName] = useState(hero.nameSource !== 'manual');
   const [draftName, setDraftName] = useState(hero.name);
-  const derived = calculateDerivedStats(hero.stats, hero.baseHp, undefined, hero);
+  const derived = useDerivedStats(hero);
   const secondary = calculateSecondaryStats(hero);
   const effectiveWeaponStats = getEffectiveWeaponStats(hero);
   const effectiveAttackSpeed = getEffectiveAttackSpeed(hero, effectiveWeaponStats);

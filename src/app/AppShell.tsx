@@ -12,6 +12,7 @@ import {
 } from '../game/save/saveSystem';
 import { locations } from '../data/locations';
 import { calculateDerivedStats, xpToNextLevel } from '../game/formulas/stats';
+import { useDerivedStats } from '../game/hooks/useDerivedStats';
 import { checkLevelUp } from '../game/formulas/progression';
 import { updateQuestProgressOnLocationChanged } from '../game/formulas/quests';
 import type { AppTab } from './tabs';
@@ -89,6 +90,7 @@ export default function AppShell() {
   const [isFighting, setIsFighting] = useState(false);
 
   const [cloudSaveChecked, setCloudSaveChecked] = useState(false);
+  const derived = useDerivedStats(hero);
 
   const [fullHealthNotificationSent, setFullHealthNotificationSent] = useState(() => {
     const save = loadGame();
@@ -187,8 +189,6 @@ export default function AppShell() {
 
   // Track hero health transitions to trigger Telegram notifications only when player is away
   useEffect(() => {
-    const derived = calculateDerivedStats(hero.stats, hero.baseHp, undefined, hero);
-
     const isBelowFullHp = hero.currentHp < derived.maxHp;
     const isFullHp = hero.currentHp >= derived.maxHp;
 
@@ -231,7 +231,7 @@ export default function AppShell() {
     console.info('[Telegram Notifications] Full HP reached while player is away. Sending notification.');
 
     void sendFullHealthNotification();
-  }, [hero, fullHealthNotificationSent]);
+  }, [hero.currentHp, derived.maxHp, fullHealthNotificationSent]);
 
   // Debounced cloud save to Supabase.
   // Wait until cloud load is checked to avoid overwriting cloud save with old localStorage data.
