@@ -3,6 +3,7 @@ import { Suspense, lazy, startTransition, useEffect, useMemo, useState } from 'r
 import { BottomNavigation } from '../components/layout/BottomNavigation';
 import { TopStatusBar } from '../components/layout/TopStatusBar';
 import { createInitialHero } from '../game/createInitialHero';
+import { applyAutoEquipPreset } from '../game/autoEquipPreset';
 import {
   applyOfflineHealthRegen,
   flushPendingSaveGame,
@@ -25,37 +26,48 @@ import type { HeroState } from '../game/types';
 
 const CombatScreen = lazy(async () => {
   const module = await import('../features/combat/CombatScreen');
+
   return { default: module.CombatScreen };
 });
 
 const CharacterScreen = lazy(async () => {
   const module = await import('../features/character/CharacterScreen');
+
   return { default: module.CharacterScreen };
 });
 
 const InventoryScreen = lazy(async () => {
   const module = await import('../features/inventory/InventoryScreen');
+
   return { default: module.InventoryScreen };
 });
 
 const QuestsScreen = lazy(async () => {
   const module = await import('../features/quests/QuestsScreen');
+
   return { default: module.QuestsScreen };
 });
 
 const MapScreen = lazy(async () => {
   const module = await import('../features/map/MapScreen');
+
   return { default: module.MapScreen };
 });
 
 const ShopScreen = lazy(async () => {
   const module = await import('../features/shop/ShopScreen');
+
   return { default: module.ShopScreen };
 });
+
+function createStartupHero(): HeroState {
+  return applyAutoEquipPreset(loadGame()?.hero ?? createInitialHero());
+}
 
 function getCriticalHeroSnapshot(hero: HeroState): string {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { currentHp, maxHp, ...criticalHeroState } = hero;
+
   return JSON.stringify(criticalHeroState);
 }
 
@@ -65,7 +77,8 @@ function isCriticalHeroChange(previousHero: HeroState, nextHero: HeroState): boo
 
 export default function AppShell() {
   const [activeTab, setActiveTab] = useState<AppTab>('combat');
-  const [hero, setHero] = useState<HeroState>(() => loadGame()?.hero ?? createInitialHero());
+
+  const [hero, setHero] = useState<HeroState>(() => createStartupHero());
 
   // Shared state mapping selected locations
   const [selectedLocationId, setSelectedLocationId] = useState<string>(locations[0].id);
@@ -81,8 +94,15 @@ export default function AppShell() {
     const save = loadGame();
 
     if (save?.hero) {
-      const derived = calculateDerivedStats(save.hero.stats, save.hero.baseHp, undefined, save.hero);
-      return save.hero.currentHp >= derived.maxHp;
+      const heroWithPreset = applyAutoEquipPreset(save.hero);
+      const derived = calculateDerivedStats(
+        heroWithPreset.stats,
+        heroWithPreset.baseHp,
+        undefined,
+        heroWithPreset,
+      );
+
+      return heroWithPreset.currentHp >= derived.maxHp;
     }
 
     // Prevent immediate notification on new game / first cold start
@@ -110,7 +130,7 @@ export default function AppShell() {
             updatedAt: cloudSave.updatedAt,
           };
 
-        const restoredHero = regeneratedCloudSave.hero;
+        const restoredHero = applyAutoEquipPreset(regeneratedCloudSave.hero);
         const restoredUpdatedAt = regeneratedCloudSave.updatedAt;
         const restoredLocationId = cloudSave.selectedLocationId ?? locations[0].id;
 
@@ -131,12 +151,13 @@ export default function AppShell() {
 
         setFullHealthNotificationSent(restoredHero.currentHp >= derived.maxHp);
 
-        const cloudSaveWasUpdatedByOfflineRegen =
+        const cloudSaveWasUpdatedByStartupProcessing =
           restoredHero.currentHp !== cloudSave.hero.currentHp ||
           restoredHero.maxHp !== cloudSave.hero.maxHp ||
-          restoredUpdatedAt !== cloudSave.updatedAt;
+          restoredUpdatedAt !== cloudSave.updatedAt ||
+          getCriticalHeroSnapshot(restoredHero) !== getCriticalHeroSnapshot(cloudSave.hero);
 
-        if (cloudSaveWasUpdatedByOfflineRegen) {
+        if (cloudSaveWasUpdatedByStartupProcessing) {
           void forceCloudPlayerSave({
             hero: restoredHero,
             selectedLocationId: restoredLocationId,
@@ -144,12 +165,12 @@ export default function AppShell() {
           });
         }
 
-        console.info('[Cloud Save] Applied cloud save with offline HP regen.', {
+        console.info('[Cloud Save] Applied cloud save with startup processing.', {
           beforeHp: cloudSave.hero.currentHp,
           afterHp: restoredHero.currentHp,
           maxHp: derived.maxHp,
           selectedLocationId: restoredLocationId,
-          cloudSaveWasUpdatedByOfflineRegen,
+          cloudSaveWasUpdatedByStartupProcessing,
           updatedAt: restoredUpdatedAt,
         });
       }
@@ -173,6 +194,7 @@ export default function AppShell() {
 
     if (isBelowFullHp) {
       setFullHealthNotificationSent(false);
+
       return;
     }
 
@@ -202,10 +224,12 @@ export default function AppShell() {
       console.info(
         '[Telegram Notifications] Full HP reached, but player is active. Notification skipped.',
       );
+
       return;
     }
 
     console.info('[Telegram Notifications] Full HP reached while player is away. Sending notification.');
+
     void sendFullHealthNotification();
   }, [hero, fullHealthNotificationSent]);
 
@@ -298,8 +322,14 @@ export default function AppShell() {
 
       if (!progressedSave) return;
 
-      setHero(progressedSave.hero);
-      scheduleSaveGame(progressedSave);
+      const progressedHero = applyAutoEquipPreset(progressedSave.hero);
+
+      setHero(progressedHero);
+
+      scheduleSaveGame({
+        hero: progressedHero,
+        updatedAt: progressedSave.updatedAt,
+      });
     };
 
     window.addEventListener('focus', syncOfflineProgress);
