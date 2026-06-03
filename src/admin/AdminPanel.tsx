@@ -4,7 +4,13 @@ import './AdminPanel.css';
 import { equipmentCatalog, type EquipmentItemDefinition } from '../data/equipmentCatalog';
 import { locations } from '../data/locations';
 import { calculateDerivedStats } from '../game/formulas/stats';
-import type { CoreStats, EquipmentSlot, EquipmentState, HeroState } from '../game/types';
+import type {
+  CoreStats,
+  EquipmentSlot,
+  EquipmentState,
+  GeneratedEquipmentItem,
+  HeroState
+} from '../game/types';
 
 type JsonRecord = Record<string, unknown>;
 type HeroDraft = Partial<HeroState> & JsonRecord;
