@@ -69,7 +69,9 @@ export default function AppShell() {
   // Shared state mapping selected locations
   const [selectedLocationId, setSelectedLocationId] = useState<string>(locations[0].id);
 
-  // Active combat state reported by CombatScreen
+  // Active combat state reported by CombatScreen.
+  // Real-time HP regen is now allowed during combat too.
+  // This state is still used to block offline/focus regeneration during an active fight.
   const [isFighting, setIsFighting] = useState(false);
 
   const [cloudSaveChecked, setCloudSaveChecked] = useState(false);
@@ -246,12 +248,11 @@ export default function AppShell() {
     };
   }, []);
 
-  // Real-time health regeneration loop
+  // Real-time health regeneration loop.
+  // HP regen now works both outside combat and during active combat.
   useEffect(() => {
     const interval = setInterval(() => {
       setHero((currentHero) => {
-        // Regeneration is blocked during active combat
-        if (isFighting) return currentHero;
         if (currentHero.currentHp <= 0) return currentHero;
 
         const currentDerived = calculateDerivedStats(
@@ -274,8 +275,6 @@ export default function AppShell() {
           maxHp: currentDerived.maxHp,
         };
 
-        // Auto-save the regenerated HP locally.
-        // Cloud save remains debounced; HP-only changes do not force immediate Supabase writes.
         scheduleSaveGame({
           hero: updatedHero,
           updatedAt: new Date().toISOString(),
@@ -286,9 +285,10 @@ export default function AppShell() {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [isFighting]);
+  }, []);
 
-  // Apply offline local HP regeneration when player returns to the game
+  // Apply offline local HP regeneration when player returns to the game.
+  // This remains blocked during active combat to avoid extra healing from focus/visibility events mid-fight.
   useEffect(() => {
     const syncOfflineProgress = () => {
       if (document.hidden || isFighting) return;
