@@ -637,8 +637,8 @@ describe('Save/Load Compatibility & Normalization (saveSystem.ts)', () => {
       },
       inventory: [
         { itemId: 'MAT_001', qty: 5 } // missing optional affixes!
-      ]
-      // missing equipmentAffixes!
+      ],
+      migrationFlags: { starterEquipmentV2: true }
     };
 
     const normalized = normalizeHeroState(oldSavedHero);

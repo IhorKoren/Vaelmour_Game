@@ -2,6 +2,8 @@ import { items } from '../../data/items';
 import { armors } from '../../data/armors';
 import { shields } from '../../data/shields';
 import { weapons } from '../../data/weapons';
+import { equipmentCatalog } from '../../data/equipmentCatalog';
+import { generateItemAffixes } from '../formulas/affixes';
 import type {
   Enemy,
   EquipmentSlot,
@@ -26,22 +28,6 @@ export const EQUIPMENT_SLOT_WEIGHTS: Array<{ slot: EquipmentSlot; weight: number
   { slot: 'ring1', weight: 16 },
   { slot: 'amulet', weight: 6 }
 ];
-
-const RARITY_RANDOM_STAT_COUNT: Record<string, number> = {
-  common: 0,
-  uncommon: 1,
-  rare: 2,
-  epic: 3,
-  legendary: 4
-};
-
-const RARITY_STAT_MULTIPLIER: Record<string, number> = {
-  common: 1,
-  uncommon: 1,
-  rare: 1.1,
-  epic: 1.2,
-  legendary: 1.35
-};
 
 const SLOT_LABELS: Record<EquipmentSlot, string> = {
   weapon: 'Blade',
@@ -73,74 +59,45 @@ type AffixTemplate = {
   cap?: number;
 };
 
-const SLOT_AFFIX_POOLS: Record<EquipmentSlot, AffixTemplate[]> = {
-  weapon: [
-    { type: 'damageBonus', label: 'Damage', valueType: 'percent', baseValue: 0.03, scalePerTier: 0.006, cap: 0.18 },
-    { type: 'critChance', label: 'Crit Chance', valueType: 'percent', baseValue: 0.02, scalePerTier: 0.004, cap: 0.16 },
-    { type: 'critDamage', label: 'Crit Damage', valueType: 'percent', baseValue: 0.08, scalePerTier: 0.012, cap: 0.5 },
-    { type: 'accuracy', label: 'Accuracy', valueType: 'percent', baseValue: 0.02, scalePerTier: 0.003, cap: 0.15 },
-    { type: 'bleedChance', label: 'Bleed Chance', valueType: 'percent', baseValue: 0.03, scalePerTier: 0.005, cap: 0.25 },
-    { type: 'stunChance', label: 'Stun Chance', valueType: 'percent', baseValue: 0.02, scalePerTier: 0.004, cap: 0.18 },
-    { type: 'armorPenetration', label: 'Armor Penetration', valueType: 'percent', baseValue: 0.03, scalePerTier: 0.005, cap: 0.25 }
-  ],
-  head: [
-    { type: 'maxHp', label: 'Max HP', valueType: 'flat', baseValue: 8, scalePerTier: 3, cap: 120 },
-    { type: 'armor', label: 'Armor', valueType: 'flat', baseValue: 2, scalePerTier: 1, cap: 25 },
-    { type: 'healthRegen', label: 'Health Regen', valueType: 'flat', baseValue: 1, scalePerTier: 0.4, cap: 12 },
-    { type: 'stunResist', label: 'Stun Resist', valueType: 'percent', baseValue: 0.03, scalePerTier: 0.004, cap: 0.25 },
-    { type: 'bleedResist', label: 'Bleed Resist', valueType: 'percent', baseValue: 0.03, scalePerTier: 0.004, cap: 0.25 }
-  ],
-  chest: [
-    { type: 'maxHp', label: 'Max HP', valueType: 'flat', baseValue: 10, scalePerTier: 4, cap: 160 },
-    { type: 'armor', label: 'Armor', valueType: 'flat', baseValue: 3, scalePerTier: 1.2, cap: 35 },
-    { type: 'damageReduction', label: 'Damage Reduction', valueType: 'percent', baseValue: 0.02, scalePerTier: 0.004, cap: 0.18 },
-    { type: 'stunResist', label: 'Stun Resist', valueType: 'percent', baseValue: 0.04, scalePerTier: 0.005, cap: 0.3 },
-    { type: 'bleedResist', label: 'Bleed Resist', valueType: 'percent', baseValue: 0.04, scalePerTier: 0.005, cap: 0.3 },
-    { type: 'healthRegen', label: 'Health Regen', valueType: 'flat', baseValue: 1, scalePerTier: 0.5, cap: 14 }
-  ],
-  hands: [
-    { type: 'accuracy', label: 'Accuracy', valueType: 'percent', baseValue: 0.02, scalePerTier: 0.003, cap: 0.14 },
-    { type: 'critChance', label: 'Crit Chance', valueType: 'percent', baseValue: 0.015, scalePerTier: 0.003, cap: 0.12 },
-    { type: 'critDamage', label: 'Crit Damage', valueType: 'percent', baseValue: 0.06, scalePerTier: 0.01, cap: 0.4 },
-    { type: 'attackSpeedBonus', label: 'Attack Speed', valueType: 'percent', baseValue: 0.02, scalePerTier: 0.003, cap: 0.18 },
-    { type: 'damageBonus', label: 'Damage', valueType: 'percent', baseValue: 0.02, scalePerTier: 0.004, cap: 0.16 },
-    { type: 'armorPenetration', label: 'Armor Penetration', valueType: 'percent', baseValue: 0.02, scalePerTier: 0.004, cap: 0.2 }
-  ],
-  legs: [
-    { type: 'maxHp', label: 'Max HP', valueType: 'flat', baseValue: 8, scalePerTier: 3, cap: 120 },
-    { type: 'armor', label: 'Armor', valueType: 'flat', baseValue: 2, scalePerTier: 1, cap: 25 },
-    { type: 'damageReduction', label: 'Damage Reduction', valueType: 'percent', baseValue: 0.015, scalePerTier: 0.003, cap: 0.15 },
-    { type: 'bleedResist', label: 'Bleed Resist', valueType: 'percent', baseValue: 0.03, scalePerTier: 0.004, cap: 0.22 }
-  ],
-  feet: [
-    { type: 'dodgeChance', label: 'Dodge Chance', valueType: 'percent', baseValue: 0.02, scalePerTier: 0.003, cap: 0.14 },
-    { type: 'accuracy', label: 'Accuracy', valueType: 'percent', baseValue: 0.015, scalePerTier: 0.003, cap: 0.12 },
-    { type: 'healthRegen', label: 'Health Regen', valueType: 'flat', baseValue: 1, scalePerTier: 0.4, cap: 10 }
-  ],
-  shield: [
-    { type: 'armor', label: 'Armor', valueType: 'flat', baseValue: 3, scalePerTier: 1.2, cap: 30 },
-    { type: 'blockChance', label: 'Block Chance', valueType: 'percent', baseValue: 0.03, scalePerTier: 0.004, cap: 0.22 },
-    { type: 'blockPower', label: 'Block Power', valueType: 'flat', baseValue: 3, scalePerTier: 1.2, cap: 28 },
-    { type: 'maxHp', label: 'Max HP', valueType: 'flat', baseValue: 8, scalePerTier: 3, cap: 100 }
-  ],
-  ring1: [
-    { type: 'damageBonus', label: 'Damage', valueType: 'percent', baseValue: 0.025, scalePerTier: 0.004, cap: 0.16 },
-    { type: 'critChance', label: 'Crit Chance', valueType: 'percent', baseValue: 0.018, scalePerTier: 0.003, cap: 0.12 },
-    { type: 'accuracy', label: 'Accuracy', valueType: 'percent', baseValue: 0.018, scalePerTier: 0.003, cap: 0.12 },
-    { type: 'lootChanceBonus', label: 'Loot Chance', valueType: 'percent', baseValue: 0.03, scalePerTier: 0.004, cap: 0.22 },
-    { type: 'goldFindBonus', label: 'Gold Find', valueType: 'percent', baseValue: 0.04, scalePerTier: 0.006, cap: 0.3 }
-  ],
-  ring2: [],
-  amulet: [
-    { type: 'maxHp', label: 'Max HP', valueType: 'flat', baseValue: 10, scalePerTier: 4, cap: 140 },
-    { type: 'healthRegen', label: 'Health Regen', valueType: 'flat', baseValue: 1, scalePerTier: 0.5, cap: 14 },
-    { type: 'rarityFindBonus', label: 'Rarity Find', valueType: 'percent', baseValue: 0.03, scalePerTier: 0.004, cap: 0.22 },
-    { type: 'lifeSteal', label: 'Life Steal', valueType: 'percent', baseValue: 0.01, scalePerTier: 0.002, cap: 0.08 },
-    { type: 'damageBonus', label: 'Damage', valueType: 'percent', baseValue: 0.02, scalePerTier: 0.004, cap: 0.14 }
-  ]
-};
+export const RING_PRIMARY_POOL: AffixTemplate[] = [
+  { type: 'damageBonus', label: 'Damage', valueType: 'percent', baseValue: 0.02, scalePerTier: 0.005, cap: 0.25 },
+  { type: 'critChance', label: 'Crit Chance', valueType: 'percent', baseValue: 0.015, scalePerTier: 0.004, cap: 0.35 },
+  { type: 'accuracy', label: 'Accuracy', valueType: 'percent', baseValue: 0.02, scalePerTier: 0.005, cap: 0.25 }
+];
 
-SLOT_AFFIX_POOLS.ring2 = SLOT_AFFIX_POOLS.ring1;
+export const AMULET_PRIMARY_POOL: AffixTemplate[] = [
+  { type: 'healthRegen', label: 'Health Regen', valueType: 'flat', baseValue: 1, scalePerTier: 0.5, cap: 30 },
+  { type: 'lifeSteal', label: 'Life Steal', valueType: 'percent', baseValue: 0.01, scalePerTier: 0.002, cap: 0.15 },
+  { type: 'damageBonus', label: 'Damage', valueType: 'percent', baseValue: 0.02, scalePerTier: 0.005, cap: 0.25 }
+];
+
+function rollPrimaryStat(pool: AffixTemplate[], tierIndex: number, random: () => number): { type: ItemAffixType; value: number } {
+  const picked = pool[Math.floor(random() * pool.length)];
+  const variance = 0.85 + random() * 0.3;
+  const baseValue = (picked.baseValue + tierIndex * picked.scalePerTier) * variance;
+  const clamped = Math.min(picked.cap ?? Number.POSITIVE_INFINITY, baseValue);
+  const value = picked.valueType === 'percent'
+    ? Math.round(clamped * 1000) / 1000
+    : Math.max(1, Math.round(clamped));
+  return { type: picked.type, value };
+}
+
+export function getItemBaseStats(item: GeneratedEquipmentItem): GeneratedEquipmentStats {
+  const base = { ...item.stats };
+  for (const affix of item.affixes) {
+    const key = affix.type === 'maxHealth' ? 'maxHp' : affix.type;
+    if (base[key as keyof GeneratedEquipmentStats] !== undefined) {
+      base[key as keyof GeneratedEquipmentStats] = (Number(base[key as keyof GeneratedEquipmentStats]) - affix.value) as never;
+    }
+    if (key === 'armor' && base.defense !== undefined) {
+      base.defense = Number(base.defense) - affix.value;
+    }
+    if (key === 'blockPower' && base.blockValue !== undefined) {
+      base.blockValue = Number(base.blockValue) - affix.value;
+    }
+  }
+  return base;
+}
 
 type StaticDefinition = Record<string, unknown> & {
   id: string;
@@ -251,11 +208,57 @@ export function createGeneratedEquipmentItem(params: {
   const random = params.random ?? Math.random;
   const tierLevel = getEquipmentLevelForEnemy(params.level);
   const tierIndex = getEquipmentTierIndex(tierLevel);
-  const rarityMultiplier = RARITY_STAT_MULTIPLIER[params.rarity] ?? 1;
   const slot = params.slot;
   const category = slot === 'ring1' || slot === 'ring2' ? 'ring' : slot;
-  const stats = generateBaseStats(slot, tierIndex);
-  const affixes = generateRandomAffixes(slot, params.rarity, tierIndex, rarityMultiplier, random);
+
+  const searchSlot = (slot === 'ring1' || slot === 'ring2') ? 'ring' : slot;
+  const template = equipmentCatalog.find(
+    (t) => t.slot === searchSlot && t.level === tierLevel
+  );
+  if (!template) {
+    throw new Error(`No template found for slot ${searchSlot} and level ${tierLevel}`);
+  }
+
+  const stats: GeneratedEquipmentStats = {};
+  if (template.stats.minDamage !== undefined) stats.minDamage = template.stats.minDamage;
+  if (template.stats.maxDamage !== undefined) stats.maxDamage = template.stats.maxDamage;
+  if (template.stats.attackSpeed !== undefined) stats.attackSpeed = template.stats.attackSpeed;
+  if (template.stats.armor !== undefined) {
+    stats.armor = template.stats.armor;
+    stats.defense = template.stats.armor;
+  }
+  if (template.stats.maxHp !== undefined) {
+    stats.maxHp = template.stats.maxHp;
+    stats.maxHealth = template.stats.maxHp;
+  }
+  if (template.stats.accuracy !== undefined) stats.accuracy = template.stats.accuracy;
+  if (template.stats.dodgeChance !== undefined) {
+    stats.dodgeChance = template.stats.dodgeChance;
+    stats.dodgeBonus = template.stats.dodgeChance;
+  }
+  if (template.stats.blockChance !== undefined) stats.blockChance = template.stats.blockChance;
+  if (template.stats.blockPower !== undefined) {
+    stats.blockPower = template.stats.blockPower;
+    stats.blockValue = template.stats.blockPower;
+  }
+  if (template.stats.damageBonus !== undefined) stats.damageBonus = template.stats.damageBonus;
+  if (template.stats.attackSpeedBonus !== undefined) stats.attackSpeedBonus = template.stats.attackSpeedBonus;
+  if (template.stats.damageReduction !== undefined) stats.damageReduction = template.stats.damageReduction;
+  if (template.stats.armorPenetration !== undefined) stats.armorPenetration = template.stats.armorPenetration;
+  if (template.stats.healthRegen !== undefined) stats.healthRegen = template.stats.healthRegen;
+
+  let primaryType: ItemAffixType | undefined;
+  if (category === 'ring') {
+    const rolled = rollPrimaryStat(RING_PRIMARY_POOL, tierIndex, random);
+    primaryType = rolled.type;
+    stats[rolled.type as keyof GeneratedEquipmentStats] = rolled.value as never;
+  } else if (category === 'amulet') {
+    const rolled = rollPrimaryStat(AMULET_PRIMARY_POOL, tierIndex, random);
+    primaryType = rolled.type;
+    stats[rolled.type as keyof GeneratedEquipmentStats] = ((stats[rolled.type as keyof GeneratedEquipmentStats] ?? 0) + rolled.value) as never;
+  }
+
+  const affixes = generateItemAffixes(params.rarity, searchSlot, tierIndex + 1, random, primaryType);
   applyAffixesToStats(stats, affixes);
   const id = `generated_${slot}_${tierLevel}_${params.rarity}_${Math.floor(random() * 1_000_000_000)}`;
 
@@ -282,81 +285,6 @@ export function createGeneratedEquipmentItem(params: {
   };
 }
 
-function generateBaseStats(slot: EquipmentSlot, tierIndex: number): GeneratedEquipmentStats {
-  const pow = Math.pow(1.18, tierIndex);
-  switch (slot) {
-    case 'weapon': {
-      const minDamage = Math.max(2, Math.round(6 * pow));
-      const maxDamage = Math.max(minDamage + 2, Math.round(10 * pow));
-      return {
-        minDamage,
-        maxDamage,
-        attackSpeed: Number((1 + tierIndex * 0.02).toFixed(2))
-      };
-    }
-    case 'head':
-      return { armor: Math.round(6 * pow), defense: Math.round(6 * pow), maxHp: Math.round(10 * pow) };
-    case 'chest':
-      return { armor: Math.round(10 * pow), defense: Math.round(10 * pow) };
-    case 'hands':
-      return { armor: Math.round(5 * pow), defense: Math.round(5 * pow), accuracy: Number((0.01 + tierIndex * 0.002).toFixed(3)) };
-    case 'legs':
-      return { armor: Math.round(7 * pow), defense: Math.round(7 * pow), maxHp: Math.round(8 * pow) };
-    case 'feet':
-      return { armor: Math.round(5 * pow), defense: Math.round(5 * pow), dodgeChance: Number((0.01 + tierIndex * 0.002).toFixed(3)) };
-    case 'shield':
-      return {
-        armor: Math.round(8 * pow),
-        defense: Math.round(8 * pow),
-        blockChance: Number((0.08 + tierIndex * 0.01).toFixed(3)),
-        blockPower: Math.round(5 * pow)
-      };
-    case 'ring1':
-    case 'ring2':
-      return { damageBonus: Number((0.02 + tierIndex * 0.003).toFixed(3)) };
-    case 'amulet':
-      return { maxHp: Math.round(12 * pow), healthRegen: Math.max(1, Math.round(1 + tierIndex * 0.35)) };
-    default:
-      return {};
-  }
-}
-
-function generateRandomAffixes(
-  slot: EquipmentSlot,
-  rarity: Rarity,
-  tierIndex: number,
-  rarityMultiplier: number,
-  random: () => number
-): ItemAffix[] {
-  const pool = SLOT_AFFIX_POOLS[slot] ?? [];
-  const count = Math.min(pool.length, RARITY_RANDOM_STAT_COUNT[rarity] ?? 0);
-  const available = [...pool];
-  const affixes: ItemAffix[] = [];
-
-  for (let i = 0; i < count; i += 1) {
-    const pickIndex = Math.floor(random() * available.length);
-    const picked = available.splice(pickIndex, 1)[0];
-    if (!picked) {
-      break;
-    }
-    const variance = 0.85 + random() * 0.3;
-    const baseValue = (picked.baseValue + tierIndex * picked.scalePerTier) * rarityMultiplier * variance;
-    const clamped = Math.min(picked.cap ?? Number.POSITIVE_INFINITY, baseValue);
-    const value = picked.valueType === 'percent'
-      ? Math.round(clamped * 1000) / 1000
-      : Math.max(1, Math.round(clamped));
-    affixes.push({
-      id: `${picked.type}_${i + 1}`,
-      type: picked.type,
-      label: picked.label,
-      value,
-      valueType: picked.valueType
-    });
-  }
-
-  return affixes;
-}
-
 function applyAffixesToStats(stats: GeneratedEquipmentStats, affixes: ItemAffix[]): void {
   for (const affix of affixes) {
     const key = affix.type === 'maxHealth' ? 'maxHp' : affix.type;
@@ -372,6 +300,7 @@ function applyAffixesToStats(stats: GeneratedEquipmentStats, affixes: ItemAffix[
     }
   }
 }
+
 
 export function findInventoryStackByItemId(hero: HeroState, itemId: string): InventoryStack | null {
   return hero.inventory.find((stack) => stack.itemId.toLowerCase() === itemId.toLowerCase()) ?? null;

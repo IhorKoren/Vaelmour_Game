@@ -37,62 +37,91 @@ function createAffix(def: AffixDefinition, tier: number, rarityMultiplier: numbe
   };
 }
 
-export const WEAPON_AFFIX_POOL: AffixDefinition[] = [
-  { type: 'damageBonus', label: 'Шкода', valueType: 'percent', baseValue: 0.02, scalePerTier: 0.005, cap: 0.25 },
-  { type: 'accuracy', label: 'Влучність', valueType: 'percent', baseValue: 0.02, scalePerTier: 0.005, cap: 0.25 },
-  { type: 'critChance', label: 'Шанс криту', valueType: 'percent', baseValue: 0.015, scalePerTier: 0.004, cap: 0.35 },
-  { type: 'critDamage', label: 'Критична шкода', valueType: 'percent', baseValue: 0.1, scalePerTier: 0.015, cap: 0.75 },
-  { type: 'attackSpeedBonus', label: 'Швидкість атаки', valueType: 'percent', baseValue: 0.015, scalePerTier: 0.003, cap: 0.25 },
-  { type: 'armorPenetration', label: 'Пробиття броні', valueType: 'percent', baseValue: 0.03, scalePerTier: 0.005, cap: 0.6 },
-  { type: 'stunChance', label: 'Шанс стану', valueType: 'percent', baseValue: 0.015, scalePerTier: 0.003, cap: 0.3 },
-  { type: 'bleedChance', label: 'Шанс кровотечі', valueType: 'percent', baseValue: 0.025, scalePerTier: 0.004, cap: 0.45 }
-];
+export const SLOT_AFFIX_POOLS: Record<string, AffixDefinition[]> = {
+  weapon: [
+    { type: 'damageBonus', label: 'Шкода', valueType: 'percent', baseValue: 0.03, scalePerTier: 0.006, cap: 0.18 },
+    { type: 'critChance', label: 'Шанс криту', valueType: 'percent', baseValue: 0.02, scalePerTier: 0.004, cap: 0.16 },
+    { type: 'critDamage', label: 'Критична шкода', valueType: 'percent', baseValue: 0.08, scalePerTier: 0.012, cap: 0.5 },
+    { type: 'accuracy', label: 'Влучність', valueType: 'percent', baseValue: 0.02, scalePerTier: 0.003, cap: 0.15 },
+    { type: 'bleedChance', label: 'Шанс кровотечі', valueType: 'percent', baseValue: 0.03, scalePerTier: 0.005, cap: 0.25 },
+    { type: 'stunChance', label: 'Шанс стану', valueType: 'percent', baseValue: 0.02, scalePerTier: 0.004, cap: 0.18 },
+    { type: 'armorPenetration', label: 'Пробиття броні', valueType: 'percent', baseValue: 0.03, scalePerTier: 0.005, cap: 0.25 }
+  ],
+  head: [
+    { type: 'maxHp', label: 'Додаткове HP', valueType: 'flat', baseValue: 8, scalePerTier: 3, cap: 120 },
+    { type: 'armor', label: 'Броня', valueType: 'flat', baseValue: 2, scalePerTier: 1, cap: 25 },
+    { type: 'healthRegen', label: 'Регенерація', valueType: 'flat', baseValue: 1, scalePerTier: 0.4, cap: 12 },
+    { type: 'stunResist', label: 'Опір стану', valueType: 'percent', baseValue: 0.03, scalePerTier: 0.004, cap: 0.25 },
+    { type: 'bleedResist', label: 'Опір кровотечі', valueType: 'percent', baseValue: 0.03, scalePerTier: 0.004, cap: 0.25 }
+  ],
+  chest: [
+    { type: 'maxHp', label: 'Додаткове HP', valueType: 'flat', baseValue: 10, scalePerTier: 4, cap: 160 },
+    { type: 'armor', label: 'Броня', valueType: 'flat', baseValue: 3, scalePerTier: 1.2, cap: 35 },
+    { type: 'damageReduction', label: 'Зменшення шкоди', valueType: 'percent', baseValue: 0.02, scalePerTier: 0.004, cap: 0.18 },
+    { type: 'stunResist', label: 'Опір стану', valueType: 'percent', baseValue: 0.04, scalePerTier: 0.005, cap: 0.3 },
+    { type: 'bleedResist', label: 'Опір кровотечі', valueType: 'percent', baseValue: 0.04, scalePerTier: 0.005, cap: 0.3 },
+    { type: 'healthRegen', label: 'Регенерація', valueType: 'flat', baseValue: 1, scalePerTier: 0.5, cap: 14 }
+  ],
+  hands: [
+    { type: 'accuracy', label: 'Влучність', valueType: 'percent', baseValue: 0.02, scalePerTier: 0.003, cap: 0.14 },
+    { type: 'critChance', label: 'Шанс криту', valueType: 'percent', baseValue: 0.015, scalePerTier: 0.003, cap: 0.12 },
+    { type: 'critDamage', label: 'Критична шкода', valueType: 'percent', baseValue: 0.06, scalePerTier: 0.01, cap: 0.4 },
+    { type: 'attackSpeedBonus', label: 'Швидкість атаки', valueType: 'percent', baseValue: 0.02, scalePerTier: 0.003, cap: 0.18 },
+    { type: 'damageBonus', label: 'Шкода', valueType: 'percent', baseValue: 0.02, scalePerTier: 0.004, cap: 0.16 },
+    { type: 'armorPenetration', label: 'Пробиття броні', valueType: 'percent', baseValue: 0.02, scalePerTier: 0.004, cap: 0.2 }
+  ],
+  legs: [
+    { type: 'maxHp', label: 'Додаткове HP', valueType: 'flat', baseValue: 8, scalePerTier: 3, cap: 120 },
+    { type: 'armor', label: 'Броня', valueType: 'flat', baseValue: 2, scalePerTier: 1, cap: 25 },
+    { type: 'damageReduction', label: 'Зменшення шкоди', valueType: 'percent', baseValue: 0.015, scalePerTier: 0.003, cap: 0.15 },
+    { type: 'bleedResist', label: 'Опір кровотечі', valueType: 'percent', baseValue: 0.03, scalePerTier: 0.004, cap: 0.22 }
+  ],
+  feet: [
+    { type: 'dodgeChance', label: 'Ухилення', valueType: 'percent', baseValue: 0.02, scalePerTier: 0.003, cap: 0.14 },
+    { type: 'accuracy', label: 'Влучність', valueType: 'percent', baseValue: 0.015, scalePerTier: 0.003, cap: 0.12 },
+    { type: 'healthRegen', label: 'Регенерація', valueType: 'flat', baseValue: 1, scalePerTier: 0.4, cap: 10 }
+  ],
+  shield: [
+    { type: 'armor', label: 'Броня', valueType: 'flat', baseValue: 3, scalePerTier: 1.2, cap: 30 },
+    { type: 'blockChance', label: 'Шанс блоку', valueType: 'percent', baseValue: 0.03, scalePerTier: 0.004, cap: 0.22 },
+    { type: 'blockPower', label: 'Сила блоку', valueType: 'flat', baseValue: 3, scalePerTier: 1.2, cap: 28 },
+    { type: 'maxHp', label: 'Додаткове HP', valueType: 'flat', baseValue: 8, scalePerTier: 3, cap: 100 }
+  ],
+  ring: [
+    { type: 'damageBonus', label: 'Шкода', valueType: 'percent', baseValue: 0.025, scalePerTier: 0.004, cap: 0.16 },
+    { type: 'critChance', label: 'Шанс криту', valueType: 'percent', baseValue: 0.018, scalePerTier: 0.003, cap: 0.12 },
+    { type: 'accuracy', label: 'Влучність', valueType: 'percent', baseValue: 0.018, scalePerTier: 0.003, cap: 0.12 },
+    { type: 'lootChanceBonus', label: 'Бонус луту', valueType: 'percent', baseValue: 0.03, scalePerTier: 0.004, cap: 0.22 },
+    { type: 'goldFindBonus', label: 'Бонус золота', valueType: 'percent', baseValue: 0.04, scalePerTier: 0.006, cap: 0.3 }
+  ],
+  amulet: [
+    { type: 'maxHp', label: 'Додаткове HP', valueType: 'flat', baseValue: 10, scalePerTier: 4, cap: 140 },
+    { type: 'healthRegen', label: 'Регенерація', valueType: 'flat', baseValue: 1, scalePerTier: 0.5, cap: 14 },
+    { type: 'rarityFindBonus', label: 'Бонус рідкості', valueType: 'percent', baseValue: 0.03, scalePerTier: 0.004, cap: 0.22 },
+    { type: 'lifeSteal', label: 'Вампіризм', valueType: 'percent', baseValue: 0.01, scalePerTier: 0.002, cap: 0.08 },
+    { type: 'damageBonus', label: 'Шкода', valueType: 'percent', baseValue: 0.02, scalePerTier: 0.004, cap: 0.14 }
+  ]
+};
 
-export const ARMOR_AFFIX_POOL: AffixDefinition[] = [
-  { type: 'maxHp', label: 'Додаткове HP', valueType: 'flat', baseValue: 8, scalePerTier: 4 },
-  { type: 'armor', label: 'Броня', valueType: 'flat', baseValue: 2, scalePerTier: 1 },
-  { type: 'healthRegen', label: 'Самолікування', valueType: 'flat', baseValue: 1, scalePerTier: 0.4, cap: 30 },
-  { type: 'dodgeChance', label: 'Ухилення', valueType: 'percent', baseValue: 0.015, scalePerTier: 0.003, cap: 0.35 },
-  { type: 'stunResist', label: 'Опір стану', valueType: 'percent', baseValue: 0.04, scalePerTier: 0.006, cap: 0.6 },
-  { type: 'bleedResist', label: 'Опір кровотечі', valueType: 'percent', baseValue: 0.04, scalePerTier: 0.006, cap: 0.6 },
-  { type: 'damageReduction', label: 'Зменшення шкоди', valueType: 'percent', baseValue: 0.01, scalePerTier: 0.003, cap: 0.3 }
-];
-
-export const ACCESSORY_AFFIX_POOL: AffixDefinition[] = [
-  { type: 'damageBonus', label: 'Шкода', valueType: 'percent', baseValue: 0.02, scalePerTier: 0.005, cap: 0.25 },
-  { type: 'accuracy', label: 'Влучність', valueType: 'percent', baseValue: 0.02, scalePerTier: 0.005, cap: 0.25 },
-  { type: 'critChance', label: 'Шанс криту', valueType: 'percent', baseValue: 0.015, scalePerTier: 0.004, cap: 0.35 },
-  { type: 'critDamage', label: 'Критична шкода', valueType: 'percent', baseValue: 0.1, scalePerTier: 0.015, cap: 0.75 },
-  { type: 'armorPenetration', label: 'Пробиття броні', valueType: 'percent', baseValue: 0.03, scalePerTier: 0.005, cap: 0.6 },
-  { type: 'lifeSteal', label: 'Вампіризм', valueType: 'percent', baseValue: 0.01, scalePerTier: 0.002, cap: 0.15 },
-  { type: 'maxHp', label: 'Додаткове HP', valueType: 'flat', baseValue: 8, scalePerTier: 4 },
-  { type: 'healthRegen', label: 'Самолікування', valueType: 'flat', baseValue: 1, scalePerTier: 0.4, cap: 30 },
-  { type: 'goldFindBonus', label: 'Бонус золота', valueType: 'percent', baseValue: 0.03, scalePerTier: 0.006, cap: 0.5 },
-  { type: 'lootChanceBonus', label: 'Бонус луту', valueType: 'percent', baseValue: 0.02, scalePerTier: 0.004, cap: 0.3 },
-  { type: 'rarityFindBonus', label: 'Бонус рідкості', valueType: 'percent', baseValue: 0.01, scalePerTier: 0.002, cap: 0.2 },
-  { type: 'stunChance', label: 'Шанс стану', valueType: 'percent', baseValue: 0.015, scalePerTier: 0.003, cap: 0.3 },
-  { type: 'bleedChance', label: 'Шанс кровотечі', valueType: 'percent', baseValue: 0.025, scalePerTier: 0.004, cap: 0.45 }
-];
-
-export const SHIELD_AFFIX_POOL: AffixDefinition[] = [
-  { type: 'armor', label: 'Броня', valueType: 'flat', baseValue: 2, scalePerTier: 1 },
-  { type: 'blockChance', label: 'Шанс блоку', valueType: 'percent', baseValue: 0.03, scalePerTier: 0.004, cap: 0.4 },
-  { type: 'blockPower', label: 'Сила блоку', valueType: 'flat', baseValue: 5, scalePerTier: 2 },
-  { type: 'damageReduction', label: 'Зменшення шкоди', valueType: 'percent', baseValue: 0.01, scalePerTier: 0.003, cap: 0.3 },
-  { type: 'maxHp', label: 'Додаткове HP', valueType: 'flat', baseValue: 8, scalePerTier: 4 },
-  { type: 'stunResist', label: 'Опір стану', valueType: 'percent', baseValue: 0.04, scalePerTier: 0.006, cap: 0.6 },
-  { type: 'bleedResist', label: 'Опір кровотечі', valueType: 'percent', baseValue: 0.04, scalePerTier: 0.006, cap: 0.6 }
-];
+export const WEAPON_AFFIX_POOL = SLOT_AFFIX_POOLS.weapon;
+export const SHIELD_AFFIX_POOL = SLOT_AFFIX_POOLS.shield;
+export const ACCESSORY_AFFIX_POOL = SLOT_AFFIX_POOLS.ring;
+export const ARMOR_AFFIX_POOL = SLOT_AFFIX_POOLS.chest;
 
 export function getAffixPool(category: string): AffixDefinition[] {
   const normalized = category.toLowerCase().trim();
-  if (normalized === 'weapon') return WEAPON_AFFIX_POOL;
-  if (normalized === 'shield') return SHIELD_AFFIX_POOL;
-  if (normalized === 'ring' || normalized === 'amulet' || normalized === 'accessory') return ACCESSORY_AFFIX_POOL;
-  return ARMOR_AFFIX_POOL;
+  if (normalized === 'ring1' || normalized === 'ring2' || normalized === 'ring') return SLOT_AFFIX_POOLS.ring;
+  if (normalized === 'amulet') return SLOT_AFFIX_POOLS.amulet;
+  if (normalized === 'accessory') return SLOT_AFFIX_POOLS.ring;
+  if (SLOT_AFFIX_POOLS[normalized]) {
+    return SLOT_AFFIX_POOLS[normalized];
+  }
+  if (normalized === 'weapon') return SLOT_AFFIX_POOLS.weapon;
+  if (normalized === 'shield') return SLOT_AFFIX_POOLS.shield;
+  return SLOT_AFFIX_POOLS.chest; // Default fallback (armor/chest)
 }
 
-function getAffixCount(rarity: string): number {
+export function getAffixCount(rarity: string): number {
   switch (rarity.toLowerCase().trim()) {
     case 'uncommon':
       return 1;
@@ -107,7 +136,7 @@ function getAffixCount(rarity: string): number {
   }
 }
 
-function getRarityMultiplier(rarity: string): number {
+export function getRarityMultiplier(rarity: string): number {
   switch (rarity.toLowerCase().trim()) {
     case 'rare':
       return 1.15;
@@ -120,11 +149,18 @@ function getRarityMultiplier(rarity: string): number {
   }
 }
 
-export function generateItemAffixes(rarity: string, category: string, tier: number = 1, random: () => number = Math.random): ItemAffix[] {
+export function generateItemAffixes(
+  rarity: string,
+  category: string,
+  tier: number = 1,
+  random: () => number = Math.random,
+  excludeType?: ItemAffixType
+): ItemAffix[] {
   const affixCount = getAffixCount(rarity);
   if (affixCount <= 0) return [];
 
-  const pool = [...getAffixPool(category)];
+  const basePool = getAffixPool(category);
+  const pool = basePool.filter((affix) => affix.type !== excludeType);
   const selected: ItemAffix[] = [];
   const rarityMultiplier = getRarityMultiplier(rarity);
 
@@ -136,3 +172,4 @@ export function generateItemAffixes(rarity: string, category: string, tier: numb
 
   return selected;
 }
+

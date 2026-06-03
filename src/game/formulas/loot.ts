@@ -29,6 +29,7 @@ function chooseRandomItem(pool: ItemDefinition[], random: () => number): ItemDef
 export function rollLootDrop(
   enemy: Enemy,
   availableItems: ItemDefinition[],
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _risk: 'Safe' | 'Risky' | 'Dangerous' = 'Safe',
   random: () => number = Math.random
 ): LootDropResult {

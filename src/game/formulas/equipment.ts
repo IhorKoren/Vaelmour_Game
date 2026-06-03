@@ -70,7 +70,7 @@ function generatedToEquippedShape(item: GeneratedEquipmentItem): Weapon | Armor 
     accuracy: Number(item.stats.accuracy ?? 0),
     critChance: Number(item.stats.critChance ?? 0),
     critDamage: Number(item.stats.critDamage ?? 0),
-    attackSpeedBonus: Number(item.stats.attackSpeed ?? 0),
+    attackSpeedBonus: Number(item.stats.attackSpeedBonus ?? 0),
     armorPenetration: Number(item.stats.armorPenetration ?? 0),
     dodgeChance: Number(item.stats.dodgeChance ?? 0),
     maxHp: Number(item.stats.maxHp ?? item.stats.maxHealth ?? 0),

@@ -10,6 +10,7 @@ import {
   getEquippableSlot,
   getEquippedItemStats
 } from '../../game/formulas/equipment';
+import { getItemBaseStats } from '../../game/equipment/generatedEquipment';
 import type { HeroState, EquipmentSlot, Weapon, Armor } from '../../game/types';
 import { getDisplayItemDescription, getDisplayItemName, formatRarity, formatItemType } from '../../utils/displayHelpers';
 import { calculateRerollCost, rerollItemAffix } from '../../game/formulas/reroll';
@@ -297,6 +298,54 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
     return resolvedStacks.find(({ stackKey }) => stackKey === activeSelectedKey) ?? null;
   }, [resolvedStacks, activeSelectedKey]);
 
+  function formatStatDisplay(key: string, value: number): string {
+    if (value === 0) return '';
+    const prefix = value > 0 ? '+' : '';
+
+    if (key === 'healthRegen') {
+      return `Відновлює ${value} HP раз у 5 секунд`;
+    }
+
+    const percentKeys = [
+      'damageBonus', 'critChance', 'critDamage', 'dodgeChance', 'dodgeBonus', 'accuracy',
+      'blockChance', 'damageReduction', 'lifeSteal', 'goldFindBonus', 'lootChanceBonus', 'rarityFindBonus', 'attackSpeedBonus', 'armorPenetration'
+    ];
+
+    const ukrNames: Record<string, string> = {
+      minDamage: 'Мін. шкода',
+      maxDamage: 'Макс. шкода',
+      attackSpeed: 'Швидкість атаки',
+      armor: 'Броня',
+      defense: 'Броня',
+      maxHp: 'HP',
+      maxHealth: 'HP',
+      damageBonus: 'до шкоди',
+      critChance: 'шанс критичного удару',
+      critDamage: 'критична шкода',
+      dodgeChance: 'шанс ухилення',
+      dodgeBonus: 'бонус до ухилення',
+      accuracy: 'точність',
+      blockChance: 'шанс блоку',
+      blockPower: 'сила блоку',
+      blockValue: 'сила блоку',
+      damageReduction: 'зменшення шкоди',
+      lifeSteal: 'вампіризм',
+      goldFindBonus: 'бонус до золота',
+      lootChanceBonus: 'бонус до знаходження предметів',
+      rarityFindBonus: 'бонус до знаходження рідкісних предметів',
+      attackSpeedBonus: 'швидкість атаки',
+      armorPenetration: 'пробиття броні'
+    };
+
+    const name = ukrNames[key] ?? key;
+    if (percentKeys.includes(key)) {
+      const formattedVal = Math.round(value * 1000) / 10;
+      return `${prefix}${formattedVal}% ${name}`;
+    }
+
+    return `${prefix}${value} ${name}`;
+  }
+
   const compareDetails = useMemo(() => {
     if (!selectedStack || !selectedStack.item) return null;
     const { item, stack } = selectedStack;
@@ -347,10 +396,6 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
     } else {
       const armorStats = itemStats as Armor;
       const equippedArmor = equippedStats as Armor | null;
-      const diffDef = (armorStats.defense ?? 0) - (equippedArmor ? (equippedArmor.defense ?? 0) : 0);
-      const diffDmg = (armorStats.damageBonus ?? 0) - (equippedArmor ? (equippedArmor.damageBonus ?? 0) : 0);
-      const diffDodge = (armorStats.dodgeBonus ?? 0) - (equippedArmor ? (equippedArmor.dodgeBonus ?? 0) : 0);
-      const diffHp = (armorStats.hpBonus ?? 0) - (equippedArmor ? (equippedArmor.hpBonus ?? 0) : 0);
 
       const slotNamesUkr: Record<EquipmentSlot, string> = {
         weapon: 'Зброя',
@@ -365,25 +410,78 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
         amulet: 'Амулет'
       };
 
+      const statsList: React.ReactNode[] = [];
+      const compareList: React.ReactNode[] = [];
+
+      const checkStat = (label: string, val: number, eqVal: number, isPercent = false) => {
+        if (val > 0) {
+          statsList.push(
+            <div key={label}>
+              {label}: <strong style={{ color: 'var(--color-leather)' }}>+{isPercent ? `${Math.round(val * 1000) / 10}%` : val}</strong>
+            </div>
+          );
+        }
+        const diff = val - eqVal;
+        if (diff !== 0) {
+          compareList.push(
+            <div key={label}>
+              {label}: <strong style={{ color: diff >= 0 ? '#2b9348' : '#ff4d4d' }}>{diff >= 0 ? `+` : ''}{isPercent ? `${Math.round(diff * 1000) / 10}%` : diff}</strong>
+            </div>
+          );
+        }
+      };
+
+      checkStat('🛡️ Захист', armorStats.defense ?? 0, equippedArmor?.defense ?? 0);
+      checkStat('🩸 HP', armorStats.maxHp ?? armorStats.maxHealth ?? 0, equippedArmor?.maxHp ?? equippedArmor?.maxHealth ?? 0);
+
+      const regenVal = armorStats.healthRegen ?? 0;
+      const eqRegenVal = equippedArmor?.healthRegen ?? 0;
+      if (regenVal > 0) {
+        statsList.push(
+          <div key="healthRegen" style={{ gridColumn: 'span 2' }}>
+            💖 {formatStatDisplay('healthRegen', regenVal)}
+          </div>
+        );
+      }
+      if (regenVal - eqRegenVal !== 0) {
+        const diff = regenVal - eqRegenVal;
+        compareList.push(
+          <div key="healthRegen">
+            💖 Регенерація: <strong style={{ color: diff >= 0 ? '#2b9348' : '#ff4d4d' }}>{diff >= 0 ? `+` : ''}{diff} HP/5с</strong>
+          </div>
+        );
+      }
+
+      checkStat('💪 Шкода', armorStats.damageBonus ?? 0, equippedArmor?.damageBonus ?? 0, true);
+      checkStat('💨 Ухилення', armorStats.dodgeBonus ?? 0, equippedArmor?.dodgeBonus ?? 0, true);
+      checkStat('🩸 Бонус до HP', armorStats.hpBonus ?? 0, equippedArmor?.hpBonus ?? 0, true);
+      checkStat('🎯 Точність', armorStats.accuracy ?? 0, equippedArmor?.accuracy ?? 0, true);
+      checkStat('⚡ Шанс криту', armorStats.critChance ?? 0, equippedArmor?.critChance ?? 0, true);
+      checkStat('💥 Критична шкода', armorStats.critDamage ?? 0, equippedArmor?.critDamage ?? 0, true);
+      checkStat('🛡️ Шанс блоку', armorStats.blockChance ?? 0, equippedArmor?.blockChance ?? 0, true);
+      checkStat('🛡️ Сила блоку', armorStats.blockPower ?? 0, equippedArmor?.blockPower ?? 0);
+      checkStat('🩸 Вампіризм', armorStats.lifeSteal ?? 0, equippedArmor?.lifeSteal ?? 0, true);
+
+      // Utility check
+      const accessoryStats = itemStats as unknown as Record<string, number>;
+      const equippedAccessory = equippedStats as unknown as Record<string, number>;
+      checkStat('🪙 Бонус золота', accessoryStats.goldFindBonus ?? 0, equippedAccessory?.goldFindBonus ?? 0, true);
+      checkStat('💎 Бонус рідкості', accessoryStats.rarityFindBonus ?? 0, equippedAccessory?.rarityFindBonus ?? 0, true);
+      checkStat('🎁 Бонус луту', accessoryStats.lootChanceBonus ?? 0, equippedAccessory?.lootChanceBonus ?? 0, true);
+
       return {
         slot,
         isEquipped,
         stats: (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px', fontSize: '11.5px', color: 'var(--color-text-muted)', marginTop: '8px' }}>
-            <div>🛡️ Захист: <strong style={{ color: 'var(--color-leather)' }}>+{armorStats.defense ?? 0}</strong></div>
-            {(armorStats.damageBonus ?? 0) > 0 && <div>💪 Шкода: <strong style={{ color: 'var(--color-leather)' }}>+{Math.round((armorStats.damageBonus ?? 0) * 100)}%</strong></div>}
-            {(armorStats.dodgeBonus ?? 0) > 0 && <div>💨 Ухилення: <strong style={{ color: 'var(--color-leather)' }}>+{Math.round((armorStats.dodgeBonus ?? 0) * 100)}%</strong></div>}
-            {(armorStats.hpBonus ?? 0) > 0 && <div>🩸 Здоров'я: <strong style={{ color: 'var(--color-leather)' }}>+{Math.round((armorStats.hpBonus ?? 0) * 100)}%</strong></div>}
-            <div>🏷️ Слот: <strong style={{ color: 'var(--color-leather)' }}>{slotNamesUkr[slot]}</strong></div>
+            {statsList}
+            <div style={{ gridColumn: 'span 2' }}>🏷️ Слот: <strong style={{ color: 'var(--color-leather)' }}>{slotNamesUkr[slot]}</strong></div>
           </div>
         ),
-        compare: hasEquipped && !isEquipped && (
+        compare: hasEquipped && !isEquipped && compareList.length > 0 && (
           <div style={{ padding: '8px', borderRadius: '10px', background: 'rgba(0,0,0,0.25)', fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '8px', border: '1px solid rgba(212,163,115,0.08)' }}>
             <span style={{ display: 'block', fontWeight: 'bold', marginBottom: '2px', color: 'var(--color-bronze-light)' }}>Порівняння з екіпірованим:</span>
-            <div>Захист: <strong style={{ color: diffDef >= 0 ? '#2b9348' : '#ff4d4d' }}>{diffDef >= 0 ? `+${diffDef}` : diffDef}</strong></div>
-            {diffDmg !== 0 && <div>Шкода: <strong style={{ color: diffDmg >= 0 ? '#2b9348' : '#ff4d4d' }}>{diffDmg >= 0 ? `+${Math.round(diffDmg * 100)}%` : `${Math.round(diffDmg * 100)}%`}</strong></div>}
-            {diffDodge !== 0 && <div>Ухилення: <strong style={{ color: diffDodge >= 0 ? '#2b9348' : '#ff4d4d' }}>{diffDodge >= 0 ? `+${Math.round(diffDodge * 100)}%` : `${Math.round(diffDodge * 100)}%`}</strong></div>}
-            {diffHp !== 0 && <div>Здоров'я: <strong style={{ color: diffHp >= 0 ? '#2b9348' : '#ff4d4d' }}>{diffHp >= 0 ? `+${Math.round(diffHp * 100)}%` : `${Math.round(diffHp * 100)}%`}</strong></div>}
+            {compareList}
           </div>
         )
       };
@@ -567,6 +665,46 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
         const isEquippable = slot !== null;
         const isEquipped = compareDetails?.isEquipped;
 
+        const generated = selectedStack.stack.generatedItem;
+        const baseStats = generated ? getItemBaseStats(generated) : null;
+
+        const baseLines: string[] = [];
+        if (baseStats) {
+          if (baseStats.minDamage !== undefined && baseStats.maxDamage !== undefined) {
+            baseLines.push(`⚔️ Шкода: ${baseStats.minDamage}-${baseStats.maxDamage}`);
+          }
+          if (baseStats.attackSpeed !== undefined) {
+            baseLines.push(`⚡ Швидкість атаки: ${baseStats.attackSpeed}`);
+          }
+
+          const skipKeys = ['minDamage', 'maxDamage', 'attackSpeed', 'defense', 'maxHealth', 'blockValue', 'dodgeBonus', 'hpBonus'];
+          for (const [k, v] of Object.entries(baseStats)) {
+            if (skipKeys.includes(k)) continue;
+            const formatted = formatStatDisplay(k, Number(v));
+            if (formatted) baseLines.push(formatted);
+          }
+        } else {
+          if (item.minDamage !== undefined && item.maxDamage !== undefined) {
+            baseLines.push(`⚔️ Шкода: ${item.minDamage}-${item.maxDamage}`);
+          }
+          if (item.attackSpeed !== undefined) {
+            baseLines.push(`⚡ Швидкість атаки: ${item.attackSpeed}`);
+          }
+          if (item.armor !== undefined || item.defense !== undefined) {
+            baseLines.push(`🛡️ Броня: +${item.armor ?? item.defense}`);
+          }
+          if (item.maxHp !== undefined || item.maxHealth !== undefined) {
+            baseLines.push(`🩸 HP: +${item.maxHp ?? item.maxHealth}`);
+          }
+
+          const skipKeys = ['minDamage', 'maxDamage', 'attackSpeed', 'armor', 'defense', 'maxHp', 'maxHealth', 'id', 'name', 'category', 'rarity', 'tier', 'description', 'sourceSheet', 'level', 'templateId', 'codeName', 'sellValueGold'];
+          for (const [k, v] of Object.entries(item)) {
+            if (skipKeys.includes(k) || typeof v !== 'number') continue;
+            const formatted = formatStatDisplay(k, v);
+            if (formatted) baseLines.push(formatted);
+          }
+        }
+
         return (
           <Panel title="Деталі предмета">
             <div style={{ padding: '12px', borderRadius: '16px', background: 'rgba(20, 13, 9, 0.85)', border: `1px solid ${rarityColor}` }}>
@@ -595,7 +733,23 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
                 </span>
               </div>
 
-              {compareDetails && compareDetails.stats}
+              {isEquippable && (
+                <div style={{ fontSize: '11.5px', color: 'var(--color-text-muted)', marginBottom: '8px' }}>
+                  🛡️ Міцність: <strong>{selectedStack.stack.durability ?? selectedStack.stack.generatedItem?.durability ?? 100}/100</strong>
+                </div>
+              )}
+
+              {baseLines.length > 0 && (
+                <div style={{ marginBottom: '8px', padding: '6px 8px', borderRadius: '8px', background: 'rgba(0,0,0,0.18)', border: '1px solid rgba(212,163,115,0.04)' }}>
+                  <span style={{ display: 'block', fontSize: '9px', fontWeight: 900, color: 'var(--color-bronze-light)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }}>
+                    Базові показники:
+                  </span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '11.5px', color: '#eed1b3' }}>
+                    {baseLines.map((line, idx) => <div key={idx}>{line}</div>)}
+                  </div>
+                </div>
+              )}
+
               {compareDetails && compareDetails.compare}
 
               {selectedStack.stack.affixes && selectedStack.stack.affixes.length > 0 && (() => {
@@ -626,10 +780,10 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
                             paddingBottom: '3px'
                           }}
                         >
-                          <span>+{affix.valueType === 'percent' ? `${Math.round(affix.value * 100)}%` : affix.value} {affix.label}</span>
+                          <span>{formatStatDisplay(affix.type, affix.value)}</span>
                           {!isEquipped && (
                             <button
-                              type="button"
+                               type="button"
                               onClick={() => handleReroll(selectedStack.inventoryIndex, idx)}
                               disabled={!hasGold}
                               style={{
