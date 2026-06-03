@@ -653,15 +653,30 @@ export function AdminPanel() {
   }
 
   function recalculateMaxHp() {
-    const currentHero = normalizeHeroForStats(heroDraft);
-    const nextDerived = calculateDerivedStats(
-      currentHero.stats,
-      currentHero.baseHp,
-      undefined,
-      currentHero,
-    );
+  const currentHero = normalizeHeroForStats(heroDraft);
 
-    const nextHero = cloneHeroDraft();
-    const nextCurrentHp = Math.min(getNumber(nextHero.currentHp, nextDerived.maxHp), nextDerived.maxHp);
+  const nextDerived = calculateDerivedStats(
+    currentHero.stats,
+    currentHero.baseHp,
+    undefined,
+    currentHero,
+  );
 
-    nextHero.maxHp = nextDerived.maxHp;
+  const nextHero = cloneHeroDraft();
+
+  const nextCurrentHp = Math.min(
+    getNumber(nextHero.currentHp, nextDerived.maxHp),
+    nextDerived.maxHp,
+  );
+
+  nextHero.maxHp = nextDerived.maxHp;
+  nextHero.currentHp = nextCurrentHp;
+
+  setFields((current) => ({
+    ...current,
+    maxHp: String(nextDerived.maxHp),
+    currentHp: String(nextCurrentHp),
+  }));
+
+  applyHeroDraft(nextHero);
+}
