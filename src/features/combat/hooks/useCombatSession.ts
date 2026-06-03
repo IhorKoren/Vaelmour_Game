@@ -646,6 +646,7 @@ export function useCombatSession({
       clearTimeout(heroTimeoutId);
       clearTimeout(enemyTimeoutId);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     isCombatActive,
     encounterId,
@@ -776,7 +777,8 @@ export function useCombatSession({
     armor,
     frenziedSwingsBuff,
     enemyPoiseShred,
-    processVictoryRewards
+    processVictoryRewards,
+    appendCombatLog
   ]);
 
   return {

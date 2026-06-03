@@ -10,9 +10,7 @@ import bossesJson from '../../data/generated/bosses.json';
 import type { Enemy, HeroState } from '../../game/types';
 import { getDisplayLocationName } from '../../utils/displayHelpers';
 
-import { CombatArena } from './components/CombatArena';
-import { CombatControls } from './components/CombatControls';
-import { CombatLog } from './components/CombatLog';
+import { CombatArena, CombatControls, CombatLog } from './components';
 import { useCombatSession } from './hooks/useCombatSession';
 import { calculateVictoryRewards } from './services/combatRewards';
 
