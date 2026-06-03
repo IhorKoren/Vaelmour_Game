@@ -1,4 +1,6 @@
 import { masterDatabase } from '../data/masterDatabase';
+import { equipmentCatalog } from '../data/equipmentCatalog';
+import type { GeneratedEquipmentItem } from '../game/types';
 
 const NAME_TRANSLATIONS: Record<string, string> = {
   'Broken Road Outskirts': 'Околиці Розбитої дороги',
@@ -359,8 +361,130 @@ export function getDisplayMaterialName(id: string): string {
   return translateName(found?.name ?? id);
 }
 
-export function getDisplayItemName(id: string): string {
+const TIER_NAMES = [
+  'Початковий',
+  'Укріплений',
+  'Міцний',
+  'Вартовий',
+  'Загартований',
+  'Сталевий',
+  'Ветеранський',
+  'Темнолісий',
+  'Попелястий',
+  'Чемпіонський',
+  'Ваельморський'
+] as const;
+
+function getAdjective(baseAdj: string, isPlural: boolean): string {
+  if (!isPlural) return baseAdj;
+  if (baseAdj.endsWith('ий')) {
+    return baseAdj.slice(0, -2) + 'і';
+  }
+  return baseAdj;
+}
+
+function getUkrainianSlotName(slot: string): string {
+  const mappings: Record<string, string> = {
+    weapon: 'клинок',
+    shield: 'щит',
+    head: 'шолом',
+    chest: 'нагрудник',
+    legs: 'поножі',
+    hands: 'рукавиці',
+    feet: 'чоботи',
+    ring: 'перстень',
+    ring1: 'перстень',
+    ring2: 'перстень',
+    amulet: 'амулет'
+  };
+  return mappings[slot] ?? slot;
+}
+
+function getStatSuffix(stat: string): string {
+  const mappings: Record<string, string> = {
+    damageBonus: 'шкоди',
+    critChance: 'криту',
+    critDamage: 'критичної шкоди',
+    accuracy: 'влучності',
+    dodgeChance: 'ухилення',
+    dodgeBonus: 'ухилення',
+    blockChance: 'блокування',
+    blockPower: 'сили блоку',
+    damageReduction: 'зменшення шкоди',
+    lifeSteal: 'вампіризму',
+    lifesteal: 'вампіризму',
+    healthRegen: 'регенерації',
+    goldFindBonus: 'золота',
+    lootChanceBonus: 'луту',
+    rarityFindBonus: 'рідкості',
+    maxHp: 'здоров\'я',
+    maxHealth: 'здоров\'я',
+    hpBonus: 'здоров\'я',
+    armor: 'броні',
+    attackSpeedBonus: 'швидкості',
+    bleedChance: 'кровотечі',
+    stunChance: 'приголомшення',
+    bleedResist: 'опору кровотечі',
+    stunResist: 'опору оглушенню'
+  };
+  return mappings[stat] ?? '';
+}
+
+export function getDisplayItemName(id: string, item?: Partial<GeneratedEquipmentItem>): string {
   if (!id) return '';
+
+  if (id.startsWith('generated_')) {
+    const parts = id.split('_');
+    if (parts.length >= 4) {
+      const slot = parts[1];
+      const level = parseInt(parts[2], 10) || 1;
+      const rarity = parts[3];
+
+      const levels = [1, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30];
+      let tierIndex = levels.indexOf(level);
+      if (tierIndex === -1) {
+        let closestIdx = 0;
+        let minDiff = Math.abs(levels[0] - level);
+        for (let i = 1; i < levels.length; i++) {
+          const diff = Math.abs(levels[i] - level);
+          if (diff < minDiff) {
+            minDiff = diff;
+            closestIdx = i;
+          }
+        }
+        tierIndex = closestIdx;
+      }
+
+      const isPlural = ['legs', 'hands', 'feet'].includes(slot);
+      let baseName: string;
+      const searchSlot = (slot === 'ring1' || slot === 'ring2') ? 'ring' : slot;
+      const template = equipmentCatalog.find(
+        (t) => t.slot === searchSlot && t.level === level
+      );
+      if (template && template.name) {
+        baseName = template.name;
+        if (isPlural) {
+          const spaceIdx = baseName.indexOf(' ');
+          if (spaceIdx !== -1) {
+            const firstWord = baseName.substring(0, spaceIdx);
+            const rest = baseName.substring(spaceIdx);
+            baseName = getAdjective(firstWord, true) + rest;
+          }
+        }
+      } else {
+        const adjSingular = TIER_NAMES[tierIndex] || 'Початковий';
+        const adjective = getAdjective(adjSingular, isPlural);
+        const noun = getUkrainianSlotName(slot);
+        baseName = `${adjective} ${noun}`;
+      }
+
+      const affixes = item?.affixes || [];
+      const suffixStat = (rarity !== 'common' && affixes.length > 0) ? affixes[0].type : undefined;
+      const suffix = suffixStat ? getStatSuffix(suffixStat) : '';
+
+      return suffix ? `${baseName} ${suffix}` : baseName;
+    }
+  }
 
   // If it is a recipe ID, resolve it to its result item name
   if (id.toUpperCase().startsWith('REC_')) {
@@ -610,24 +734,64 @@ export function formatStatName(statKey: string): string {
     strength: 'Сила',
     vitality: 'Живучість',
     agility: 'Спритність',
-    attackPower: 'Сила атаки',
-    maxHp: 'Макс. HP',
-    critChance: 'Шанс криту',
-    dodgeChance: 'Шанс ухилення',
-    accuracy: 'Точність',
-    defense: 'Захист',
-    damageBonus: 'Бонус до шкоди',
-    dodgeBonus: 'Бонус до ухилення',
+    maxHp: 'Максимальне HP',
+    flatMaxHealth: 'Максимальне HP',
+    maxHealth: 'Максимальне HP',
     hpBonus: 'Бонус до HP',
+    armor: 'Броня',
+    defense: 'Броня',
+    damageBonus: 'Бонус до шкоди',
+    accuracy: 'Влучність',
+    critChance: 'Шанс критичного удару',
+    critDamage: 'Критична шкода',
+    critDamageBonus: 'Критична шкода',
+    attackSpeedBonus: 'Швидкість атаки',
+    armorPenetration: 'Пробиття броні',
+    stunChance: 'Шанс оглушення',
+    bleedChance: 'Шанс кровотечі',
+    bleedDamage: 'Шкода від кровотечі',
+    stunResist: 'Опір оглушенню',
+    bleedResist: 'Опір кровотечі',
+    dodgeChance: 'Шанс ухилення',
+    dodgeBonus: 'Шанс ухилення',
+    evasion: 'Шанс ухилення',
+    blockChance: 'Шанс блокування',
+    blockPower: 'Сила блоку',
+    blockValue: 'Сила блоку',
+    damageReduction: 'Зменшення шкоди',
+    damageReductionHighHp: 'Зменшення шкоди',
+    lifeSteal: 'Вампіризм',
+    lifesteal: 'Вампіризм',
+    healthRegen: 'Відновлення HP',
+    goldFindBonus: 'Бонус золота',
+    goldBonus: 'Бонус золота',
+    lootChanceBonus: 'Бонус луту',
+    itemFind: 'Бонус луту',
+    rarityFindBonus: 'Бонус рідкості',
+    rarityFind: 'Бонус рідкості',
+    durabilityLossReduction: 'Зносостійкість',
+    attackPower: 'Сила атаки',
     minDamage: 'Мін. шкода',
     maxDamage: 'Макс. шкода',
-    attackSpeed: 'Швидкість',
+    attackSpeed: 'Швидкість атаки',
     durability: 'Міцність',
-    blockChance: 'Шанс блоку',
-    blockValue: 'Показник блоку',
-    staggerResist: 'Опір приголомшенню',
-    maxHealth: 'Макс. HP',
-    healthRegen: 'Регенерація'
+    xpBonus: 'Бонус досвіду',
+    stunChanceBonus: 'Шанс оглушення',
+    bleedChanceBonus: 'Шанс кровотечі',
+    bleedResistance: 'Опір кровотечі',
+    staggerPower: 'Сила приголомшення',
+    staggerResistance: 'Опір приголомшенню',
+    poise: 'Стійкість',
+    rageFromAttacks: 'Лють від атак',
+    counterChance: 'Шанс контратаки',
+    counterDamage: 'Шкода від контратаки',
+    executeDamage: 'Шкода від добивання',
+    lowHpArmorBonus: 'Бонус броні при низькому HP',
+    bleedTickRate: 'Частота кровотечі',
+    thorns: 'Шпики',
+    fireDamage: 'Шкода вогнем',
+    frostDamage: 'Шкода льодом',
+    poisonDamage: 'Шкода отрутою'
   };
 
   return mappings[statKey] ?? statKey.replace(/([A-Z])/g, ' $1').replace(/^./, (value) => value.toUpperCase());
@@ -692,4 +856,138 @@ export function getDisplayOutputEffect(effect: string, itemId: string = ''): str
     return translated;
   }
   return trimmed;
+}
+
+const percentKeys = [
+  'damageBonus', 'critChance', 'critDamage', 'critDamageBonus', 'dodgeChance', 'dodgeBonus', 'accuracy',
+  'blockChance', 'damageReduction', 'lifeSteal', 'lifesteal', 'goldFindBonus', 'goldBonus',
+  'lootChanceBonus', 'itemFind', 'rarityFindBonus', 'rarityFind', 'attackSpeedBonus',
+  'armorPenetration', 'stunChance', 'bleedChance', 'stunResist', 'bleedResist',
+  'counterChance', 'xpBonus', 'evasion', 'bleedResistance', 'staggerResistance', 'hpBonus'
+];
+
+export function formatStatValueOnly(key: string, value: number): string {
+  if (value === 0 || value === null || value === undefined || Number.isNaN(value)) {
+    return '';
+  }
+  const prefix = value > 0 ? '+' : '';
+
+  if (percentKeys.includes(key)) {
+    const formattedVal = Math.round(value * 1000) / 10;
+    return `${prefix}${formattedVal}%`;
+  }
+
+  if (key === 'healthRegen') {
+    return `${value} HP / 5с`;
+  }
+
+  if (['maxHp', 'flatMaxHealth', 'maxHealth'].includes(key)) {
+    return `${prefix}${Math.round(value)} HP`;
+  }
+
+  return `${prefix}${Math.round(value)}`;
+}
+
+export function formatStatDisplay(key: string, value: number): string {
+  if (value === 0 || value === null || value === undefined || Number.isNaN(value)) {
+    return '';
+  }
+
+  if (key === 'healthRegen') {
+    return `Відновлює ${value} HP раз у 5 секунд`;
+  }
+
+  const name = formatStatName(key);
+  const formattedVal = formatStatValueOnly(key, value);
+
+  if (key === 'blockPower' || key === 'blockValue') {
+    return `${name}: ${formattedVal}`;
+  }
+
+  return `${formattedVal} ${name}`;
+}
+
+export function formatEquipmentSummary(item: Record<string, number | string | undefined | null>): string {
+  if (!item) return '';
+
+  const parts: string[] = [];
+
+  const minDamage = Number(item.minDamage ?? 0);
+  const maxDamage = Number(item.maxDamage ?? 0);
+  if (minDamage > 0) {
+    parts.push(`Шкода: ${minDamage}–${maxDamage}`);
+  }
+
+  const keysToSummary = [
+    { key: 'defense', normGroup: 'armor' },
+    { key: 'armor', normGroup: 'armor' },
+    { key: 'maxHp', normGroup: 'hp' },
+    { key: 'maxHealth', normGroup: 'hp' },
+    { key: 'flatMaxHealth', normGroup: 'hp' },
+    { key: 'hpBonus', normGroup: 'hpBonus' },
+    { key: 'blockChance', normGroup: 'blockChance' },
+    { key: 'blockPower', normGroup: 'blockPower' },
+    { key: 'blockValue', normGroup: 'blockPower' },
+    { key: 'critChance', normGroup: 'critChance' },
+    { key: 'critDamage', normGroup: 'critDamage' },
+    { key: 'critDamageBonus', normGroup: 'critDamage' },
+    { key: 'damageBonus', normGroup: 'damageBonus' },
+    { key: 'lifeSteal', normGroup: 'lifesteal' },
+    { key: 'lifesteal', normGroup: 'lifesteal' },
+    { key: 'healthRegen', normGroup: 'healthRegen' },
+    { key: 'dodgeChance', normGroup: 'dodge' },
+    { key: 'dodgeBonus', normGroup: 'dodge' },
+    { key: 'evasion', normGroup: 'dodge' },
+    { key: 'attackSpeed', normGroup: 'attackSpeed' },
+    { key: 'attackSpeedBonus', normGroup: 'attackSpeed' },
+    { key: 'accuracy', normGroup: 'accuracy' },
+    { key: 'goldFindBonus', normGroup: 'goldFind' },
+    { key: 'goldBonus', normGroup: 'goldFind' },
+    { key: 'xpBonus', normGroup: 'xpBonus' },
+    { key: 'lootChanceBonus', normGroup: 'lootChance' },
+    { key: 'itemFind', normGroup: 'lootChance' },
+    { key: 'rarityFindBonus', normGroup: 'rarityFind' },
+    { key: 'rarityFind', normGroup: 'rarityFind' },
+    { key: 'bleedChance', normGroup: 'bleedChance' },
+    { key: 'bleedChanceBonus', normGroup: 'bleedChance' },
+    { key: 'bleedDamage', normGroup: 'bleedDamage' },
+    { key: 'stunChance', normGroup: 'stunChance' },
+    { key: 'stunChanceBonus', normGroup: 'stunChance' },
+    { key: 'counterChance', normGroup: 'counterChance' },
+    { key: 'thorns', normGroup: 'thorns' },
+    { key: 'fireDamage', normGroup: 'fireDamage' },
+    { key: 'frostDamage', normGroup: 'frostDamage' },
+    { key: 'poisonDamage', normGroup: 'poisonDamage' },
+    { key: 'bleedResist', normGroup: 'bleedResist' },
+    { key: 'bleedResistance', normGroup: 'bleedResist' },
+    { key: 'stunResist', normGroup: 'stunResist' },
+    { key: 'staggerResistance', normGroup: 'stunResist' }
+  ];
+
+  const processed = new Set<string>();
+
+  for (const { key, normGroup } of keysToSummary) {
+    const rawVal = item[key];
+    if (rawVal === undefined || rawVal === null || rawVal === '') continue;
+    const val = Number(rawVal);
+    if (val === 0 || Number.isNaN(val)) continue;
+    if (processed.has(normGroup)) continue;
+    processed.add(normGroup);
+
+    if (normGroup === 'armor') {
+      parts.push(`Броня: +${val}`);
+    } else if (normGroup === 'healthRegen') {
+      parts.push(`Регенерація +${val}`);
+    } else {
+      const name = formatStatName(key);
+      const formatted = formatStatValueOnly(key, val);
+      if (formatted.startsWith('+') || formatted.startsWith('-')) {
+        parts.push(`${name} ${formatted}`);
+      } else {
+        parts.push(`${name}: ${formatted}`);
+      }
+    }
+  }
+
+  return parts.join(', ');
 }

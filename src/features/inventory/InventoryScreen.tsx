@@ -12,7 +12,7 @@ import {
 } from '../../game/formulas/equipment';
 import { getItemBaseStats } from '../../game/equipment/generatedEquipment';
 import type { HeroState, EquipmentSlot, Weapon, Armor } from '../../game/types';
-import { getDisplayItemDescription, getDisplayItemName, formatRarity, formatItemType } from '../../utils/displayHelpers';
+import { getDisplayItemDescription, getDisplayItemName, formatRarity, formatItemType, formatStatDisplay } from '../../utils/displayHelpers';
 import { calculateRerollCost, rerollItemAffix } from '../../game/formulas/reroll';
 import { calculateItemSellValue } from '../../game/formulas/sellValue';
 
@@ -298,53 +298,7 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
     return resolvedStacks.find(({ stackKey }) => stackKey === activeSelectedKey) ?? null;
   }, [resolvedStacks, activeSelectedKey]);
 
-  function formatStatDisplay(key: string, value: number): string {
-    if (value === 0) return '';
-    const prefix = value > 0 ? '+' : '';
 
-    if (key === 'healthRegen') {
-      return `Відновлює ${value} HP раз у 5 секунд`;
-    }
-
-    const percentKeys = [
-      'damageBonus', 'critChance', 'critDamage', 'dodgeChance', 'dodgeBonus', 'accuracy',
-      'blockChance', 'damageReduction', 'lifeSteal', 'goldFindBonus', 'lootChanceBonus', 'rarityFindBonus', 'attackSpeedBonus', 'armorPenetration'
-    ];
-
-    const ukrNames: Record<string, string> = {
-      minDamage: 'Мін. шкода',
-      maxDamage: 'Макс. шкода',
-      attackSpeed: 'Швидкість атаки',
-      armor: 'Броня',
-      defense: 'Броня',
-      maxHp: 'HP',
-      maxHealth: 'HP',
-      damageBonus: 'до шкоди',
-      critChance: 'шанс критичного удару',
-      critDamage: 'критична шкода',
-      dodgeChance: 'шанс ухилення',
-      dodgeBonus: 'бонус до ухилення',
-      accuracy: 'точність',
-      blockChance: 'шанс блоку',
-      blockPower: 'сила блоку',
-      blockValue: 'сила блоку',
-      damageReduction: 'зменшення шкоди',
-      lifeSteal: 'вампіризм',
-      goldFindBonus: 'бонус до золота',
-      lootChanceBonus: 'бонус до знаходження предметів',
-      rarityFindBonus: 'бонус до знаходження рідкісних предметів',
-      attackSpeedBonus: 'швидкість атаки',
-      armorPenetration: 'пробиття броні'
-    };
-
-    const name = ukrNames[key] ?? key;
-    if (percentKeys.includes(key)) {
-      const formattedVal = Math.round(value * 1000) / 10;
-      return `${prefix}${formattedVal}% ${name}`;
-    }
-
-    return `${prefix}${value} ${name}`;
-  }
 
   const compareDetails = useMemo(() => {
     if (!selectedStack || !selectedStack.item) return null;
@@ -637,7 +591,7 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
                     {typeIcon}
                   </span>
                   <span className="inventory-slot__name">
-                    {stack.generatedItem?.name ?? getDisplayItemName(stack.itemId)}
+                    {getDisplayItemName(stack.itemId, stack.generatedItem)}
                   </span>
                   {stack.qty > 1 && (
                     <span className="inventory-slot__qty">
@@ -711,7 +665,7 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px', justifyContent: 'space-between' }}>
                 <div>
                   <h3 style={{ margin: 0, fontSize: '15px', color: 'var(--color-text-dark)', display: 'inline-block', fontFamily: 'var(--font-display)', fontWeight: 'bold' }}>
-                    {selectedStack.stack.generatedItem?.name ?? getDisplayItemName(item.id)}
+                    {getDisplayItemName(item.id, selectedStack.stack.generatedItem)}
                   </h3>
                   <span style={{
                     fontSize: '8px',
@@ -817,7 +771,7 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
                 );
               })()}
 
-              {item.description && (
+              {item.description && !item.description.startsWith('Generated equipment') && (
                 <p style={{ margin: '8px 0 0', fontSize: '11.5px', fontStyle: 'italic', color: 'var(--color-text-muted)', lineHeight: '1.4' }}>
                   "{getDisplayItemDescription(item.id, item.description)}"
                 </p>

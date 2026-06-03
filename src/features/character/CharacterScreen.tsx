@@ -14,11 +14,11 @@ import {
 import { weapons } from '../../data/weapons';
 import { armors } from '../../data/armors';
 import { items } from '../../data/items';
-import type { EquipmentSlot, HeroState, CoreStats, Weapon, Armor } from '../../game/types';
+import type { EquipmentSlot, HeroState, CoreStats, Weapon } from '../../game/types';
 import { skills } from '../../data/skills';
 import { getSkillRageCost } from '../../game/formulas/combatMechanics';
 import { isSkillUnlocked } from '../../game/formulas/skills';
-import { getDisplayItemName, formatRarity, getDisplaySkillName, getDisplaySkillDescription, formatItemType } from '../../utils/displayHelpers';
+import { getDisplayItemName, formatRarity, getDisplaySkillName, getDisplaySkillDescription, formatStatValueOnly, formatStatName } from '../../utils/displayHelpers';
 import { getTelegramUser } from '../../telegram/telegramWebApp';
 import { calculateSecondaryStats, getEffectiveAttackSpeed } from '../../game/formulas/secondaryStats';
 
@@ -67,49 +67,10 @@ export function CharacterScreen({ hero, onHeroChange }: Props) {
     setIsEditingName(false);
   }
 
-  const statUkrNames: Record<string, string> = {
-    strength: 'Сила',
-    vitality: 'Живучість',
-    agility: 'Спритність',
-    maxHp: 'Максимальне HP',
-    currentHp: 'Поточне HP',
-    attackPower: 'Сила атаки',
-    minDamage: 'Мін. шкода',
-    maxDamage: 'Макс. шкода',
-    attackSpeed: 'Швидкість атаки',
-    critChance: 'Шанс критичного удару',
-    critMultiplier: 'Критична шкода',
-    critDamage: 'Додаткова крит. шкода',
-    dodgeChance: 'Шанс ухилення',
-    accuracy: 'Точність атак',
-    defense: 'Броня / Захист',
-    dodgeBonus: 'Бонус до ухилення',
-    hpBonus: 'Бонус до здоров\'я',
-    damageBonus: 'Бонус до шкоди',
-    lifesteal: 'Крадіжка здоров\'я (Vampirism)',
-    bleedChance: 'Шанс викликати кровотечу',
-    bleedDamage: 'Шкода від кровотечі',
-    armorPenetration: 'Пробиття броні',
-    blockChance: 'Шанс блокування',
-    resistance: 'Опір стихіям'
-  };
-
-  function formatUnknownKey(key: string): string {
-    const spaced = key.replace(/([A-Z])/g, ' $1');
-    return spaced.charAt(0).toUpperCase() + spaced.slice(1);
-  }
 
   function formatStatValue(key: string, value: number | string): string {
     if (typeof value === 'string') return value;
-    const keyLower = key.toLowerCase();
-    if (keyLower.includes('chance') || keyLower.includes('bonus') || keyLower.includes('lifesteal') || keyLower.includes('penetration') || keyLower.includes('resistance')) {
-      const displayVal = Math.abs(value) < 1.0 ? Math.round(value * 100) : Math.round(value);
-      return value >= 0 ? `+${displayVal}%` : `-${displayVal}%`;
-    }
-    if (keyLower.includes('speed')) {
-      return `${Number(value).toFixed(2)} с`;
-    }
-    return value >= 0 ? `+${Math.round(value)}` : `${Math.round(value)}`;
+    return formatStatValueOnly(key, value);
   }
 
   const totalModifiers = useMemo(() => secondary, [secondary]);
@@ -501,42 +462,104 @@ export function CharacterScreen({ hero, onHeroChange }: Props) {
                 feet: 'Взуття (Чоботи)'
               };
 
-              let statsList: React.ReactNode;
-              if (selectedSlot === 'weapon') {
-                const weaponStats = itemStats as Weapon;
-                statsList = (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', fontSize: '11.5px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
-                    <div>⚔️ Шкода: <strong style={{ color: 'var(--color-leather)' }}>{weaponStats.minDamage}-{weaponStats.maxDamage}</strong></div>
-                    <div>⚡ Швидкість: <strong style={{ color: 'var(--color-leather)' }}>{weaponStats.attackSpeed}</strong></div>
-                    <div>🏷️ Тип зброї: <strong style={{ color: 'var(--color-leather)' }}>{formatItemType(weaponStats.type)}</strong></div>
-                    <div>🛠️ Міцність: <strong style={{ color: durability <= 25 ? 'var(--color-hp)' : 'var(--color-uncommon)' }}>{durability}/100</strong></div>
-                  </div>
-                );
-              } else if (selectedSlot === 'shield') {
-                const shieldStats = itemStats as { defense?: number; blockChance?: number; blockValue?: number; maxHealth?: number; staggerResist?: number };
-                statsList = (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', fontSize: '11.5px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
-                    <div>🛡️ Захист: <strong style={{ color: 'var(--color-leather)' }}>+{shieldStats.defense ?? 0}</strong></div>
-                    <div>🛡️ Блок: <strong style={{ color: 'var(--color-leather)' }}>{Math.round((shieldStats.blockChance ?? 0) * 100)}%</strong></div>
-                    <div>💥 Поглинання: <strong style={{ color: 'var(--color-leather)' }}>-{shieldStats.blockValue ?? 0}</strong></div>
-                    <div>🩸 HP: <strong style={{ color: 'var(--color-leather)' }}>+{shieldStats.maxHealth ?? 0}</strong></div>
-                    <div>🧱 Стійкість: <strong style={{ color: 'var(--color-leather)' }}>+{Math.round((shieldStats.staggerResist ?? 0) * 100)}%</strong></div>
-                    <div>🛠️ Міцність: <strong style={{ color: durability <= 25 ? 'var(--color-hp)' : 'var(--color-uncommon)' }}>{durability}/100</strong></div>
-                  </div>
-                );
-              } else {
-                const armorStats = itemStats as Armor;
-                const hasDurability = selectedSlot !== 'ring1' && selectedSlot !== 'ring2' && selectedSlot !== 'amulet';
-                statsList = (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', fontSize: '11.5px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
-                    <div>🛡️ Захист: <strong style={{ color: 'var(--color-leather)' }}>+{armorStats.defense ?? 0}</strong></div>
-                    {((armorStats.damageBonus ?? 0) > 0) && <div>💪 Шкода: <strong style={{ color: 'var(--color-leather)' }}>+{Math.round((armorStats.damageBonus ?? 0) * 100)}%</strong></div>}
-                    {((armorStats.dodgeBonus ?? 0) > 0) && <div>🏃 Ухилення: <strong style={{ color: 'var(--color-leather)' }}>+{Math.round((armorStats.dodgeBonus ?? 0) * 100)}%</strong></div>}
-                    {((armorStats.hpBonus ?? 0) > 0) && <div>🩸 Здоров'я: <strong style={{ color: 'var(--color-leather)' }}>+{Math.round((armorStats.hpBonus ?? 0) * 100)}%</strong></div>}
-                    {hasDurability && <div>🛠️ Міцність: <strong style={{ color: durability <= 25 ? 'var(--color-hp)' : 'var(--color-uncommon)' }}>{durability}/100</strong></div>}
+              const excludedKeys = ['id', 'tier', 'rarity', 'durability', 'maxDurability', 'category', 'slot', 'stats', 'affixes', 'name', 'type', 'description', 'sellValueGold', 'sourceSheet', 'templateId', 'codeName'];
+              const displayStats: React.ReactNode[] = [];
+
+              const statsWeapon = itemStats as Weapon;
+              if (statsWeapon.minDamage !== undefined && statsWeapon.maxDamage !== undefined && statsWeapon.minDamage > 0) {
+                displayStats.push(
+                  <div key="damage">
+                    ⚔️ Шкода: <strong style={{ color: 'var(--color-leather)' }}>{statsWeapon.minDamage}–{statsWeapon.maxDamage}</strong>
                   </div>
                 );
               }
+              if (statsWeapon.attackSpeed !== undefined && statsWeapon.attackSpeed > 0 && selectedSlot === 'weapon') {
+                displayStats.push(
+                  <div key="attackSpeed">
+                    ⚡ Швидкість: <strong style={{ color: 'var(--color-leather)' }}>{statsWeapon.attackSpeed}</strong>
+                  </div>
+                );
+              }
+
+              // Render active modifiers dynamically
+              Object.entries(itemStats).forEach(([k, v]) => {
+                if (excludedKeys.includes(k)) return;
+                if (typeof v !== 'number' || v === 0 || Number.isNaN(v)) return;
+
+                const emojis: Record<string, string> = {
+                  defense: '🛡️',
+                  armor: '🛡️',
+                  maxHp: '🩸',
+                  maxHealth: '🩸',
+                  flatMaxHealth: '🩸',
+                  hpBonus: '❤️',
+                  blockChance: '🛡️',
+                  blockPower: '🛡️',
+                  blockValue: '🛡️',
+                  critChance: '⚡',
+                  critDamage: '💥',
+                  critDamageBonus: '💥',
+                  damageBonus: '💪',
+                  dodgeChance: '🏃',
+                  dodgeBonus: '🏃',
+                  evasion: '🏃',
+                  lifeSteal: '🩸',
+                  lifesteal: '🩸',
+                  healthRegen: '💚',
+                  goldFindBonus: '🪙',
+                  goldBonus: '🪙',
+                  lootChanceBonus: '🎁',
+                  itemFind: '🎁',
+                  rarityFindBonus: '💎',
+                  rarityFind: '💎',
+                  armorPenetration: '🎯',
+                  accuracy: '🎯',
+                  bleedChance: '🩸',
+                  bleedResist: '🛡️',
+                  bleedResistance: '🛡️',
+                  stunChance: '⚡',
+                  stunResist: '🛡️',
+                  staggerResistance: '🛡️',
+                  xpBonus: '✨',
+                  counterChance: '⚔️',
+                  thorns: '🌵',
+                  fireDamage: '🔥',
+                  frostDamage: '❄️',
+                  poisonDamage: '🧪'
+                };
+                const emoji = emojis[k] ?? '✨';
+
+                if (k === 'healthRegen') {
+                  displayStats.push(
+                    <div key={k}>
+                      💚 Відновлює <strong style={{ color: 'var(--color-leather)' }}>{v} HP</strong> раз у 5 секунд
+                    </div>
+                  );
+                } else {
+                  const labelPart = formatStatName(k);
+                  const valuePart = formatStatValueOnly(k, v);
+                  displayStats.push(
+                    <div key={k}>
+                      {emoji} {labelPart}: <strong style={{ color: 'var(--color-leather)' }}>{valuePart}</strong>
+                    </div>
+                  );
+                }
+              });
+
+              const hasDurability = selectedSlot !== 'ring1' && selectedSlot !== 'ring2' && selectedSlot !== 'amulet';
+              if (hasDurability) {
+                displayStats.push(
+                  <div key="durability">
+                    🛠️ Міцність: <strong style={{ color: durability <= 25 ? 'var(--color-hp)' : 'var(--color-uncommon)' }}>{durability}/100</strong>
+                  </div>
+                );
+              }
+
+              const statsList = (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', fontSize: '11.5px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
+                  {displayStats}
+                </div>
+              );
 
               const rarityColors: Record<string, string> = {
                 common: '#8c7865',
@@ -756,37 +779,54 @@ export function CharacterScreen({ hero, onHeroChange }: Props) {
           {(() => {
             const activeModsList: Array<{ label: string; value: string; icon: string }> = [];
             
-            if (totalModifiers.damageBonus > 0) {
-              activeModsList.push({
-                label: 'Бонус до шкоди',
-                value: formatStatValue('damageBonus', totalModifiers.damageBonus),
-                icon: '💥'
-              });
-            }
-            if (totalModifiers.hpBonus > 0) {
-              activeModsList.push({
-                label: 'Бонус до здоров\'я',
-                value: formatStatValue('hpBonus', totalModifiers.hpBonus),
-                icon: '❤️'
-              });
-            }
-            if (totalModifiers.dodgeBonus > 0) {
-              activeModsList.push({
-                label: 'Бонус до ухилення',
-                value: formatStatValue('dodgeBonus', totalModifiers.dodgeBonus),
-                icon: '🏃'
-              });
-            }
-            
-            // Custom mods
+            const emojis: Record<string, string> = {
+              defense: '🛡️',
+              armor: '🛡️',
+              maxHp: '🩸',
+              maxHealth: '🩸',
+              flatMaxHealth: '🩸',
+              hpBonus: '❤️',
+              blockChance: '🛡️',
+              blockPower: '🛡️',
+              blockValue: '🛡️',
+              critChance: '⚡',
+              critDamage: '💥',
+              critDamageBonus: '💥',
+              damageBonus: '💪',
+              dodgeChance: '🏃',
+              dodgeBonus: '🏃',
+              evasion: '🏃',
+              lifeSteal: '🩸',
+              lifesteal: '🩸',
+              healthRegen: '💚',
+              goldFindBonus: '🪙',
+              goldBonus: '🪙',
+              lootChanceBonus: '🎁',
+              itemFind: '🎁',
+              rarityFindBonus: '💎',
+              rarityFind: '💎',
+              armorPenetration: '🎯',
+              accuracy: '🎯',
+              bleedChance: '🩸',
+              bleedResist: '🛡️',
+              bleedResistance: '🛡️',
+              stunChance: '⚡',
+              stunResist: '🛡️',
+              staggerResistance: '🛡️',
+              xpBonus: '✨',
+              counterChance: '⚔️',
+              thorns: '🌵',
+              fireDamage: '🔥',
+              frostDamage: '❄️',
+              poisonDamage: '🧪'
+            };
+
             (Object.entries(totalModifiers) as Array<[string, number]>).forEach(([key, val]) => {
-              if (!['defense', 'damageBonus', 'hpBonus', 'dodgeBonus', 'healthRegen'].includes(key) && val > 0) {
-                const label = statUkrNames[key] || formatUnknownKey(key);
-                activeModsList.push({
-                  label,
-                  value: formatStatValue(key, val),
-                  icon: '✨'
-                });
+              if (val > 0) {
+                const label = formatStatName(key);
+                const value = formatStatValueOnly(key, val);
+                const icon = emojis[key] ?? '✨';
+                activeModsList.push({ label, value, icon });
               }
             });
             

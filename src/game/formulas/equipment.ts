@@ -2,7 +2,7 @@ import { weapons } from '../../data/weapons';
 import { armors } from '../../data/armors';
 import { items } from '../../data/items';
 import { shields } from '../../data/shields';
-import type { HeroState, EquipmentSlot, Weapon, Armor, Shield, GeneratedEquipmentItem } from '../types';
+import type { HeroState, EquipmentSlot, Weapon, Armor, Shield, GeneratedEquipmentItem, GeneratedEquipmentStats } from '../types';
 import { calculateDerivedStats } from './stats';
 import { getGeneratedItemFromHero } from '../equipment/generatedEquipment';
 import { calculateItemSellValue } from './sellValue';
@@ -19,9 +19,52 @@ function isStackableInventoryItem(itemId: string): boolean {
   return getEquippableSlot(item) === null;
 }
 
+function getSharedStatsShape(stats: GeneratedEquipmentStats) {
+  const s = stats as Record<string, number | undefined>;
+  return {
+    armor: Number(s.armor ?? s.defense ?? 0),
+    defense: Number(s.defense ?? s.armor ?? 0),
+    damageBonus: Number(s.damageBonus ?? 0),
+    dodgeBonus: Number(s.dodgeBonus ?? s.dodgeChance ?? 0),
+    hpBonus: Number(s.hpBonus ?? 0),
+    healthRegen: Number(s.healthRegen ?? 0),
+    accuracy: Number(s.accuracy ?? 0),
+    critChance: Number(s.critChance ?? 0),
+    critDamage: Number(s.critDamage ?? 0),
+    attackSpeedBonus: Number(s.attackSpeedBonus ?? 0),
+    armorPenetration: Number(s.armorPenetration ?? 0),
+    dodgeChance: Number(s.dodgeChance ?? 0),
+    maxHp: Number(s.maxHp ?? s.maxHealth ?? 0),
+    maxHealth: Number(s.maxHealth ?? s.maxHp ?? 0),
+    damageReduction: Number(s.damageReduction ?? 0),
+    blockChance: Number(s.blockChance ?? 0),
+    blockPower: Number(s.blockPower ?? s.blockValue ?? 0),
+    lifeSteal: Number(s.lifeSteal ?? 0),
+    goldFindBonus: Number(s.goldFindBonus ?? s.goldBonus ?? 0),
+    goldBonus: Number(s.goldBonus ?? s.goldFindBonus ?? 0),
+    xpBonus: Number(s.xpBonus ?? 0),
+    lootChanceBonus: Number(s.lootChanceBonus ?? s.itemFind ?? 0),
+    itemFind: Number(s.itemFind ?? s.lootChanceBonus ?? 0),
+    rarityFindBonus: Number(s.rarityFindBonus ?? s.rarityFind ?? 0),
+    rarityFind: Number(s.rarityFind ?? s.rarityFindBonus ?? 0),
+    bleedChance: Number(s.bleedChance ?? 0),
+    bleedDamage: Number(s.bleedDamage ?? 0),
+    stunChance: Number(s.stunChance ?? 0),
+    counterChance: Number(s.counterChance ?? 0),
+    thorns: Number(s.thorns ?? 0),
+    fireDamage: Number(s.fireDamage ?? 0),
+    frostDamage: Number(s.frostDamage ?? 0),
+    poisonDamage: Number(s.poisonDamage ?? 0),
+    evasion: Number(s.evasion ?? s.dodgeChance ?? 0)
+  };
+}
+
 function generatedToEquippedShape(item: GeneratedEquipmentItem): Weapon | Armor | Shield {
+  const shared = getSharedStatsShape(item.stats);
+
   if (item.slot === 'weapon') {
     return {
+      ...shared,
       id: item.id,
       name: item.name,
       type: 'generated',
@@ -33,52 +76,31 @@ function generatedToEquippedShape(item: GeneratedEquipmentItem): Weapon | Armor 
       mainStat: 'strength',
       effect: '',
       description: 'Generated equipment item.'
-    };
+    } as Weapon;
   }
 
   if (item.slot === 'shield') {
     return {
+      ...shared,
       id: item.id,
       name: item.name,
       type: 'shield',
       tier: item.tier,
       rarity: item.rarity,
-      armor: Number(item.stats.armor ?? item.stats.defense ?? 0),
-      defense: Number(item.stats.defense ?? item.stats.armor ?? 0),
-      blockChance: Number(item.stats.blockChance ?? 0),
       blockValue: Number(item.stats.blockValue ?? item.stats.blockPower ?? 0),
-      maxHealth: Number(item.stats.maxHealth ?? item.stats.maxHp ?? 0),
       staggerResist: Number(item.stats.stunResist ?? 0),
-      description: 'Generated equipment item.',
-      damageReduction: Number(item.stats.damageReduction ?? 0)
-    };
+      description: 'Generated equipment item.'
+    } as Shield;
   }
 
   return {
+    ...shared,
     id: item.id,
     name: item.name,
     type: item.slot,
     tier: item.tier,
     rarity: item.rarity,
-    armor: Number(item.stats.armor ?? item.stats.defense ?? 0),
-    defense: Number(item.stats.defense ?? item.stats.armor ?? 0),
-    damageBonus: Number(item.stats.damageBonus ?? 0),
-    dodgeBonus: Number(item.stats.dodgeBonus ?? item.stats.dodgeChance ?? 0),
-    hpBonus: Number(item.stats.hpBonus ?? 0),
-    description: 'Generated equipment item.',
-    healthRegen: Number(item.stats.healthRegen ?? 0),
-    accuracy: Number(item.stats.accuracy ?? 0),
-    critChance: Number(item.stats.critChance ?? 0),
-    critDamage: Number(item.stats.critDamage ?? 0),
-    attackSpeedBonus: Number(item.stats.attackSpeedBonus ?? 0),
-    armorPenetration: Number(item.stats.armorPenetration ?? 0),
-    dodgeChance: Number(item.stats.dodgeChance ?? 0),
-    maxHp: Number(item.stats.maxHp ?? item.stats.maxHealth ?? 0),
-    maxHealth: Number(item.stats.maxHealth ?? item.stats.maxHp ?? 0),
-    damageReduction: Number(item.stats.damageReduction ?? 0),
-    blockChance: Number(item.stats.blockChance ?? 0),
-    blockPower: Number(item.stats.blockPower ?? item.stats.blockValue ?? 0),
-    lifeSteal: Number(item.stats.lifeSteal ?? 0)
+    description: 'Generated equipment item.'
   } as Armor;
 }
 
