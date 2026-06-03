@@ -23,7 +23,7 @@
   {
     "recipe_id": "REC_AMULET_NEW_006",
     "source_location": "Mercenary Crossroads",
-    "drops_from": "Wild Raider",
+    "drops_from": "Mercenary Swordsman",
     "recipe_drop_chance": "2.6",
     "dropped_recipe": "Recipe: Mercenary Luck Talisman"
   },

@@ -43,7 +43,7 @@ export const amuletUniqueItemDrops = [
     "item_name": "Mercenary Luck Talisman",
     "required_level": "14",
     "rarity": "Rare",
-    "drops_from": "Wild Raider",
+    "drops_from": "Mercenary Swordsman",
     "location": "LOC_007",
     "drop_chance": "2.5"
   },

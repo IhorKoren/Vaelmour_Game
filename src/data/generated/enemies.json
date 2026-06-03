@@ -5410,5 +5410,110 @@
     "behavior": "brute",
     "xp": 135,
     "gold": 41
+  },
+  {
+    "id": "enemy_vael_mercenary_swordsman_001",
+    "sourceSheet": "ENEMY Enemies",
+    "level": 13,
+    "name": "Mercenary Swordsman",
+    "family": "Mercenary",
+    "archetype": "Fighter",
+    "hp": 180,
+    "damageMin": 18,
+    "damageMax": 22,
+    "attack": 20.0,
+    "armor": 6,
+    "defense": 6,
+    "poise": 25,
+    "attackSpeed": 1.2,
+    "critChance": 0.08,
+    "bleedResist": 0.1,
+    "dodgeChance": 0.02,
+    "abilities": [
+      "Balanced Combat"
+    ],
+    "lootType": "Swords / Sellblade Gear",
+    "spawnWeight": 36,
+    "description": "Fighter type enemy from the Mercenary family.",
+    "notes": "Fighter type enemy from the Mercenary family.",
+    "levelRange": [
+      13,
+      13
+    ],
+    "location": "dynamic_spawn_pool",
+    "lootTable": "loot_mercenary_swordsman",
+    "behavior": "balanced",
+    "xp": 57,
+    "gold": 18
+  },
+  {
+    "id": "enemy_vael_crossroad_duelist_001",
+    "sourceSheet": "ENEMY Enemies",
+    "level": 13,
+    "name": "Crossroad Duelist",
+    "family": "Mercenary",
+    "archetype": "Fighter",
+    "hp": 185,
+    "damageMin": 19,
+    "damageMax": 23,
+    "attack": 21.0,
+    "armor": 7,
+    "defense": 7,
+    "poise": 28,
+    "attackSpeed": 1.3,
+    "critChance": 0.10,
+    "dodgeChance": 0.05,
+    "bleedResist": 0.12,
+    "abilities": [
+      "Counter Attacks"
+    ],
+    "lootType": "Swords / Sellblade Gear",
+    "spawnWeight": 26,
+    "description": "Fighter type enemy from the Mercenary family.",
+    "notes": "Fighter type enemy from the Mercenary family.",
+    "levelRange": [
+      13,
+      13
+    ],
+    "location": "dynamic_spawn_pool",
+    "lootTable": "loot_crossroad_duelist",
+    "behavior": "hunter",
+    "xp": 60,
+    "gold": 20
+  },
+  {
+    "id": "enemy_vael_veteran_sellblade_001",
+    "sourceSheet": "ENEMY Enemies",
+    "level": 13,
+    "name": "Veteran Sellblade",
+    "family": "Mercenary",
+    "archetype": "Fighter",
+    "hp": 192,
+    "damageMin": 20,
+    "damageMax": 24,
+    "attack": 23.0,
+    "armor": 9,
+    "defense": 9,
+    "poise": 35,
+    "attackSpeed": 1.4,
+    "critChance": 0.12,
+    "dodgeChance": 0.07,
+    "bleedResist": 0.15,
+    "abilities": [
+      "Veteran Striking"
+    ],
+    "lootType": "Swords / Sellblade Gear",
+    "spawnWeight": 11,
+    "description": "Fighter type enemy from the Mercenary family.",
+    "notes": "Fighter type enemy from the Mercenary family.",
+    "levelRange": [
+      13,
+      13
+    ],
+    "location": "dynamic_spawn_pool",
+    "lootTable": "loot_veteran_sellblade",
+    "behavior": "hunter",
+    "xp": 65,
+    "gold": 22
   }
 ]

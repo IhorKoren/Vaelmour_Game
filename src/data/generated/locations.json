@@ -262,16 +262,9 @@
     "bossOrKeyEnemy": "Crossroad Duelist",
     "unlockCondition": "Complete 20 hunts in any level 10+ location",
     "enemies": [
-      "enemy_01_wild_raider_002",
-      "enemy_04_wild_raider_017",
-      "enemy_07_wild_raider_032",
-      "enemy_10_wild_raider_047",
-      "enemy_13_wild_raider_062",
-      "enemy_16_wild_raider_077",
-      "enemy_19_wild_raider_092",
-      "enemy_22_wild_raider_107",
-      "enemy_25_wild_raider_122",
-      "enemy_28_wild_raider_137"
+      "enemy_vael_mercenary_swordsman_001",
+      "enemy_vael_crossroad_duelist_001",
+      "enemy_vael_veteran_sellblade_001"
     ],
     "materials": [
       "MAT_008",
