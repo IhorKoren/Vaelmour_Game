@@ -113,4 +113,28 @@ describe('displayHelpers formatting and localization', () => {
     const armorCount2 = (summary2.match(/Броня/g) || []).length;
     expect(armorCount2).toBe(1);
   });
+
+  it('should hide technical/non-bonus equipment fields from formatEquipmentSummary', () => {
+    // Mock generated amulet with technical field speed and allowed fields
+    const mockAmulet = {
+      category: 'amulet',
+      slot: 'amulet',
+      stats: {
+        speed: 1,
+        maxHp: 10,
+        lifeSteal: 0.012
+      }
+    };
+
+    const summary = formatEquipmentSummary(mockAmulet);
+
+    // Expected: maxHp and lifeSteal are included
+    expect(summary).toContain('Максимальне HP');
+    expect(summary).toContain('Вампіризм');
+
+    // Expected: speed/Швидкість are NOT included
+    expect(summary).not.toContain('Speed');
+    expect(summary).not.toContain('speed');
+    expect(summary).not.toContain('Швидкість');
+  });
 });

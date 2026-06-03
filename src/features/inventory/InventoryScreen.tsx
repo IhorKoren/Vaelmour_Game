@@ -12,7 +12,7 @@ import {
 } from '../../game/formulas/equipment';
 import { getItemBaseStats } from '../../game/equipment/generatedEquipment';
 import type { HeroState, EquipmentSlot, Weapon, Armor } from '../../game/types';
-import { getDisplayItemDescription, getDisplayItemName, formatRarity, formatItemType, formatStatDisplay, formatStatName } from '../../utils/displayHelpers';
+import { getDisplayItemDescription, getDisplayItemName, formatRarity, formatItemType, formatStatDisplay, formatStatName, ALLOWED_BONUS_STATS } from '../../utils/displayHelpers';
 import { calculateRerollCost, rerollItemAffix } from '../../game/formulas/reroll';
 import { calculateItemSellValue } from '../../game/formulas/sellValue';
 
@@ -629,13 +629,14 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
           if (baseStats.minDamage !== undefined && baseStats.maxDamage !== undefined) {
             baseLines.push(`⚔️ Шкода: ${baseStats.minDamage}-${baseStats.maxDamage}`);
           }
-          if (baseStats.attackSpeed !== undefined) {
+          if (baseStats.attackSpeed !== undefined && item.category === 'weapon') {
             baseLines.push(`⚡ Швидкість атаки: ${baseStats.attackSpeed}`);
           }
 
           const skipKeys = ['minDamage', 'maxDamage', 'attackSpeed', 'defense', 'maxHealth', 'blockValue', 'dodgeBonus', 'hpBonus'];
           for (const [k, v] of Object.entries(baseStats)) {
             if (skipKeys.includes(k)) continue;
+            if (!ALLOWED_BONUS_STATS.includes(k)) continue;
             const label = formatStatName(k);
             if (renderedLabels.has(label)) continue;
             const formatted = formatStatDisplay(k, Number(v));
@@ -648,7 +649,7 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
           if (item.minDamage !== undefined && item.maxDamage !== undefined) {
             baseLines.push(`⚔️ Шкода: ${item.minDamage}-${item.maxDamage}`);
           }
-          if (item.attackSpeed !== undefined) {
+          if (item.attackSpeed !== undefined && item.category === 'weapon') {
             baseLines.push(`⚡ Швидкість атаки: ${item.attackSpeed}`);
           }
           if (item.armor !== undefined || item.defense !== undefined) {
@@ -663,6 +664,7 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
           const skipKeys = ['minDamage', 'maxDamage', 'attackSpeed', 'armor', 'defense', 'maxHp', 'maxHealth', 'id', 'name', 'category', 'rarity', 'tier', 'description', 'sourceSheet', 'level', 'templateId', 'codeName', 'sellValueGold'];
           for (const [k, v] of Object.entries(item)) {
             if (skipKeys.includes(k) || typeof v !== 'number') continue;
+            if (!ALLOWED_BONUS_STATS.includes(k)) continue;
             const label = formatStatName(k);
             if (renderedLabels.has(label)) continue;
             const formatted = formatStatDisplay(k, v);

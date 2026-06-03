@@ -907,6 +907,50 @@ export function formatStatDisplay(key: string, value: number): string {
   return `${formattedVal} ${name}`;
 }
 
+export const ALLOWED_BONUS_STATS = [
+  'maxHp',
+  'hpBonus',
+  'damageBonus',
+  'defense',
+  'critChance',
+  'critDamage',
+  'critDamageBonus',
+  'dodgeChance',
+  'dodgeBonus',
+  'evasion',
+  'attackSpeed',
+  'attackSpeedBonus',
+  'healthRegen',
+  'lifeSteal',
+  'lifesteal',
+  'blockChance',
+  'blockPower',
+  'blockValue',
+  'armorPenetration',
+  'accuracy',
+  'goldFindBonus',
+  'goldBonus',
+  'xpBonus',
+  'lootChanceBonus',
+  'itemFind',
+  'rarityFindBonus',
+  'rarityFind',
+  'bleedChance',
+  'bleedChanceBonus',
+  'bleedDamage',
+  'stunChance',
+  'stunChanceBonus',
+  'counterChance',
+  'thorns',
+  'fireDamage',
+  'frostDamage',
+  'poisonDamage',
+  'bleedResist',
+  'bleedResistance',
+  'stunResist',
+  'staggerResistance'
+];
+
 export function formatEquipmentSummary(item: Record<string, unknown>): string {
   if (!item) return '';
 
@@ -970,6 +1014,14 @@ export function formatEquipmentSummary(item: Record<string, unknown>): string {
   const processed = new Set<string>();
 
   for (const { key } of keysToSummary) {
+    if (!ALLOWED_BONUS_STATS.includes(key)) continue;
+
+    // Filter out weapon-only stats (like base speed) on non-weapons
+    if (key === 'attackSpeed') {
+      const slot = String(item.slot || item.category || '');
+      if (slot !== 'weapon') continue;
+    }
+
     const rawVal = statsSource[key];
     if (rawVal === undefined || rawVal === null || rawVal === '') continue;
     const val = Number(rawVal);

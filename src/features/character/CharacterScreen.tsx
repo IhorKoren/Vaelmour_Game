@@ -18,7 +18,7 @@ import type { EquipmentSlot, HeroState, CoreStats, Weapon } from '../../game/typ
 import { skills } from '../../data/skills';
 import { getSkillRageCost } from '../../game/formulas/combatMechanics';
 import { isSkillUnlocked } from '../../game/formulas/skills';
-import { getDisplayItemName, formatRarity, getDisplaySkillName, getDisplaySkillDescription, formatStatValueOnly, formatStatName } from '../../utils/displayHelpers';
+import { getDisplayItemName, formatRarity, getDisplaySkillName, getDisplaySkillDescription, formatStatValueOnly, formatStatName, ALLOWED_BONUS_STATS } from '../../utils/displayHelpers';
 import { getTelegramUser } from '../../telegram/telegramWebApp';
 import { calculateSecondaryStats, getEffectiveAttackSpeed } from '../../game/formulas/secondaryStats';
 
@@ -485,7 +485,11 @@ export function CharacterScreen({ hero, onHeroChange }: Props) {
               const renderedLabels = new Set<string>();
               Object.entries(itemStats).forEach(([k, v]) => {
                 if (excludedKeys.includes(k)) return;
+                if (!ALLOWED_BONUS_STATS.includes(k)) return;
                 if (typeof v !== 'number' || v === 0 || Number.isNaN(v)) return;
+
+                // For weapons, attackSpeed is rendered in a dedicated line. For others, base speed is not a bonus.
+                if (k === 'attackSpeed') return;
 
                 const labelPart = formatStatName(k);
                 if (renderedLabels.has(labelPart)) return;
