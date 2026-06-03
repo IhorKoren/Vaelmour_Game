@@ -97,7 +97,7 @@ export const AUTO_EQUIP_PRESET_ENABLED = true;
  * 'test_loadout_v2'
  * 'epic_level_12_test_v1'
  */
-export const AUTO_EQUIP_PRESET_VERSION = 'test_loadout_v1';
+export const AUTO_EQUIP_PRESET_VERSION = false;
 
 /**
  * false = застосувати тільки 1 раз для поточної AUTO_EQUIP_PRESET_VERSION.
