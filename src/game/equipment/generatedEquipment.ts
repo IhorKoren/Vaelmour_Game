@@ -137,7 +137,9 @@ export function rollWeightedEquipmentSlot(random: () => number = Math.random): E
 export function getGeneratedEquipmentDropChance(enemy: Enemy, hero?: HeroState, heroBonusOverride?: number): number {
   const baseChance = enemy.rank === 'boss' ? 0.35 : enemy.rank === 'elite' ? 0.12 : 0.035;
   const heroBonus = heroBonusOverride ?? (hero ? getHeroGeneratedStatTotal(hero, 'lootChanceBonus') : 0);
-  return Math.max(0, Math.min(1, baseChance * (1 + heroBonus)));
+  const calculatedChance = baseChance * (1 + heroBonus);
+  const cap = enemy.rank === 'boss' ? 0.70 : enemy.rank === 'elite' ? 0.30 : 0.15;
+  return Math.max(0, Math.min(cap, calculatedChance));
 }
 
 export function rollGeneratedEquipmentRarity(
@@ -146,50 +148,48 @@ export function rollGeneratedEquipmentRarity(
   random: () => number = Math.random,
   heroBonusOverride?: number
 ): Rarity {
+  const levelFactor = Math.min(1.0, (enemy.level ?? 1) / 30.0);
   const heroBonus = heroBonusOverride ?? (hero ? getHeroGeneratedStatTotal(hero, 'rarityFindBonus') : 0);
-  const table =
-    enemy.rank === 'boss'
-      ? [
-          { rarity: 'common', chance: 0.2 },
-          { rarity: 'uncommon', chance: 0.45 },
-          { rarity: 'rare', chance: 0.27 },
-          { rarity: 'epic', chance: 0.08 }
-        ]
-      : enemy.rank === 'elite'
-        ? [
-            { rarity: 'common', chance: 0.45 },
-            { rarity: 'uncommon', chance: 0.38 },
-            { rarity: 'rare', chance: 0.14 },
-            { rarity: 'epic', chance: 0.03 }
-          ]
-        : [
-            { rarity: 'common', chance: 0.7 },
-            { rarity: 'uncommon', chance: 0.25 },
-            { rarity: 'rare', chance: 0.045 },
-            { rarity: 'epic', chance: 0.005 }
-          ];
 
-  const cappedEpicChance = enemy.rank === 'boss' ? 0.15 : enemy.rank === 'elite' ? 0.08 : 0.03;
-  const boosted = table.map((entry) => ({ ...entry }));
-  const epicEntry = boosted.find((entry) => entry.rarity === 'epic');
-  if (epicEntry) {
-    const nextEpicChance = Math.min(cappedEpicChance, epicEntry.chance * (1 + heroBonus));
-    const delta = nextEpicChance - epicEntry.chance;
-    epicEntry.chance = nextEpicChance;
-    const commonEntry = boosted.find((entry) => entry.rarity === 'common');
-    if (commonEntry) {
-      commonEntry.chance = Math.max(0, commonEntry.chance - delta);
-    }
+  let epicChance: number;
+  let rareChance: number;
+  let uncommonChance: number;
+
+  if (enemy.rank === 'boss') {
+    epicChance = 0.01 + 0.09 * levelFactor;
+    rareChance = 0.12 + 0.18 * levelFactor;
+    uncommonChance = 0.37 + 0.08 * levelFactor;
+  } else if (enemy.rank === 'elite') {
+    epicChance = 0.002 + 0.033 * levelFactor;
+    rareChance = 0.04 + 0.11 * levelFactor;
+    uncommonChance = 0.25 + 0.15 * levelFactor;
+  } else {
+    epicChance = 0.008 * levelFactor;
+    rareChance = 0.005 + 0.045 * levelFactor;
+    uncommonChance = 0.15 + 0.15 * levelFactor;
   }
 
-  let roll = random();
-  for (const entry of boosted) {
-    roll -= entry.chance;
-    if (roll <= 0) {
-      return entry.rarity;
-    }
+  // Apply player rarity find bonus (capped)
+  const baseEpicChance = epicChance;
+  const baseRareChance = rareChance;
+
+  const maxEpicChance = enemy.rank === 'boss' ? 0.18 : enemy.rank === 'elite' ? 0.08 : 0.03;
+  const maxRareChance = enemy.rank === 'boss' ? 0.45 : enemy.rank === 'elite' ? 0.25 : 0.12;
+
+  epicChance = Math.min(maxEpicChance, baseEpicChance * (1 + heroBonus));
+  rareChance = Math.min(maxRareChance, baseRareChance * (1 + heroBonus));
+
+  let commonChance = 1.0 - uncommonChance - rareChance - epicChance;
+  if (commonChance < 0) {
+    uncommonChance = Math.max(0, uncommonChance + commonChance);
+    commonChance = 0;
   }
-  return 'common';
+
+  const roll = random();
+  if (roll <= commonChance) return 'common';
+  if (roll <= commonChance + uncommonChance) return 'uncommon';
+  if (roll <= commonChance + uncommonChance + rareChance) return 'rare';
+  return 'epic';
 }
 
 export function buildGeneratedEquipmentName(slot: EquipmentSlot, rarity: Rarity): string {

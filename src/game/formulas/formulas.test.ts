@@ -35,6 +35,14 @@ import type { HeroState, Enemy, Weapon, Armor, Skill, ItemAffix } from '../types
 import { items, type ItemDefinition } from '../../data/items';
 import { recipes } from '../../data/recipes';
 import { getEquippableSlot } from './equipment';
+import {
+  getGeneratedEquipmentDropChance,
+  rollGeneratedEquipmentRarity,
+  rollWeightedEquipmentSlot,
+  getEquipmentLevelForEnemy,
+  EQUIPMENT_SLOT_WEIGHTS
+} from '../equipment/generatedEquipment';
+
 
 // Mock data structures for tests
 const mockHero: HeroState = {
@@ -450,7 +458,7 @@ describe('Loot Drop Formulas (loot.ts)', () => {
 
     const mockRandom = (() => {
       let count = 0;
-      const values = [0.01, 0.5, 0.6, 0.5, 0.5];
+      const values = [0.01, 0.5, 0.75, 0.5, 0.5];
       return () => values[count++] ?? 0.5;
     })();
 
@@ -463,6 +471,81 @@ describe('Loot Drop Formulas (loot.ts)', () => {
     expect(result.item?.durability).toBe(100);
     expect(result.item?.affixes.length).toBeGreaterThanOrEqual(1);
     expect(result.item?.source?.enemyId).toBe(enemy.id);
+  });
+
+  it('should verify regular enemy drop chance is lower than elite, and elite is lower than boss', () => {
+    const normalEnemy = { ...mockEnemy, rank: 'normal' as const };
+    const eliteEnemy = { ...mockEnemy, rank: 'elite' as const };
+    const bossEnemy = { ...mockEnemy, rank: 'boss' as const };
+
+    const normalChance = getGeneratedEquipmentDropChance(normalEnemy, mockHero);
+    const eliteChance = getGeneratedEquipmentDropChance(eliteEnemy, mockHero);
+    const bossChance = getGeneratedEquipmentDropChance(bossEnemy, mockHero);
+
+    expect(normalChance).toBeLessThan(eliteChance);
+    expect(eliteChance).toBeLessThan(bossChance);
+    expect(normalChance).toBe(0.035);
+    expect(eliteChance).toBe(0.12);
+    expect(bossChance).toBe(0.35);
+  });
+
+  it('should verify rarity chances improve from level 1 to level 30', () => {
+    const level1Enemy = { ...mockEnemy, level: 1, rank: 'normal' as const };
+    const level30Enemy = { ...mockEnemy, level: 30, rank: 'normal' as const };
+
+    // At level 1, rollGeneratedEquipmentRarity uses levelFactor = 1/30
+    // At level 30, it uses levelFactor = 30/30 = 1.0
+    // We pass custom random rolls to check progression deterministically
+    const rarityLvl1 = rollGeneratedEquipmentRarity(level1Enemy, mockHero, () => 0.70);
+    const rarityLvl30 = rollGeneratedEquipmentRarity(level30Enemy, mockHero, () => 0.70);
+
+    expect(rarityLvl1).toBe('common');
+    expect(rarityLvl30).toBe('uncommon');
+  });
+
+  it('should verify equipment tier mapping produces only allowed tiers', () => {
+    const allowedTiers = [1, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30];
+    for (let lvl = 1; lvl <= 30; lvl++) {
+      const mappedLevel = getEquipmentLevelForEnemy(lvl);
+      expect(allowedTiers).toContain(mappedLevel);
+      if (lvl < 3) {
+        expect(mappedLevel).toBe(1);
+      } else if (lvl >= 30) {
+        expect(mappedLevel).toBe(30);
+      }
+    }
+  });
+
+  it('should verify all required loot slots can be selected and no belt slot is generated', () => {
+    const expectedSlots = ['weapon', 'shield', 'head', 'chest', 'hands', 'legs', 'feet', 'ring1', 'amulet'];
+    const generatedSlots = new Set<string>();
+
+    const slotsInWeights = EQUIPMENT_SLOT_WEIGHTS.map(w => w.slot);
+    
+    expect(slotsInWeights).toContain('weapon');
+    expect(slotsInWeights).toContain('shield');
+    expect(slotsInWeights).toContain('head');
+    expect(slotsInWeights).toContain('chest');
+    expect(slotsInWeights).toContain('hands');
+    expect(slotsInWeights).toContain('legs');
+    expect(slotsInWeights).toContain('feet');
+    expect(slotsInWeights).toContain('ring1');
+    expect(slotsInWeights).toContain('amulet');
+    expect(slotsInWeights).not.toContain('belt');
+
+    let sum = 0;
+    const totalWeight = EQUIPMENT_SLOT_WEIGHTS.reduce((s, e) => s + e.weight, 0);
+    for (const entry of EQUIPMENT_SLOT_WEIGHTS) {
+      const midPoint = (sum + entry.weight / 2) / totalWeight;
+      const slot = rollWeightedEquipmentSlot(() => midPoint);
+      generatedSlots.add(slot);
+      sum += entry.weight;
+    }
+
+    expect(generatedSlots.size).toBe(expectedSlots.length);
+    for (const slot of expectedSlots) {
+      expect(generatedSlots.has(slot)).toBe(true);
+    }
   });
 });
 
