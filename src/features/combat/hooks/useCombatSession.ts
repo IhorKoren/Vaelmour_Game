@@ -1,10 +1,8 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import type { Enemy, HeroState, Skill } from '../../../game/types';
-import { enemies } from '../../../data/enemies';
 import { skills } from '../../../data/skills';
 import { locations } from '../../../data/locations';
 import { calculateEnemyDamage, calculateHeroDamage } from '../../../game/formulas/combat';
-import { selectWeightedEnemy } from '../../../game/formulas/spawn';
 import {
   clampRage,
   getRageFromDamageDealt,
@@ -20,16 +18,15 @@ import {
   applyArmorDurabilityLoss
 } from '../../../game/formulas/equipment';
 import { calculateSecondaryStats, getEffectiveAttackSpeed } from '../../../game/formulas/secondaryStats';
-import {
-  scaleEnemyForLocation,
-  rollEliteOrNormal,
-  getBossForLocation
-} from '../../../game/formulas/enemyScaling';
+import { getBossForLocation } from '../../../game/formulas/enemyScaling';
 import bossesJson from '../../../data/generated/bosses.json';
 import { isSkillUnlocked } from '../../../game/formulas/skills';
 import { COMBAT_ATTACK_INTERVAL_MULTIPLIER } from '../../../game/constants';
-import { getDisplayEnemyName } from '../../../utils/displayHelpers';
 import type { GeneratedEquipmentItem } from '../../../game/types';
+import { getDisplayEnemyName } from '../../../utils/displayHelpers';
+import { buildEncounterStartLog, createEncounterEnemy } from '../services/combatEnemyService';
+import { prependCombatLogEntries } from '../services/combatLogService';
+import { clearCombatTimeout } from '../services/combatTimerService';
 
 const MAX_COMBAT_LOG_ENTRIES = 6;
 
@@ -90,15 +87,7 @@ export function useCombatSession({
     return getBossForLocation(currentLocation.name, currentLocation.bossOrKeyEnemy, bossesJson);
   }, [currentLocation]);
 
-  const [enemy, setEnemy] = useState<Enemy>(() => {
-    const enemyPool = currentLocation?.enemies && currentLocation.enemies.length > 0 ? currentLocation.enemies : [];
-    if (enemyPool.length === 0) {
-      const defaultEnemy = enemies[0] || { id: 'safe_wolf', name: 'Safe Wolf', hp: 50, maxHp: 50, dmg: 5, xp: 10, gold: 5 };
-      return scaleEnemyForLocation(defaultEnemy, currentLocation);
-    }
-    const baseEnemy = selectWeightedEnemy(enemyPool, enemies) || enemies[0];
-    return scaleEnemyForLocation(baseEnemy, currentLocation);
-  });
+  const [enemy, setEnemy] = useState<Enemy>(() => createEncounterEnemy(currentLocation));
   const [enemyHp, setEnemyHp] = useState(enemy.hp);
   
   const [log, setLog] = useState<string[]>(['Приготуйтеся до полювання. Оберіть локацію на карті та почніть бій!']);
@@ -129,8 +118,8 @@ export function useCombatSession({
 
   // Sync state on location switch
   useEffect(() => {
-    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
-    if (victoryTimeoutRef.current) clearTimeout(victoryTimeoutRef.current);
+    clearCombatTimeout(searchTimeoutRef);
+    clearCombatTimeout(victoryTimeoutRef);
     
     const resetTimer = setTimeout(() => {
       setHuntState('idle');
@@ -198,31 +187,21 @@ export function useCombatSession({
   // Clean up timers on unmount
   useEffect(() => {
     return () => {
-      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
-      if (victoryTimeoutRef.current) clearTimeout(victoryTimeoutRef.current);
+      clearCombatTimeout(searchTimeoutRef);
+      clearCombatTimeout(victoryTimeoutRef);
     };
   }, []);
 
   const startHunting = useCallback(() => {
-    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
-    if (victoryTimeoutRef.current) clearTimeout(victoryTimeoutRef.current);
+    clearCombatTimeout(searchTimeoutRef);
+    clearCombatTimeout(victoryTimeoutRef);
     
     setVictoryRewards(null);
     setHuntState('searching');
     setLog(['Шукаємо ворога...']);
     
     const id = setTimeout(() => {
-      const enemyPool = currentLocation?.enemies && currentLocation.enemies.length > 0 ? currentLocation.enemies : [];
-      let scaledEnemy: Enemy;
-      if (enemyPool.length === 0) {
-        console.warn("Enemy pool is missing or empty for location:", currentLocation?.id);
-        const defaultEnemy = enemies[0] || { id: 'safe_wolf', name: 'Safe Wolf', hp: 50, maxHp: 50, dmg: 5, xp: 10, gold: 5 };
-        scaledEnemy = scaleEnemyForLocation(defaultEnemy, currentLocation);
-      } else {
-        const baseEnemy = selectWeightedEnemy(enemyPool, enemies) || enemies[0];
-        scaledEnemy = scaleEnemyForLocation(baseEnemy, currentLocation);
-      }
-      const finalEnemy = rollEliteOrNormal(scaledEnemy);
+      const finalEnemy = createEncounterEnemy(currentLocation);
       setEnemy(finalEnemy);
       setEnemyHp(finalEnemy.hp);
       setEnemyBleed(null);
@@ -233,8 +212,7 @@ export function useCombatSession({
       setFrenziedSwingsBuff(null);
       setEnemyPoiseShred(null);
       setSkillCooldowns({});
-      const rankLabel = finalEnemy.rank === 'elite' ? '⭐️ ЕЛІТНИЙ ВОРОГ ⭐️: ' : '';
-      setLog([`${rankLabel}Перед вами постає ${finalEnemy.name} (${finalEnemy.level ?? 1} рівень).`]);
+      setLog([buildEncounterStartLog(finalEnemy)]);
       setHeroRage(0);
       setHuntState('fighting');
       rewardGrantedRef.current = false;
@@ -245,8 +223,8 @@ export function useCombatSession({
 
   const startBossFight = useCallback(() => {
     if (!locationBoss) return;
-    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
-    if (victoryTimeoutRef.current) clearTimeout(victoryTimeoutRef.current);
+    clearCombatTimeout(searchTimeoutRef);
+    clearCombatTimeout(victoryTimeoutRef);
 
     setVictoryRewards(null);
     setHuntState('searching');
@@ -273,16 +251,16 @@ export function useCombatSession({
   }, [locationBoss]);
 
   const handleRetreat = useCallback(() => {
-    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
-    if (victoryTimeoutRef.current) clearTimeout(victoryTimeoutRef.current);
+    clearCombatTimeout(searchTimeoutRef);
+    clearCombatTimeout(victoryTimeoutRef);
     setHeroRage(0);
     setHuntState('idle');
     setLog(['Ви успішно припинили полювання та повернулися до табору.']);
   }, []);
 
   const handleReturn = useCallback(() => {
-    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
-    if (victoryTimeoutRef.current) clearTimeout(victoryTimeoutRef.current);
+    clearCombatTimeout(searchTimeoutRef);
+    clearCombatTimeout(victoryTimeoutRef);
     // Safe complete heal on returning to camp
     latestOnHeroChange.current({ ...latestHero.current, currentHp: latestHero.current.maxHp });
     setHeroRage(0);
@@ -300,7 +278,9 @@ export function useCombatSession({
     const result = onVictoryCalculations(latestEnemy.current, heroDamageLog);
     
     setVictoryRewards(result.victoryRewards);
-    setLog((previous) => [...result.logLines, ...previous].slice(0, MAX_COMBAT_LOG_ENTRIES));
+    setLog((previous) =>
+      prependCombatLogEntries(previous, result.logLines, MAX_COMBAT_LOG_ENTRIES),
+    );
     
     // Pass reward hero back to shell
     latestOnHeroChange.current(result.rewardedHero);
@@ -310,20 +290,10 @@ export function useCombatSession({
       setVictoryRewards(null);
       setHuntState('searching');
       const nextId = setTimeout(() => {
-        const enemyPool = currentLocation?.enemies && currentLocation.enemies.length > 0 ? currentLocation.enemies : [];
-        let nextScaled: Enemy;
-        if (enemyPool.length === 0) {
-          const defaultEnemy = enemies[0] || { id: 'safe_wolf', name: 'Safe Wolf', hp: 50, maxHp: 50, dmg: 5, xp: 10, gold: 5 };
-          nextScaled = scaleEnemyForLocation(defaultEnemy, currentLocation);
-        } else {
-          const nextBase = selectWeightedEnemy(enemyPool, enemies) || enemies[0];
-          nextScaled = scaleEnemyForLocation(nextBase, currentLocation);
-        }
-        const finalEnemy = rollEliteOrNormal(nextScaled);
+        const finalEnemy = createEncounterEnemy(currentLocation);
         setEnemy(finalEnemy);
         setEnemyHp(finalEnemy.hp);
-        const rankLabel = finalEnemy.rank === 'elite' ? '⭐️ ЕЛІТНИЙ ВОРОГ ⭐️: ' : '';
-        setLog([`${rankLabel}Перед вами постає ${finalEnemy.name} (${finalEnemy.level ?? 1} рівень).`]);
+        setLog([buildEncounterStartLog(finalEnemy)]);
         setHuntState('fighting');
         rewardGrantedRef.current = false;
         setEncounterId((prev) => prev + 1);
@@ -576,8 +546,8 @@ export function useCombatSession({
       latestOnHeroChange.current(nextHero);
 
       if (nextHero.currentHp <= 0) {
-        if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
-        if (victoryTimeoutRef.current) clearTimeout(victoryTimeoutRef.current);
+        clearCombatTimeout(searchTimeoutRef);
+        clearCombatTimeout(victoryTimeoutRef);
         const retreatedHero = {
           ...nextHero,
           currentHp: 1

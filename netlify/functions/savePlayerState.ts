@@ -1,17 +1,13 @@
-import crypto from 'crypto';
 import { createClient } from '@supabase/supabase-js';
+import { sanitizeCloudSavePayload } from '../../src/game/save/cloudSaveSanitizer';
+import {
+  type TelegramUser,
+  validateTelegramInitData,
+} from './_shared/telegramAuth';
 
 type NetlifyEvent = {
   httpMethod: string;
   body: string | null;
-};
-
-type TelegramUser = {
-  id: number;
-  username?: string;
-  first_name?: string;
-  last_name?: string;
-  language_code?: string;
 };
 
 type AuthMode = 'telegram' | 'admin_debug' | null;
@@ -42,6 +38,16 @@ function toNumber(value: unknown, fallback: number): number {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+function toTimestamp(value: unknown): number | null {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const parsed = Date.parse(value);
+
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 function sortValueForCompare(value: unknown): unknown {
   if (Array.isArray(value)) {
     return value.map(sortValueForCompare);
@@ -65,53 +71,6 @@ function stableStringify(value: unknown): string {
 
 function areDifferent(previousValue: unknown, nextValue: unknown): boolean {
   return stableStringify(previousValue) !== stableStringify(nextValue);
-}
-
-function validateTelegramInitData(initData: string, botToken: string): boolean {
-  if (!initData || !botToken) return false;
-
-  try {
-    const params = new URLSearchParams(initData);
-    const hash = params.get('hash');
-
-    if (!hash) return false;
-
-    params.delete('hash');
-
-    const dataCheckString = Array.from(params.keys())
-      .sort()
-      .map((key) => `${key}=${params.get(key)}`)
-      .join('\n');
-
-    const secretKey = crypto
-      .createHmac('sha256', 'WebAppData')
-      .update(botToken)
-      .digest();
-
-    const calculatedHash = crypto
-      .createHmac('sha256', secretKey)
-      .update(dataCheckString)
-      .digest('hex');
-
-    return calculatedHash === hash;
-  } catch (error) {
-    console.error('[savePlayerState] Failed to validate Telegram initData:', error);
-    return false;
-  }
-}
-
-function parseTelegramUserFromInitData(initData: string): TelegramUser | null {
-  try {
-    const params = new URLSearchParams(initData);
-    const userParam = params.get('user');
-
-    if (!userParam) return null;
-
-    return JSON.parse(userParam) as TelegramUser;
-  } catch (error) {
-    console.error('[savePlayerState] Failed to parse Telegram user:', error);
-    return null;
-  }
 }
 
 function buildImportantEvents(params: {
@@ -278,15 +237,18 @@ export async function handler(event: NetlifyEvent) {
 
   const initData = typeof body.initData === 'string' ? body.initData : '';
   const hero = isRecord(body.hero) ? body.hero : undefined;
+  const requestedUpdatedAt =
+    typeof body.updatedAt === 'string' ? body.updatedAt : undefined;
 
   const selectedLocationId =
     typeof body.selectedLocationId === 'string' ? body.selectedLocationId : null;
 
   let telegramUser: TelegramUser | null = null;
   let authMode: AuthMode = null;
+  const authResult = validateTelegramInitData(initData, telegramBotToken);
 
-  if (initData && validateTelegramInitData(initData, telegramBotToken)) {
-    telegramUser = parseTelegramUserFromInitData(initData);
+  if (authResult.ok) {
+    telegramUser = authResult.user;
     authMode = 'telegram';
   }
 
@@ -334,7 +296,9 @@ export async function handler(event: NetlifyEvent) {
   if (!telegramUser?.id) {
     return json(401, {
       error: 'Unauthorized',
-      reason: 'Valid Telegram initData or admin debug credentials are required',
+      reason: authResult.ok
+        ? 'missing_telegram_user'
+        : authResult.reason,
       hasInitData: Boolean(initData),
     });
   }
@@ -383,7 +347,7 @@ export async function handler(event: NetlifyEvent) {
 
   const { data: existingSave, error: existingSaveError } = await supabase
     .from('player_saves')
-    .select('hero_json, selected_location_id, level, xp, gold')
+    .select('hero_json, selected_location_id, level, xp, gold, updated_at')
     .eq('player_id', player.id)
     .maybeSingle();
 
@@ -398,40 +362,52 @@ export async function handler(event: NetlifyEvent) {
 
   const existingSaveRecord = isRecord(existingSave) ? existingSave : null;
   const existingSaveExists = Boolean(existingSaveRecord);
+  const existingUpdatedAt = toTimestamp(existingSaveRecord?.updated_at);
+  const incomingUpdatedAt = toTimestamp(requestedUpdatedAt);
+
+  if (
+    existingSaveExists &&
+    existingUpdatedAt !== null &&
+    incomingUpdatedAt !== null &&
+    incomingUpdatedAt < existingUpdatedAt
+  ) {
+    return json(200, {
+      success: true,
+      staleIgnored: true,
+      message: 'Ignored stale player state save',
+      playerId: player.id,
+      selectedLocationId:
+        typeof existingSaveRecord?.selected_location_id === 'string'
+          ? existingSaveRecord.selected_location_id
+          : 'LOC_001',
+      updatedAt: existingSaveRecord?.updated_at,
+    });
+  }
 
   const existingHero = isRecord(existingSaveRecord?.hero_json)
     ? existingSaveRecord.hero_json
     : {};
 
-  const nextInventory = Array.isArray(hero.inventory)
-    ? hero.inventory
-    : Array.isArray(existingHero.inventory)
-      ? existingHero.inventory
-      : [];
-
-  const nextEquipment = isRecord(hero.equipment)
-    ? hero.equipment
-    : isRecord(existingHero.equipment)
-      ? existingHero.equipment
-      : {};
-
-  const nextSelectedLocationId =
-    selectedLocationId ??
-    (typeof hero.selectedLocationId === 'string' ? hero.selectedLocationId : null) ??
-    (typeof existingSaveRecord?.selected_location_id === 'string'
-      ? existingSaveRecord.selected_location_id
-      : null) ??
-    'LOC_001';
-
-  const normalizedHero: Record<string, unknown> = {
-    ...existingHero,
-    ...hero,
-    inventory: nextInventory,
-    equipment: nextEquipment,
-    selectedLocationId: nextSelectedLocationId,
+  const sanitizedPayload = sanitizeCloudSavePayload(
+    hero,
+    selectedLocationId,
+    existingHero,
+  );
+  const normalizedHero = {
+    ...sanitizedPayload.hero,
     saveVersion: 2,
     updatedAt: now,
   };
+
+  const nextInventory = Array.isArray(normalizedHero.inventory)
+    ? normalizedHero.inventory
+    : [];
+
+  const nextEquipment = isRecord(normalizedHero.equipment)
+    ? normalizedHero.equipment
+    : {};
+
+  const nextSelectedLocationId = sanitizedPayload.selectedLocationId;
 
   const level = toNumber(normalizedHero.level, 1);
   const xp = toNumber(normalizedHero.xp, 0);
@@ -537,6 +513,7 @@ export async function handler(event: NetlifyEvent) {
     selectedLocationId: nextSelectedLocationId,
     inventoryCount: nextInventory.length,
     equipment: nextEquipment,
+    sanitizedChanges: sanitizedPayload.changes,
     eventCount: importantEvents.length,
     eventTypes: importantEvents.map((playerEvent) => playerEvent.event_type),
   });
