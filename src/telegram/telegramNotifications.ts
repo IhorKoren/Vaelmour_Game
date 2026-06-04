@@ -1,27 +1,46 @@
-import { getTelegramWebApp, getTelegramUser } from './telegramWebApp';
+import { getTelegramWebApp } from './telegramWebApp';
+
+export type FullHealthNotificationResponse = {
+  success: boolean;
+  skipped: boolean;
+  reason: string;
+  messageSent: boolean;
+};
+
+const DEFAULT_SKIPPED_RESPONSE: FullHealthNotificationResponse = {
+  success: false,
+  skipped: true,
+  reason: 'missing_init_data',
+  messageSent: false,
+};
 
 /**
  * Sends Telegram notification when hero HP is fully restored.
  */
-export async function sendFullHealthNotification(): Promise<void> {
+export async function sendFullHealthNotification(): Promise<FullHealthNotificationResponse> {
   const webApp = getTelegramWebApp();
-  const user = getTelegramUser();
+  const initData = webApp?.initData ?? '';
+
+  if (!initData) {
+    console.info('[Telegram Notifications] Skipped: Telegram WebApp initData is missing.');
+    return DEFAULT_SKIPPED_RESPONSE;
+  }
 
   const payload = {
-    initData: webApp?.initData ?? '',
+    initData,
     message:
-      'рџџў Р“РµСЂРѕР№ РїРѕРІРЅС–СЃС‚СЋ РІС–РґРЅРѕРІРёРІ Р·РґРѕСЂРѕРІКјСЏ С‚Р° РіРѕС‚РѕРІРёР№ РґРѕ Р±РѕСЋ.',
-    debugReason: user?.id ? undefined : 'missing_telegram_user_id',
+      'Герой повністю відновив здоровʼя та готовий до бою.',
   };
 
-  console.info('[Telegram Notifications] Full HP notification attempt:', {
+  console.info('[Telegram Notifications] Full HP notification request prepared.', {
     hasTelegramWebApp: Boolean(webApp),
-    hasInitData: Boolean(webApp?.initData),
-    userId: user?.id ?? null,
+    hasInitData: Boolean(initData),
   });
 
   try {
-    const response = await fetch('/.netlify/functions/sendFullHealthNotification', {
+    console.info('[Telegram Notifications] Sending request to /api/telegram/full-health-notification.');
+
+    const response = await fetch('/api/telegram/full-health-notification', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -30,17 +49,54 @@ export async function sendFullHealthNotification(): Promise<void> {
     });
 
     const responseText = await response.text();
+    const parsedResponse = parseNotificationResponse(responseText);
 
     if (!response.ok) {
-      console.error('[Telegram Notifications] Backend error:', {
+      console.error('[Telegram Notifications] Backend returned non-OK status.', {
         status: response.status,
-        body: responseText,
+        reason: parsedResponse.reason,
+        skipped: parsedResponse.skipped,
       });
-      return;
+
+      return parsedResponse;
     }
 
-    console.info('[Telegram Notifications] Full HP notification sent:', responseText);
+    console.info('[Telegram Notifications] Backend responded.', {
+      success: parsedResponse.success,
+      skipped: parsedResponse.skipped,
+      reason: parsedResponse.reason,
+      messageSent: parsedResponse.messageSent,
+    });
+
+    return parsedResponse;
   } catch (error) {
-    console.error('[Telegram Notifications] Failed to call Netlify function:', error);
+    console.error('[Telegram Notifications] Failed to call notification endpoint:', error);
+
+    return {
+      success: false,
+      skipped: false,
+      reason: 'request_failed',
+      messageSent: false,
+    };
+  }
+}
+
+function parseNotificationResponse(responseText: string): FullHealthNotificationResponse {
+  try {
+    const parsed = JSON.parse(responseText) as Partial<FullHealthNotificationResponse>;
+
+    return {
+      success: parsed.success === true,
+      skipped: parsed.skipped === true,
+      reason: typeof parsed.reason === 'string' ? parsed.reason : 'unknown',
+      messageSent: parsed.messageSent === true,
+    };
+  } catch {
+    return {
+      success: false,
+      skipped: false,
+      reason: 'invalid_response',
+      messageSent: false,
+    };
   }
 }

@@ -1,4 +1,4 @@
-import { Suspense, lazy, startTransition, useEffect, useMemo, useState } from 'react';
+import { Suspense, lazy, startTransition, useEffect, useMemo, useRef, useState } from 'react';
 
 import { BottomNavigation } from '../components/layout/BottomNavigation';
 import { TopStatusBar } from '../components/layout/TopStatusBar';
@@ -17,6 +17,7 @@ import { checkLevelUp } from '../game/formulas/progression';
 import { updateQuestProgressOnLocationChanged } from '../game/formulas/quests';
 import type { AppTab } from './tabs';
 import { shouldApplyPassiveHealthRegen } from './regenRules';
+import { decideFullHealthNotification } from '../telegram/fullHealthNotificationRules';
 import { sendFullHealthNotification } from '../telegram/telegramNotifications';
 import {
   flushCloudPlayerSave,
@@ -111,6 +112,7 @@ export default function AppShell() {
     // Prevent immediate notification on new game / first cold start
     return true;
   });
+  const wasBelowFullHpRef = useRef(false);
 
   // Load cloud save from Supabase once on startup
   useEffect(() => {
@@ -188,51 +190,64 @@ export default function AppShell() {
     };
   }, []);
 
-  // Track hero health transitions to trigger Telegram notifications only when player is away
+  // Track hero health transitions and notify once per below-full -> full cycle outside combat.
   useEffect(() => {
-    const isBelowFullHp = hero.currentHp < derived.maxHp;
-    const isFullHp = hero.currentHp >= derived.maxHp;
+    const decision = decideFullHealthNotification({
+      currentHp: hero.currentHp,
+      maxHp: derived.maxHp,
+      isFighting,
+      wasBelowFullHp: wasBelowFullHpRef.current,
+      notificationSent: fullHealthNotificationSent,
+    });
 
-    if (isBelowFullHp) {
-      setFullHealthNotificationSent(false);
+    if (decision === 'reset_cycle') {
+      if (fullHealthNotificationSent || !wasBelowFullHpRef.current) {
+        console.info('[Telegram Notifications] Full HP cycle reset after damage or partial healing.', {
+          currentHp: hero.currentHp,
+          maxHp: derived.maxHp,
+        });
+      }
+
+      wasBelowFullHpRef.current = true;
+
+      if (fullHealthNotificationSent) {
+        setFullHealthNotificationSent(false);
+      }
 
       return;
     }
 
-    if (!isFullHp || fullHealthNotificationSent) {
+    if (decision === 'skip_in_combat') {
+      console.info('[Telegram Notifications] Full HP notification skipped during active combat.');
       return;
     }
 
+    if (decision === 'skip_already_sent') {
+      console.info('[Telegram Notifications] Full HP notification already sent for current cycle.');
+      return;
+    }
+
+    if (decision === 'skip_not_full') {
+      return;
+    }
+
+    console.info('[Telegram Notifications] Full HP reached outside combat. Notification should be sent.', {
+      currentHp: hero.currentHp,
+      maxHp: derived.maxHp,
+    });
+
+    wasBelowFullHpRef.current = false;
     setFullHealthNotificationSent(true);
 
-    const telegramWebApp = (
-      window as Window & {
-        Telegram?: {
-          WebApp?: {
-            isActive?: boolean;
-          };
-        };
-      }
-    ).Telegram?.WebApp;
-
-    const playerIsAway =
-      document.hidden ||
-      document.visibilityState === 'hidden' ||
-      !document.hasFocus() ||
-      telegramWebApp?.isActive === false;
-
-    if (!playerIsAway) {
-      console.info(
-        '[Telegram Notifications] Full HP reached, but player is active. Notification skipped.',
-      );
-
-      return;
-    }
-
-    console.info('[Telegram Notifications] Full HP reached while player is away. Sending notification.');
-
-    void sendFullHealthNotification();
-  }, [hero.currentHp, derived.maxHp, fullHealthNotificationSent]);
+    void sendFullHealthNotification().then((result) => {
+      console.info('[Telegram Notifications] Full HP notification completed.', {
+        success: result.success,
+        skipped: result.skipped,
+        reason: result.reason,
+        messageSent: result.messageSent,
+      });
+    });
+  }, [hero.currentHp, derived.maxHp, fullHealthNotificationSent, isFighting]);
 
   // Debounced cloud save to Supabase.
   // Wait until cloud load is checked to avoid overwriting cloud save with old localStorage data.
