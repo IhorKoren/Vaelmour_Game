@@ -22,7 +22,7 @@ describe('sendFullHealthNotification handler', () => {
   });
 
   it('returns a skipped result when initData is missing', async () => {
-    const { handler } = await import('./sendFullHealthNotification');
+    const { handler } = await import('../../netlify/functions/sendFullHealthNotification');
 
     const response = await handler({
       httpMethod: 'POST',
@@ -39,7 +39,7 @@ describe('sendFullHealthNotification handler', () => {
   });
 
   it('returns a skipped result when initData is invalid', async () => {
-    const { handler } = await import('./sendFullHealthNotification');
+    const { handler } = await import('../../netlify/functions/sendFullHealthNotification');
 
     const response = await handler({
       httpMethod: 'POST',
@@ -58,7 +58,7 @@ describe('sendFullHealthNotification handler', () => {
   });
 
   it('returns a success-shaped response when the bot message is sent', async () => {
-    vi.doMock('./_shared/telegramAuth', () => ({
+    vi.doMock('../../netlify/functions/_shared/telegramAuth', () => ({
       validateTelegramInitData: vi.fn(() => ({
         ok: true,
         authDate: 1234567890,
@@ -98,7 +98,7 @@ describe('sendFullHealthNotification handler', () => {
         }),
     } as Response);
 
-    const { handler } = await import('./sendFullHealthNotification');
+    const { handler } = await import('../../netlify/functions/sendFullHealthNotification');
     const response = await handler({
       httpMethod: 'POST',
       body: JSON.stringify({
