@@ -16,6 +16,7 @@ import { useDerivedStats } from '../game/hooks/useDerivedStats';
 import { checkLevelUp } from '../game/formulas/progression';
 import { updateQuestProgressOnLocationChanged } from '../game/formulas/quests';
 import type { AppTab } from './tabs';
+import { shouldApplyPassiveHealthRegen } from './regenRules';
 import { sendFullHealthNotification } from '../telegram/telegramNotifications';
 import {
   flushCloudPlayerSave,
@@ -85,12 +86,12 @@ export default function AppShell() {
   const [selectedLocationId, setSelectedLocationId] = useState<string>(locations[0].id);
 
   // Active combat state reported by CombatScreen.
-  // Real-time HP regen is now allowed during combat too.
-  // This state is still used to block offline/focus regeneration during an active fight.
+  // Passive/global HP regen is blocked during active combat.
   const [isFighting, setIsFighting] = useState(false);
 
   const [cloudSaveChecked, setCloudSaveChecked] = useState(false);
   const derived = useDerivedStats(hero);
+  const isStartupReady = cloudSaveChecked;
 
   const [fullHealthNotificationSent, setFullHealthNotificationSent] = useState(() => {
     const save = loadGame();
@@ -273,13 +274,11 @@ export default function AppShell() {
     };
   }, []);
 
-  // Real-time health regeneration loop.
-  // HP regen now works both outside combat and during active combat.
+  // Real-time passive health regeneration loop.
+  // Passive regen is intentionally blocked during active combat.
   useEffect(() => {
     const interval = setInterval(() => {
       setHero((currentHero) => {
-        if (currentHero.currentHp <= 0) return currentHero;
-
         const currentDerived = calculateDerivedStats(
           currentHero.stats,
           currentHero.baseHp,
@@ -287,8 +286,12 @@ export default function AppShell() {
           currentHero,
         );
 
-        if (currentDerived.healthRegen <= 0) return currentHero;
-        if (currentHero.currentHp >= currentDerived.maxHp) return currentHero;
+        if (!shouldApplyPassiveHealthRegen({
+          currentHp: currentHero.currentHp,
+          maxHp: currentDerived.maxHp,
+          healthRegen: currentDerived.healthRegen,
+          isFighting,
+        })) return currentHero;
 
         const nextHp = Math.min(currentDerived.maxHp, currentHero.currentHp + currentDerived.healthRegen);
 
@@ -310,7 +313,7 @@ export default function AppShell() {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [isFighting]);
 
   // Apply offline local HP regeneration when player returns to the game.
   // This remains blocked during active combat to avoid extra healing from focus/visibility events mid-fight.
@@ -428,6 +431,19 @@ export default function AppShell() {
   }
 
   function renderActiveScreen() {
+    if (!isStartupReady) {
+      return (
+        <div className="screen screen-loading">
+          <div className="panel screen-loading__panel">
+            <h2 className="panel__title">Р—Р°РІР°РЅС‚Р°Р¶РµРЅРЅСЏ</h2>
+            <p className="screen-loading__text">
+              Р—РІС–СЂСЏС”РјРѕ Р»РѕРєР°Р»СЊРЅРµ С‚Р° С…РјР°СЂРЅРµ Р·Р±РµСЂРµР¶РµРЅРЅСЏ...
+            </p>
+          </div>
+        </div>
+      );
+    }
+
     if (activeTab === 'combat') {
       return (
         <CombatScreen
@@ -483,7 +499,9 @@ export default function AppShell() {
         </Suspense>
       </main>
 
-      <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />
+      {isStartupReady ? (
+        <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />
+      ) : null}
     </div>
   );
 }
