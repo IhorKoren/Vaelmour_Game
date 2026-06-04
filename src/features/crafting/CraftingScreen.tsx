@@ -58,7 +58,7 @@ const RECIPE_PURPOSES: Record<string, string> = {
   REC_030: 'Ключове креслення для фінальної зустрічі. Створює печатки, потрібні для доступу до Лорда Попелу Велора.'
 };
 
-export function resolveCraftResult(resultId: string) {
+function resolveCraftResult(resultId: string) {
   const match =
     resolveItemDefinitionByIdOrName(resultId, weapons) ??
     resolveItemDefinitionByIdOrName(resultId, armors) ??
@@ -81,7 +81,7 @@ export function resolveCraftResult(resultId: string) {
   return null;
 }
 
-export function getRecipeCraftingDescription(recipe: Recipe): string {
+function getRecipeCraftingDescription(recipe: Recipe): string {
   const itemName = getDisplayItemName(recipe.result);
   const itemType = formatItemType(recipe.itemType ?? '');
   const rank = recipe.tier ?? 1;
@@ -89,6 +89,8 @@ export function getRecipeCraftingDescription(recipe: Recipe): string {
 
   return `${itemName} — ${itemType.toLowerCase()} рангу ${rank}. ${purpose}`;
 }
+
+void getRecipeCraftingDescription;
 
 function isWeaponRecipe(recipe: Recipe): boolean {
   const itemType = (recipe.itemType ?? '').toLowerCase();

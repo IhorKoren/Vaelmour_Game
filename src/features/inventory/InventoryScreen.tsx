@@ -1,7 +1,5 @@
 import { useState, useMemo } from 'react';
-import { items } from '../../data/items';
-import { weapons } from '../../data/weapons';
-import { armors } from '../../data/armors';
+import { resolveBaseItemDefinition, resolveInventoryItemDefinition } from '../../data/resolvedItems';
 import { Panel } from '../../components/ui/Panel';
 import { CraftingScreen } from '../crafting/CraftingScreen';
 import { 
@@ -86,31 +84,7 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
       return;
     }
 
-    let item = items.find((entry) => entry.id.toLowerCase() === itemId.toLowerCase());
-    if (!item && stack.generatedItem) {
-      item = {
-        id: stack.generatedItem.id,
-        name: stack.generatedItem.name,
-        category: stack.generatedItem.category,
-        rarity: stack.generatedItem.rarity,
-        tier: stack.generatedItem.tier,
-        level: stack.generatedItem.level,
-        description: 'Generated equipment drop.',
-        ...stack.generatedItem.stats
-      };
-    }
-    if (!item) {
-      const w = weapons.find((entry) => entry.id.toLowerCase() === itemId.toLowerCase());
-      if (w) {
-        item = { id: w.id, name: w.name, category: 'weapon', rarity: w.rarity, tier: w.tier, description: w.description || '' };
-      }
-    }
-    if (!item) {
-      const a = armors.find((entry) => entry.id.toLowerCase() === itemId.toLowerCase());
-      if (a) {
-        item = { id: a.id, name: a.name, category: 'armor', rarity: a.rarity, tier: a.tier, description: a.description || '' };
-      }
-    }
+    const item = resolveInventoryItemDefinition(stack);
     if (!item) {
       setSellMessage({ success: false, text: 'Цей предмет не можна продати' });
       return;
@@ -152,7 +126,7 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
     if (!stack || !stack.affixes) return;
     const itemId = stack.itemId;
 
-    let item = items.find((entry) => entry.id.toLowerCase() === itemId.toLowerCase());
+    let item = resolveBaseItemDefinition(itemId);
     let category = 'material';
     if (!item && stack.generatedItem) {
       item = {
@@ -166,19 +140,10 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
       };
       category = stack.generatedItem.slot === 'ring1' || stack.generatedItem.slot === 'ring2' ? 'ring' : stack.generatedItem.slot;
     }
-    if (!item) {
-      const w = weapons.find((entry) => entry.id.toLowerCase() === itemId.toLowerCase());
-      if (w) {
-        item = { id: w.id, name: w.name, category: 'weapon', rarity: w.rarity, tier: w.tier, description: w.description || '' };
-        category = 'weapon';
-      }
-    }
-    if (!item) {
-      const a = armors.find((entry) => entry.id.toLowerCase() === itemId.toLowerCase());
-      if (a) {
-        item = { id: a.id, name: a.name, category: 'armor', rarity: a.rarity, tier: a.tier, description: a.description || '' };
-        category = a.type || 'armor';
-      }
+    if (item?.category === 'weapon') {
+      category = 'weapon';
+    } else if (item?.category === 'armor') {
+      category = 'armor';
     }
     if (!item) return;
 
@@ -228,45 +193,7 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
 
   const resolvedStacks = useMemo(() => {
     return hero.inventory.map((stack, index) => {
-      let item = items.find((entry) => entry.id.toLowerCase() === stack.itemId.toLowerCase());
-      if (!item && stack.generatedItem) {
-        item = {
-          id: stack.generatedItem.id,
-          name: stack.generatedItem.name,
-          category: stack.generatedItem.category,
-          rarity: stack.generatedItem.rarity,
-          tier: stack.generatedItem.tier,
-          level: stack.generatedItem.level,
-          description: 'Generated equipment drop.',
-          ...stack.generatedItem.stats
-        };
-      }
-      if (!item) {
-        const w = weapons.find((entry) => entry.id.toLowerCase() === stack.itemId.toLowerCase());
-        if (w) {
-          item = {
-            id: w.id,
-            name: w.name,
-            category: 'weapon',
-            rarity: w.rarity,
-            tier: w.tier,
-            description: w.description || ''
-          };
-        }
-      }
-      if (!item) {
-        const a = armors.find((entry) => entry.id.toLowerCase() === stack.itemId.toLowerCase());
-        if (a) {
-          item = {
-            id: a.id,
-            name: a.name,
-            category: 'armor',
-            rarity: a.rarity,
-            tier: a.tier,
-            description: a.description || ''
-          };
-        }
-      }
+      const item = resolveInventoryItemDefinition(stack);
       return {
         stackKey: getInventoryStackKey(stack, index),
         inventoryIndex: index,
@@ -456,7 +383,7 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
     const slots = [...filteredStacks];
     const needed = capacity - filteredStacks.length;
     for (let i = 0; i < needed; i++) {
-      slots.push({ stackKey: `blank-${i}`, inventoryIndex: -1, stack: { itemId: `blank_slot_${i}`, qty: 0 }, item: undefined });
+      slots.push({ stackKey: `blank-${i}`, inventoryIndex: -1, stack: { itemId: `blank_slot_${i}`, qty: 0 }, item: null });
     }
     return slots;
   }, [filteredStacks]);
