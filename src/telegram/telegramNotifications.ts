@@ -9,8 +9,8 @@ export async function sendFullHealthNotification(): Promise<void> {
 
   const payload = {
     initData: webApp?.initData ?? '',
-    userId: user?.id ?? null,
-    message: '🟢 Герой повністю відновив здоровʼя та готовий до бою.',
+    message:
+      'рџџў Р“РµСЂРѕР№ РїРѕРІРЅС–СЃС‚СЋ РІС–РґРЅРѕРІРёРІ Р·РґРѕСЂРѕРІКјСЏ С‚Р° РіРѕС‚РѕРІРёР№ РґРѕ Р±РѕСЋ.',
     debugReason: user?.id ? undefined : 'missing_telegram_user_id',
   };
 

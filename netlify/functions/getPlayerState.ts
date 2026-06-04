@@ -1,17 +1,9 @@
-import crypto from 'crypto';
 import { createClient } from '@supabase/supabase-js';
+import { validateTelegramInitData } from './_shared/telegramAuth';
 
 type NetlifyEvent = {
   httpMethod: string;
   body: string | null;
-};
-
-type TelegramUser = {
-  id: number;
-  username?: string;
-  first_name?: string;
-  last_name?: string;
-  language_code?: string;
 };
 
 function json(statusCode: number, body: unknown) {
@@ -22,53 +14,6 @@ function json(statusCode: number, body: unknown) {
     },
     body: JSON.stringify(body),
   };
-}
-
-function validateTelegramInitData(initData: string, botToken: string): boolean {
-  if (!initData || !botToken) return false;
-
-  try {
-    const params = new URLSearchParams(initData);
-    const hash = params.get('hash');
-
-    if (!hash) return false;
-
-    params.delete('hash');
-
-    const dataCheckString = Array.from(params.keys())
-      .sort()
-      .map((key) => `${key}=${params.get(key)}`)
-      .join('\n');
-
-    const secretKey = crypto
-      .createHmac('sha256', 'WebAppData')
-      .update(botToken)
-      .digest();
-
-    const calculatedHash = crypto
-      .createHmac('sha256', secretKey)
-      .update(dataCheckString)
-      .digest('hex');
-
-    return calculatedHash === hash;
-  } catch (error) {
-    console.error('[getPlayerState] Telegram initData validation failed:', error);
-    return false;
-  }
-}
-
-function parseTelegramUserFromInitData(initData: string): TelegramUser | null {
-  try {
-    const params = new URLSearchParams(initData);
-    const userParam = params.get('user');
-
-    if (!userParam) return null;
-
-    return JSON.parse(userParam) as TelegramUser;
-  } catch (error) {
-    console.error('[getPlayerState] Failed to parse Telegram user:', error);
-    return null;
-  }
 }
 
 export async function handler(event: NetlifyEvent) {
@@ -103,23 +48,17 @@ export async function handler(event: NetlifyEvent) {
   }
 
   const initData = typeof body.initData === 'string' ? body.initData : '';
+  const authResult = validateTelegramInitData(initData, telegramBotToken);
 
-  if (!validateTelegramInitData(initData, telegramBotToken)) {
+  if (!authResult.ok) {
     return json(401, {
       error: 'Unauthorized',
-      reason: 'Invalid Telegram initData',
+      reason: authResult.reason,
       hasInitData: Boolean(initData),
     });
   }
 
-  const telegramUser = parseTelegramUserFromInitData(initData);
-
-  if (!telegramUser?.id) {
-    return json(401, {
-      error: 'Unauthorized',
-      reason: 'Telegram user is missing',
-    });
-  }
+  const telegramUser = authResult.user;
 
   const supabase = createClient(supabaseUrl, serviceRoleKey, {
     auth: {

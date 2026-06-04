@@ -1,141 +1,111 @@
-import crypto from 'crypto';
+import { createClient } from '@supabase/supabase-js';
+import { validateTelegramInitData } from './_shared/telegramAuth';
 
-// Standard validation algorithm for Telegram WebApp initData
-function validateTelegramInitData(initData: string, botToken: string): boolean {
-  if (!initData || !botToken) return false;
-
-  try {
-    const params = new URLSearchParams(initData);
-    const hash = params.get('hash');
-    if (!hash) return false;
-
-    // Remove the hash parameter
-    params.delete('hash');
-
-    // Sort parameters alphabetically
-    const sortedKeys = Array.from(params.keys()).sort();
-
-    // Construct data-check-string
-    const dataCheckString = sortedKeys
-      .map((key) => `${key}=${params.get(key)}`)
-      .join('\n');
-
-    // Create secret key using botToken as HMAC key
-    const secretKey = crypto
-      .createHmac('sha256', 'WebAppData')
-      .update(botToken)
-      .digest();
-
-    // Calculate hash of data-check-string
-    const calculatedHash = crypto
-      .createHmac('sha256', secretKey)
-      .update(dataCheckString)
-      .digest('hex');
-
-    return calculatedHash === hash;
-  } catch (error) {
-    console.error('Error validating Telegram initData:', error);
-    return false;
-  }
+function json(statusCode: number, body: unknown) {
+  return {
+    statusCode,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  };
 }
 
 export async function handler(event: { httpMethod: string; body: string | null }) {
-  // Only allow POST requests
   if (event.httpMethod !== 'POST') {
-    return {
-      statusCode: 405,
-      body: JSON.stringify({ error: 'Method Not Allowed' })
-    };
+    return json(405, { error: 'Method Not Allowed' });
   }
 
   try {
-    const body = JSON.parse(event.body || '{}');
-    const { initData, userId: clientUserId, message } = body;
+    const body = JSON.parse(event.body || '{}') as Record<string, unknown>;
+    const initData = typeof body.initData === 'string' ? body.initData : '';
+    const message = typeof body.message === 'string' ? body.message : '';
 
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
-    if (!botToken) {
-      console.warn('TELEGRAM_BOT_TOKEN is not configured on the backend.');
-      return {
-        statusCode: 500,
-        body: JSON.stringify({ error: 'Backend is missing bot configuration' })
-      };
+
+    if (!botToken || !supabaseUrl || !serviceRoleKey) {
+      return json(500, {
+        error: 'Backend is missing bot or database configuration',
+      });
     }
 
-    let targetChatId: string | number | null = null;
-    let isAuthenticated = false;
+    const authResult = validateTelegramInitData(initData, botToken);
 
-    // 1. Validate initData if provided
-    if (initData) {
-      isAuthenticated = validateTelegramInitData(initData, botToken);
-      if (isAuthenticated) {
-        try {
-          const initParams = new URLSearchParams(initData);
-          const userParam = initParams.get('user');
-          if (userParam) {
-            const parsedUser = JSON.parse(userParam);
-            targetChatId = parsedUser.id;
-          }
-        } catch (err) {
-          console.error('Failed to parse user from validated initData:', err);
-        }
-      } else {
-        console.warn('Telegram initData validation failed.');
-      }
+    if (!authResult.ok) {
+      return json(401, {
+        error: 'Unauthorized',
+        reason: authResult.reason,
+      });
     }
 
-    // 2. Fallback to client-provided userId in development or if initData wasn't provided
-    if (!targetChatId && clientUserId) {
-      // In production, we restrict raw client userIds for security unless initData passes,
-      // but we allow it as a fallback to support local debugging
-      targetChatId = clientUserId;
+    const supabase = createClient(supabaseUrl, serviceRoleKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    });
+
+    const { data: player, error: playerError } = await supabase
+      .from('players')
+      .select('telegram_user_id, is_banned')
+      .eq('telegram_user_id', authResult.user.id)
+      .maybeSingle();
+
+    if (playerError) {
+      console.error('[sendFullHealthNotification] Failed to load player:', playerError);
+
+      return json(500, {
+        error: 'Failed to resolve player notification target',
+      });
     }
 
-    if (!targetChatId) {
-      console.warn('No Telegram user or chat ID could be resolved.');
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: 'Missing user identifier' })
-      };
+    if (player?.is_banned) {
+      return json(403, {
+        error: 'Player is banned',
+      });
     }
 
-    // 3. Send message using Telegram Bot API
-    const textMessage = message || '🟢 Герой повністю відновив здоровʼя та готовий до бою.';
+    const targetChatId = player?.telegram_user_id ?? authResult.user.id;
+    const textMessage =
+      message ||
+      'рџџў Р“РµСЂРѕР№ РїРѕРІРЅС–СЃС‚СЋ РІС–РґРЅРѕРІРёРІ Р·РґРѕСЂРѕРІКјСЏ С‚Р° РіРѕС‚РѕРІРёР№ РґРѕ Р±РѕСЋ.';
     const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
 
     const response = await fetch(telegramUrl, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         chat_id: targetChatId,
-        text: textMessage
-      })
+        text: textMessage,
+      }),
     });
 
     const responseData = await response.json();
 
     if (!response.ok) {
-      console.error('Telegram Bot API returned an error:', responseData);
-      return {
-        statusCode: response.status,
-        body: JSON.stringify({ error: 'Failed to send Telegram message', details: responseData })
-      };
+      console.error('[sendFullHealthNotification] Telegram Bot API error:', responseData);
+
+      return json(response.status, {
+        error: 'Failed to send Telegram message',
+        details: responseData,
+      });
     }
 
-    return {
-      statusCode: 200,
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ success: true, message: 'Notification sent successfully' })
-    };
+    return json(200, {
+      success: true,
+      message: 'Notification sent successfully',
+    });
   } catch (error: unknown) {
     const err = error instanceof Error ? error : new Error(String(error));
-    console.error('Error in sendFullHealthNotification handler:', err);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: 'Internal Server Error', message: err.message })
-    };
+    console.error('[sendFullHealthNotification] Internal error:', err);
+
+    return json(500, {
+      error: 'Internal Server Error',
+      message: err.message,
+    });
   }
 }

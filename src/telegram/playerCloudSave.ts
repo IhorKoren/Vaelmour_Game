@@ -26,6 +26,13 @@ type GetPlayerStateResponse = {
   };
 };
 
+type SavePlayerStateResponse = {
+  success: boolean;
+  staleIgnored?: boolean;
+  message?: string;
+  updatedAt?: string;
+};
+
 const CLOUD_SAVE_DEBOUNCE_MS = 5000;
 
 let pendingCloudSave: CloudPlayerSave | null = null;
@@ -128,6 +135,7 @@ async function sendCloudPlayerSave(save: CloudPlayerSave, keepalive = false): Pr
     });
 
     const responseText = await response.text();
+    const data = JSON.parse(responseText) as SavePlayerStateResponse;
 
     if (!response.ok) {
       console.error('[Cloud Save] Save failed:', {
@@ -138,7 +146,16 @@ async function sendCloudPlayerSave(save: CloudPlayerSave, keepalive = false): Pr
       return;
     }
 
-    console.info('[Cloud Save] Player state saved:', responseText);
+    if (data.staleIgnored) {
+      console.info('[Cloud Save] Ignored stale save payload.', {
+        requestedUpdatedAt: save.updatedAt,
+        persistedUpdatedAt: data.updatedAt,
+      });
+
+      return;
+    }
+
+    console.info('[Cloud Save] Player state saved:', data.message ?? responseText);
   } catch (error) {
     console.error('[Cloud Save] Save request failed:', error);
   }
