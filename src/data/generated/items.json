@@ -2104,5 +2104,86 @@
     "tier": 5,
     "description": "Unlocks Ash Lord Vaelor encounter",
     "sourceSheet": "LC Craft Rcps"
+  },
+  {
+    "id": "fang_charm",
+    "name": "Fang Charm",
+    "category": "crafted",
+    "rarity": "rare",
+    "tier": 2,
+    "description": "Bleed-focused charm that speeds up bleed ticks.",
+    "sourceSheet": "LC Loot"
+  },
+  {
+    "id": "blood_raider_chestguard",
+    "name": "Blood Raider Chestguard",
+    "category": "crafted",
+    "rarity": "rare",
+    "tier": 2,
+    "description": "Aggressive raider chestguard tuned for execute-oriented builds.",
+    "sourceSheet": "LC Loot"
+  },
+  {
+    "id": "iron_tyrant_seal",
+    "name": "Iron Tyrant Seal",
+    "category": "crafted",
+    "rarity": "epic",
+    "tier": 4,
+    "description": "Defensive seal that can grant a fortified state after taking damage.",
+    "sourceSheet": "LC Loot"
+  },
+  {
+    "id": "blackfang_vest",
+    "name": "Blackfang Vest",
+    "category": "crafted",
+    "rarity": "rare",
+    "tier": 2,
+    "description": "Rare beast-hunter vest from Blackfang encounters.",
+    "sourceSheet": "LC Loot"
+  },
+  {
+    "id": "iron_vanguard_plate",
+    "name": "Iron Vanguard Plate",
+    "category": "crafted",
+    "rarity": "epic",
+    "tier": 4,
+    "description": "Heavy vanguard plate associated with the Iron Tyrant's inner guard.",
+    "sourceSheet": "LC Loot"
+  },
+  {
+    "id": "torn_road_vest",
+    "name": "Torn Road Vest",
+    "category": "crafted",
+    "rarity": "common",
+    "tier": 1,
+    "description": "Starter chest piece from the broken road outskirts.",
+    "sourceSheet": "LC Loot"
+  },
+  {
+    "id": "gate_warden_cuirass",
+    "name": "Gate Warden Cuirass",
+    "category": "crafted",
+    "rarity": "rare",
+    "tier": 2,
+    "description": "Heavy cuirass from the Iron Bastion approach.",
+    "sourceSheet": "LC Loot"
+  },
+  {
+    "id": "watchtower_helm",
+    "name": "Watchtower Helm",
+    "category": "head",
+    "rarity": "uncommon",
+    "tier": 2,
+    "description": "Guard helm from the Old Watchtower's veteran defenders.",
+    "sourceSheet": "LC Loot"
+  },
+  {
+    "id": "ashbound_vest",
+    "name": "Ashbound Vest",
+    "category": "crafted",
+    "rarity": "rare",
+    "tier": 3,
+    "description": "Defensive vest that weakens bleeding enemies.",
+    "sourceSheet": "LC Loot"
   }
 ]

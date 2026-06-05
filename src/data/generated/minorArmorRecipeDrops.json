@@ -22,7 +22,7 @@
   },
   {
     "recipe_id": "REC_HEAD_NEW_005",
-    "source_location": "Blackfang Gate",
+    "source_location": "Iron Bastion Approach",
     "drops_from": "Iron Gate Warden",
     "recipe_drop_chance": "4.5",
     "dropped_recipe": "Recipe: Ironmarch Visor"
@@ -92,7 +92,7 @@
   },
   {
     "recipe_id": "REC_HANDS_NEW_005",
-    "source_location": "Blackfang Gate",
+    "source_location": "Iron Bastion Approach",
     "drops_from": "Iron Gate Warden",
     "recipe_drop_chance": "4.5",
     "dropped_recipe": "Recipe: Ironbound Gauntlets"
@@ -162,7 +162,7 @@
   },
   {
     "recipe_id": "REC_LEGS_NEW_005",
-    "source_location": "Blackfang Gate",
+    "source_location": "Iron Bastion Approach",
     "drops_from": "Iron Gate Warden",
     "recipe_drop_chance": "4.5",
     "dropped_recipe": "Recipe: Ironmarch Legguards"
@@ -232,7 +232,7 @@
   },
   {
     "recipe_id": "REC_FEET_NEW_005",
-    "source_location": "Blackfang Gate",
+    "source_location": "Iron Bastion Approach",
     "drops_from": "Iron Gate Warden",
     "recipe_drop_chance": "4.5",
     "dropped_recipe": "Recipe: Ironmarch Boots"

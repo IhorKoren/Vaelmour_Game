@@ -10,7 +10,7 @@
     "levelBand": "1–6",
     "levelRange": [
       1,
-      -6
+      6
     ],
     "primaryUsage": "Starter light armor, wraps",
     "stackSize": 99,
@@ -33,7 +33,7 @@
     "levelBand": "1–6",
     "levelRange": [
       1,
-      -6
+      6
     ],
     "primaryUsage": "Skirmisher armor, straps",
     "stackSize": 99,
@@ -56,7 +56,7 @@
     "levelBand": "1–6",
     "levelRange": [
       1,
-      -6
+      6
     ],
     "primaryUsage": "Basic weapons, reinforced vests",
     "stackSize": 99,
@@ -79,7 +79,7 @@
     "levelBand": "3–8",
     "levelRange": [
       3,
-      -8
+      8
     ],
     "primaryUsage": "Bleed weapons, talismans",
     "stackSize": 50,
@@ -102,7 +102,7 @@
     "levelBand": "5–10",
     "levelRange": [
       5,
-      -10
+      10
     ],
     "primaryUsage": "Rage gear, axe recipes",
     "stackSize": 50,
@@ -125,7 +125,7 @@
     "levelBand": "5–12",
     "levelRange": [
       5,
-      -12
+      12
     ],
     "primaryUsage": "Rare skirmisher armor",
     "stackSize": 25,
@@ -148,7 +148,7 @@
     "levelBand": "7–12",
     "levelRange": [
       7,
-      -12
+      12
     ],
     "primaryUsage": "Medium/heavy armor",
     "stackSize": 99,
@@ -171,7 +171,7 @@
     "levelBand": "7–14",
     "levelRange": [
       7,
-      -14
+      14
     ],
     "primaryUsage": "Fighter mail",
     "stackSize": 99,
@@ -194,7 +194,7 @@
     "levelBand": "7–14",
     "levelRange": [
       7,
-      -14
+      14
     ],
     "primaryUsage": "Block/poise items",
     "stackSize": 50,
@@ -217,7 +217,7 @@
     "levelBand": "11–16",
     "levelRange": [
       11,
-      -16
+      16
     ],
     "primaryUsage": "Bleed resistance, talismans",
     "stackSize": 50,
@@ -240,7 +240,7 @@
     "levelBand": "11–18",
     "levelRange": [
       11,
-      -18
+      18
     ],
     "primaryUsage": "Rare bleed talismans",
     "stackSize": 25,
@@ -263,7 +263,7 @@
     "levelBand": "13–20",
     "levelRange": [
       13,
-      -20
+      20
     ],
     "primaryUsage": "Fighter weapons, rings",
     "stackSize": 50,
@@ -286,7 +286,7 @@
     "levelBand": "13–20",
     "levelRange": [
       13,
-      -20
+      20
     ],
     "primaryUsage": "Tier III weapons/armor",
     "stackSize": 99,
@@ -309,7 +309,7 @@
     "levelBand": "15–22",
     "levelRange": [
       15,
-      -22
+      22
     ],
     "primaryUsage": "Execute gear and heavy weapons",
     "stackSize": 25,
@@ -332,7 +332,7 @@
     "levelBand": "17–24",
     "levelRange": [
       17,
-      -24
+      24
     ],
     "primaryUsage": "Crit gear and skirmisher items",
     "stackSize": 50,
@@ -355,7 +355,7 @@
     "levelBand": "19–26",
     "levelRange": [
       19,
-      -26
+      26
     ],
     "primaryUsage": "Vanguard armor",
     "stackSize": 50,
@@ -378,7 +378,7 @@
     "levelBand": "21–28",
     "levelRange": [
       21,
-      -28
+      28
     ],
     "primaryUsage": "Ash sanctuary recipes and boss keys",
     "stackSize": 25,
@@ -401,7 +401,7 @@
     "levelBand": "23–28",
     "levelRange": [
       23,
-      -28
+      28
     ],
     "primaryUsage": "Counter gear, duelist recipes",
     "stackSize": 25,
@@ -424,7 +424,7 @@
     "levelBand": "25–30",
     "levelRange": [
       25,
-      -30
+      30
     ],
     "primaryUsage": "Heavy weapons and high-tier armor",
     "stackSize": 50,
@@ -447,7 +447,7 @@
     "levelBand": "27–30",
     "levelRange": [
       27,
-      -30
+      30
     ],
     "primaryUsage": "Epic recipes and key crafts",
     "stackSize": 10,
@@ -470,7 +470,7 @@
     "levelBand": "7–30",
     "levelRange": [
       7,
-      -30
+      30
     ],
     "primaryUsage": "Refined armor component",
     "stackSize": 99,
@@ -493,7 +493,7 @@
     "levelBand": "13–30",
     "levelRange": [
       13,
-      -30
+      30
     ],
     "primaryUsage": "Weapons",
     "stackSize": 99,
@@ -516,7 +516,7 @@
     "levelBand": "15–30",
     "levelRange": [
       15,
-      -30
+      30
     ],
     "primaryUsage": "Rage-based items",
     "stackSize": 25,
@@ -539,7 +539,7 @@
     "levelBand": "19–30",
     "levelRange": [
       19,
-      -30
+      30
     ],
     "primaryUsage": "Poise/stagger recipes",
     "stackSize": 25,

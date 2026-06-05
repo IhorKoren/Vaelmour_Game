@@ -15,7 +15,7 @@
   },
   {
     "recipe_id": "REC_SHIELD_NEW_005",
-    "source_location": "Blackfang Gate",
+    "source_location": "Iron Bastion Approach",
     "drops_from": "Iron Gate Warden",
     "recipe_drop_chance": "4.5",
     "dropped_recipe": "Recipe: Gatewarden Bastion"
