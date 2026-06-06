@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-export function isHeroHpTooLow(currentHp: number, maxHp: number): boolean {
-  if (maxHp <= 0) return true;
-  return currentHp < maxHp * 0.20;
-}
+import { isHeroHpTooLow } from '../combatDisplayHelpers';
 
 export function isSessionActive(localId: number, activeId: number): boolean {
   return localId === activeId;
