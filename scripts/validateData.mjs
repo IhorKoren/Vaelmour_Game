@@ -593,8 +593,21 @@ for (const template of liveRecipeUnlockTemplates) {
       addError(errors, `recipeDropSources ${recipeId}: invalid unlock type "${unlock.unlockType}"`);
     }
 
-    if (!hasRecord(locationLookups, unlock.locationId)) {
-      addError(errors, `recipeDropSources ${recipeId}: unknown location "${unlock.locationId}"`);
+    if (!unlock.locationId || !String(unlock.locationId).trim()) {
+      addError(errors, `recipeDropSources ${recipeId}: missing locationId`);
+    } else {
+      const loc = locations.find(l => l.id === unlock.locationId);
+      if (!loc) {
+        addError(errors, `recipeDropSources ${recipeId}: unknown location "${unlock.locationId}"`);
+      } else {
+        const minLvl = loc.levelRange ? loc.levelRange[0] : null;
+        if (minLvl !== null && level < minLvl) {
+          addError(
+            errors,
+            `recipeDropSources ${recipeId}: unlock location "${unlock.locationId}" level range starts at level ${minLvl}, which is later than recipe level ${level}`
+          );
+        }
+      }
     }
 
     if (!unlock.notes || !String(unlock.notes).trim()) {
@@ -630,6 +643,29 @@ for (const template of liveRecipeUnlockTemplates) {
         !matchesGenericSourceText(enemyName)
       ) {
         addError(errors, `recipeDropSources ${recipeId}: unknown enemy source "${enemyName}"`);
+      } else if (unlock.locationId && !normalizeLooseText(enemyName).includes('elite spawn') && !matchesGenericSourceText(enemyName)) {
+        const locationId = unlock.locationId;
+        const hasInSpawnPool = spawnPools.some(p => 
+          p.location_id === locationId && 
+          (normalizeLooseText(p.enemy_name) === normalizeLooseText(enemyName) || 
+           normalizeValue(p.enemy_name) === normalizeValue(enemyName))
+        );
+        const hasInBossLoot = bossLoot.some(bl =>
+          bl.location_id === locationId &&
+          (normalizeLooseText(bl.boss_name) === normalizeLooseText(enemyName) ||
+           normalizeValue(bl.boss_name) === normalizeValue(enemyName))
+        );
+        const locationEntry = locations.find(l => l.id === locationId);
+        const isBossOrKeyEnemy = locationEntry && locationEntry.bossOrKeyEnemy && 
+          (normalizeLooseText(locationEntry.bossOrKeyEnemy) === normalizeLooseText(enemyName) || 
+           normalizeValue(locationEntry.bossOrKeyEnemy) === normalizeValue(enemyName));
+
+        if (!hasInSpawnPool && !hasInBossLoot && !isBossOrKeyEnemy) {
+          addError(
+            errors,
+            `recipeDropSources ${recipeId}: enemy/boss "${enemyName}" is not present in the spawn pool or boss loot for location "${locationId}"`
+          );
+        }
       }
     }
 
@@ -1222,6 +1258,186 @@ for (const material of materials) {
     addWarning(warnings, `material ${material.id}: appears unused by locations or recipes`);
   }
 }
+
+// === EXPANDED PROGRESSION & BALANCE AUDITS ===
+
+const dropSourcedMaterialIds = new Set();
+const materialsWithRealSource = new Set();
+const materialMinSourceLevels = new Map();
+
+function trackMaterialSourceLevel(matId, lvl) {
+  const norm = matId.toLowerCase();
+  dropSourcedMaterialIds.add(norm);
+  materialsWithRealSource.add(norm);
+  if (!materialMinSourceLevels.has(norm)) {
+    materialMinSourceLevels.set(norm, lvl);
+  } else {
+    materialMinSourceLevels.set(norm, Math.min(materialMinSourceLevels.get(norm), lvl));
+  }
+}
+
+// 1. Explicit materials in locations.json
+for (const loc of locations) {
+  const minLvl = loc.levelRange[0];
+  for (const mat of ensureArray(loc.materials)) {
+    trackMaterialSourceLevel(mat, minLvl);
+  }
+}
+
+// 2. Materials from locationLootData
+for (const entry of locationLootData) {
+  const loc = locations.find(l => l.id === entry.location_id);
+  const minLvl = loc ? loc.levelRange[0] : 1;
+  for (const materialName of splitMaterialReferences(entry.primary_materials)) {
+    const resolved = resolveRecord(materialLookups, materialName);
+    if (resolved) {
+      trackMaterialSourceLevel(resolved.id, minLvl);
+    }
+  }
+}
+
+// 3. Materials from materialLootData
+for (const entry of materialLootData) {
+  const resolved = resolveRecord(materialLookups, entry.material_name);
+  if (!resolved) continue;
+
+  if (entry.best_source_location) {
+    const loc = locations.find(l => normalizeLooseText(l.name) === normalizeLooseText(entry.best_source_location));
+    if (loc) {
+      trackMaterialSourceLevel(resolved.id, loc.levelRange[0]);
+    }
+  }
+
+  if (entry.drops_from) {
+    const parts = String(entry.drops_from).split('/').map(s => s.trim()).filter(Boolean);
+    for (const part of parts) {
+      const enemy = enemies.find(e => normalizeLooseText(e.name) === normalizeLooseText(part) || normalizeValue(e.id) === normalizeValue(part));
+      if (enemy) {
+        const pool = spawnPools.find(p => normalizeLooseText(p.enemy_name) === normalizeLooseText(enemy.name) || normalizeValue(p.enemy_name) === normalizeValue(enemy.id));
+        if (pool) {
+          const loc = locations.find(l => l.id === pool.location_id);
+          if (loc) {
+            trackMaterialSourceLevel(resolved.id, loc.levelRange[0]);
+          }
+        }
+      } else {
+        const boss = bosses.find(b => normalizeLooseText(b.name) === normalizeLooseText(part) || normalizeValue(b.id) === normalizeValue(part));
+        if (boss) {
+          const pool = spawnPools.find(p => normalizeLooseText(p.enemy_name) === normalizeLooseText(boss.name) || normalizeValue(p.enemy_name) === normalizeValue(boss.id));
+          if (pool) {
+            const loc = locations.find(l => l.id === pool.location_id);
+            if (loc) {
+              trackMaterialSourceLevel(resolved.id, loc.levelRange[0]);
+            }
+          } else {
+            const loot = bossLoot.find(bl => normalizeLooseText(bl.boss_name) === normalizeLooseText(boss.name));
+            if (loot) {
+              const loc = locations.find(l => l.id === loot.location_id);
+              if (loc) {
+                trackMaterialSourceLevel(resolved.id, loc.levelRange[0]);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// 4. Materials from enemies and bosses that spawn via spawnPools
+for (const pool of spawnPools) {
+  const loc = locations.find(l => l.id === pool.location_id);
+  if (!loc) continue;
+  const minLvl = loc.levelRange[0];
+  const enemy = enemies.find(e => normalizeLooseText(e.name) === normalizeLooseText(pool.enemy_name) || normalizeValue(e.id) === normalizeValue(pool.enemy_name));
+  if (enemy) {
+    const loot = enemyLootData.find(el => normalizeLooseText(el.enemy_name) === normalizeLooseText(enemy.name));
+    if (loot && loot.primary_materials) {
+      for (const name of splitMaterialReferences(loot.primary_materials)) {
+        const resolved = resolveRecord(materialLookups, name);
+        if (resolved) trackMaterialSourceLevel(resolved.id, minLvl);
+      }
+    }
+  } else {
+    const boss = bosses.find(b => normalizeLooseText(b.name) === normalizeLooseText(pool.enemy_name) || normalizeValue(b.id) === normalizeValue(pool.enemy_name));
+    if (boss) {
+      const loot = bossLoot.find(bl => normalizeLooseText(bl.boss_name) === normalizeLooseText(boss.name));
+      if (loot && loot.material_drops) {
+        const drops = String(loot.material_drops).split(',').map(s => s.trim()).filter(Boolean);
+        for (const drop of drops) {
+          const name = drop.split(' x')[0].trim();
+          const resolved = resolveRecord(materialLookups, name);
+          if (resolved) trackMaterialSourceLevel(resolved.id, minLvl);
+        }
+      }
+    } else {
+      if (!normalizeLooseText(pool.enemy_name).includes('elite spawn')) {
+        addWarning(warnings, `spawnPools ${pool.location_id}: enemy/boss name "${pool.enemy_name}" is unresolved (cannot map materials)`);
+      }
+    }
+  }
+}
+
+// 5. Materials from bosses in bossLoot
+for (const loot of bossLoot) {
+  const loc = locations.find(l => l.id === loot.location_id);
+  if (!loc) continue;
+  const minLvl = loc.levelRange[0];
+  const drops = (loot.material_drops ?? '').split(',').map(s => s.trim()).filter(Boolean);
+  for (const drop of drops) {
+    const name = drop.split(' x')[0].trim();
+    const resolved = resolveRecord(materialLookups, name);
+    if (resolved) trackMaterialSourceLevel(resolved.id, minLvl);
+  }
+}
+
+// 6. Refined/legacy compatibility exception mapping
+materialsWithRealSource.add('mat_021');
+materialsWithRealSource.add('mat_022');
+
+// 7. Validate non-legacy materials have a real source
+for (const entry of materialTaxonomy) {
+  const isLegacy = entry.isLegacy;
+  const matId = normalizeValue(entry.materialId);
+  if (!isLegacy) {
+    if (!materialsWithRealSource.has(matId)) {
+      addError(errors, `material ${entry.materialId} (${entry.playerLabel}) has no real source drop/location source defined`);
+    }
+  }
+}
+
+// Run checks on recipes
+for (const recipe of allRecipes) {
+  const isStarter = starterRecipeIdSet.has(normalizeValue(recipe.id));
+
+  // Check 1: recipe requires material with no source
+  for (const mat of ensureArray(recipe.materials)) {
+    const matId = normalizeValue(mat.id);
+    if (!materialsWithRealSource.has(matId)) {
+      addError(errors, `recipe ${recipe.id} requires material ${mat.id} which has no real drop/source in any location/enemy/boss loot`);
+    }
+  }
+
+  // Check 3: recipe requiredLevel is much lower than material source level
+  if (!isStarter) {
+    for (const mat of ensureArray(recipe.materials)) {
+      const matId = normalizeValue(mat.id);
+      const minLvl = materialMinSourceLevels.get(matId);
+      if (minLvl !== undefined && recipe.requiredLevel < minLvl - 2) {
+        addWarning(warnings, `recipe ${recipe.id} (requiredLevel ${recipe.requiredLevel}) requires material ${mat.id} which starts dropping at level ${minLvl}`);
+      }
+    }
+  }
+}
+
+// Check 5: starter equipment recipes accidentally reintroduced into active crafting progression
+for (const rule of allRecipeDrops) {
+  const recipeId = normalizeValue(rule.recipe_id);
+  if (starterRecipeIdSet.has(recipeId)) {
+    addError(errors, `starter recipe ${rule.recipe_id} is present in recipe drops dataset (should not drop)`);
+  }
+}
+
 
 if (errors.length > 0) {
   console.error('Data validation failed:\n');

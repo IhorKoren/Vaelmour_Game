@@ -294,12 +294,12 @@
         "qty": 3
       },
       {
-        "id": "MAT_016",
-        "qty": 1
+        "id": "MAT_008",
+        "qty": 4
       },
       {
-        "id": "MAT_024",
-        "qty": 1
+        "id": "MAT_007",
+        "qty": 3
       }
     ],
     "successChance": 1,

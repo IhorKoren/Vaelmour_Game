@@ -65,4 +65,20 @@ describe('recipe unlock sources', () => {
     expect(blockedByChance).toBeNull();
     expect(blockedByKnown?.id).not.toBe('recipe_weapon_blade_lvl_03');
   });
+
+  it('excludes starter recipe IDs from compatible known recipe list', () => {
+    const compatibleIds = getCompatibleKnownRecipeIds();
+    for (const starterId of STARTER_RECIPE_IDS) {
+      expect(compatibleIds).not.toContain(starterId);
+    }
+  });
+
+  it('keeps Ring Level 1 and Amulet Level 1 active', () => {
+    expect(STARTER_RECIPE_IDS).not.toContain('recipe_ring_band_lvl_01');
+    expect(STARTER_RECIPE_IDS).not.toContain('recipe_amulet_charm_lvl_01');
+    
+    const compatibleIds = getCompatibleKnownRecipeIds();
+    expect(compatibleIds).toContain('recipe_ring_band_lvl_01');
+    expect(compatibleIds).toContain('recipe_amulet_charm_lvl_01');
+  });
 });

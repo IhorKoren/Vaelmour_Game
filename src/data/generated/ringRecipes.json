@@ -14,7 +14,7 @@
     "station": "crafting",
     "materials": [
       {
-        "id": "MAT_005",
+        "id": "MAT_004",
         "qty": 3
       },
       {
@@ -41,7 +41,7 @@
     "station": "crafting",
     "materials": [
       {
-        "id": "MAT_005",
+        "id": "MAT_004",
         "qty": 2
       },
       {
@@ -207,7 +207,7 @@
     "station": "crafting",
     "materials": [
       {
-        "id": "MAT_018",
+        "id": "MAT_015",
         "qty": 5
       },
       {
