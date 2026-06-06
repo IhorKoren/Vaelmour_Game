@@ -174,22 +174,22 @@
     "category": "Metal",
     "taxonomyCategory": "tier",
     "tierStep": 6,
-    "levelBand": "7-12",
+    "levelBand": "5-12",
     "levelRange": [
-      7,
+      5,
       12
     ],
     "primaryUsage": "Tier-step metal for medium armor, shields, and reinforced gear.",
     "stackSize": 99,
     "sellValueGold": 5,
-    "source": "Common drop from watchtower defenders, guard patrols, and fortress stores.",
+    "source": "Common drop from salvaged raider armor, watchtower defenders, guard patrols, and fortress stores.",
     "tags": [
       "metal",
       "tier",
       "common",
       "step_6"
     ],
-    "notes": "First clear progression-gating metal used to separate early scrap crafts from structured armor."
+    "notes": "First clear progression-gating metal used to separate early scrap crafts from structured armor without blocking level 6 recipes."
   },
   {
     "id": "MAT_008",

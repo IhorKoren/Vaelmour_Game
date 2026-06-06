@@ -401,7 +401,7 @@ export const LIVE_RECIPE_SLOT_PROFILES = [
     materialSets: [
       [{ id: 'MAT_002', qty: 2 }, { id: 'MAT_001', qty: 2 }],
       [{ id: 'MAT_002', qty: 3 }, { id: 'MAT_001', qty: 2 }, { id: 'MAT_004', qty: 1 }],
-      [{ id: 'MAT_002', qty: 4 }, { id: 'MAT_007', qty: 1 }, { id: 'MAT_005', qty: 1 }],
+      [{ id: 'MAT_002', qty: 4 }, { id: 'MAT_007', qty: 1 }, { id: 'MAT_006', qty: 1 }],
       [{ id: 'MAT_002', qty: 4 }, { id: 'MAT_008', qty: 2 }, { id: 'MAT_009', qty: 1 }],
       [{ id: 'MAT_002', qty: 5 }, { id: 'MAT_008', qty: 2 }, { id: 'MAT_010', qty: 1 }],
       [{ id: 'MAT_002', qty: 6 }, { id: 'MAT_013', qty: 2 }, { id: 'MAT_012', qty: 1 }, { id: 'MAT_011', qty: 1 }],
@@ -469,7 +469,7 @@ export const LIVE_RECIPE_SLOT_PROFILES = [
     materialSets: [
       [{ id: 'MAT_003', qty: 1 }, { id: 'MAT_004', qty: 1 }],
       [{ id: 'MAT_003', qty: 1 }, { id: 'MAT_004', qty: 2 }],
-      [{ id: 'MAT_003', qty: 1 }, { id: 'MAT_005', qty: 2 }, { id: 'MAT_007', qty: 1 }],
+      [{ id: 'MAT_003', qty: 1 }, { id: 'MAT_005', qty: 1 }, { id: 'MAT_006', qty: 1 }, { id: 'MAT_007', qty: 1 }],
       [{ id: 'MAT_003', qty: 1 }, { id: 'MAT_009', qty: 2 }, { id: 'MAT_008', qty: 1 }],
       [{ id: 'MAT_003', qty: 1 }, { id: 'MAT_010', qty: 2 }, { id: 'MAT_011', qty: 1 }],
       [{ id: 'MAT_003', qty: 1 }, { id: 'MAT_012', qty: 2 }, { id: 'MAT_013', qty: 1 }, { id: 'MAT_011', qty: 1 }],

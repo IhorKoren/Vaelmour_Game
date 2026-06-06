@@ -97,6 +97,14 @@
   },
   {
     "material_id": "MAT_007",
+    "source_location": "Raider Camp",
+    "source_enemy_method": "Blood Raider / Savage Marauder",
+    "source_type": "Rare Enemy Drop",
+    "drop_obtain_chance": "8",
+    "notes": "Salvaged rivets from raider armor and camp scrap."
+  },
+  {
+    "material_id": "MAT_007",
     "source_location": "Old Watchtower",
     "source_enemy_method": "Iron Guard / Shield Veteran",
     "source_type": "Enemy Drop",

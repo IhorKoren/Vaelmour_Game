@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { buildCraftingMaterialAudit } from './lib/craftingMaterialAudit.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -206,6 +207,7 @@ const craftingRecipeMetadataOverrides = readTsConstArray('src/data/craftingRecip
 const liveRecipeSlotProfiles = readTsConstArray('src/data/equipmentCatalog.ts', 'LIVE_RECIPE_SLOT_PROFILES');
 const starterRecipeIds = readTsConstArray('src/data/recipeDropSources.ts', 'STARTER_RECIPE_IDS');
 const liveRecipeUnlockTemplates = readTsConstArray('src/data/recipeDropSources.ts', 'LIVE_RECIPE_UNLOCK_TEMPLATES');
+const craftingMaterialAudit = buildCraftingMaterialAudit(repoRoot);
 
 const allRecipes = [
   ...recipes,
@@ -346,6 +348,14 @@ for (const entry of materialTaxonomy) {
   if (!entry.isLegacy && (!entry.sourceHint || !String(entry.sourceHint).trim())) {
     addWarning(warnings, `materialTaxonomy ${entry.materialId}: missing source hint`);
   }
+}
+
+for (const issue of craftingMaterialAudit.errors) {
+  addError(errors, `craftingAudit: ${issue}`);
+}
+
+for (const issue of craftingMaterialAudit.warnings) {
+  addWarning(warnings, `craftingAudit: ${issue}`);
 }
 
 for (const material of materials) {
