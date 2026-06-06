@@ -242,11 +242,11 @@ export function isGeneratedOnlyRecipeId(recipeId: string): boolean {
 }
 
 export function isCompatibleKnownRecipeId(recipeId: string): boolean {
-  return isLiveRecipeId(recipeId) || isGeneratedOnlyRecipeId(recipeId);
+  return (isLiveRecipeId(recipeId) || isGeneratedOnlyRecipeId(recipeId)) && !isStarterRecipeId(recipeId);
 }
 
 export function getCompatibleKnownRecipeIds(): string[] {
-  return Array.from(new Set([...liveRecipeIdSet, ...generatedOnlyRecipeIdSet]));
+  return Array.from(new Set([...liveRecipeIdSet, ...generatedOnlyRecipeIdSet])).filter(id => !isStarterRecipeId(id));
 }
 
 export function getLiveRecipeUnlockRule(recipeId: string): LiveRecipeUnlockRule | null {

@@ -51,7 +51,7 @@ describe('recipe unlock sources', () => {
   it('preserves compatibility for legacy generated recipe ids', () => {
     const compatibleIds = new Set(getCompatibleKnownRecipeIds());
 
-    expect(compatibleIds.has('recipe_weapon_blade_lvl_01')).toBe(true);
+    expect(compatibleIds.has('recipe_weapon_blade_lvl_03')).toBe(true);
     expect(compatibleIds.has('REC_001')).toBe(true);
     expect(compatibleIds.has('REC_RING_NEW_003')).toBe(true);
   });

@@ -12,7 +12,6 @@ import { getEquippableSlot } from '../../game/formulas/equipment';
 import {
   getMaterialCategoryLabel,
   getMaterialDisplaySourceHint,
-  getMaterialPrimaryUse,
   isLegacyMaterial
 } from '../../data/materialTaxonomy';
 import {
@@ -20,7 +19,8 @@ import {
   getDisplayRecipeUnlockMethod,
   getDisplayRecipeUnlockSource,
   getSafeVisibleRecipes,
-  resolveCraftResult
+  resolveCraftResult,
+  getRecipeStatChips
 } from './craftingHelpers';
 
 
@@ -30,11 +30,6 @@ type Props = {
 };
 
 type CraftTab = 'all' | 'weapon' | 'armor' | 'other';
-
-type RecipeStatChip = {
-  label: string;
-  value: string;
-};
 
 const RECIPE_PURPOSES: Record<string, string> = {
   REC_001: 'Рання одноручна сокира для перших сутичок. Піднімає базову шкоду і допомагає швидше добивати слабких звірів та розбійників.',
@@ -117,136 +112,8 @@ function getRecipeTypeIcon(recipe: Recipe): string {
   return '🔮';
 }
 
-function getRecipeStatChips(recipe: Recipe): RecipeStatChip[] {
-  const tier = recipe.tier ?? 1;
-  const effect = recipe.outputEffect ? getDisplayOutputEffect(recipe.outputEffect, recipe.result) : 'Без додаткового ефекту';
+// local getRecipeStatChips function removed, imported from craftingHelpers.ts
 
-  const item = resolveCraftResult(recipe.result);
-  const resolvedSlot = item ? getEquippableSlot(item) : null;
-
-  // Derive slot with loose keyword signature matching if unresolved
-  let slot: string | null = resolvedSlot;
-  const itemType = (recipe.itemType ?? '').toLowerCase();
-  const resultName = (recipe.result ?? '').toLowerCase();
-  const name = (recipe.name ?? '').toLowerCase();
-  const isMaterial = itemType === 'material' || resultName.startsWith('mat_') || name.includes('material') || itemType.includes('material');
-
-  if (!slot && !isMaterial) {
-    const signature = `${itemType} ${resultName} ${name}`;
-
-    if (['axe', 'sword', 'hammer', 'weapon'].includes(itemType) || ['hatchet', 'cleaver', 'sword', 'longsword', 'hammer', 'warhammer', 'maul', 'edge', 'blade', 'axe', 'dagger'].some(t => signature.includes(t))) {
-      slot = 'weapon';
-    } else if (itemType === 'chest' || ['vest', 'mail', 'plate', 'harness', 'cuirass', 'chest', 'armor'].some(t => signature.includes(t))) {
-      slot = 'chest';
-    } else if (itemType.includes('shield') || ['shield', 'buckler'].some(t => signature.includes(t))) {
-      slot = 'shield';
-    } else if (['helm', 'helmet', 'hood', 'crown', 'cap', 'head'].some(t => signature.includes(t))) {
-      slot = 'head';
-    } else if (['legs', 'leggings', 'pants', 'greaves', 'trousers'].some(t => signature.includes(t))) {
-      slot = 'legs';
-    } else if (['gloves', 'gauntlets', 'hands', 'bracers'].some(t => signature.includes(t))) {
-      slot = 'hands';
-    } else if (['boots', 'shoes', 'feet', 'soles'].some(t => signature.includes(t))) {
-      slot = 'feet';
-    } else if (itemType.includes('ring') || ['ring', 'band', 'seal'].some(t => signature.includes(t))) {
-      slot = 'ring1';
-    } else if (itemType.includes('amulet') || itemType.includes('talisman') || itemType.includes('charm') || ['amulet', 'necklace', 'talisman', 'charm', 'sigil'].some(t => signature.includes(t))) {
-      slot = 'amulet';
-    }
-  }
-
-  if (slot === 'weapon') {
-    return [
-      { label: 'Слот', value: 'Зброя' },
-      { label: 'Шкода', value: `${tier * 6}-${tier * 10}` },
-      { label: 'Швидкість', value: '1.0' },
-      { label: 'Ефект', value: effect }
-    ];
-  }
-
-  if (slot === 'shield') {
-    return [
-      { label: 'Слот', value: 'Щит' },
-      { label: 'Блок', value: `${Math.round((0.12 + Math.max(0, tier - 1) * 0.015) * 100)}%` },
-      { label: 'Броня', value: `${Math.round(tier * 3.5 + 1)}` },
-      { label: 'Ефект', value: effect }
-    ];
-  }
-
-  if (slot && ['chest', 'head', 'hands', 'legs', 'feet'].includes(slot)) {
-    const slotLabels: Record<string, string> = {
-      chest: 'Нагрудник',
-      head: 'Шолом / Голова',
-      hands: 'Рукавиці',
-      legs: 'Поножі',
-      feet: 'Чоботи'
-    };
-
-    const defenseVal = (item && 'defense' in item && item.defense !== undefined) ? item.defense : ((item && 'armor' in item && item.armor !== undefined) ? item.armor : tier * 5);
-    const hpVal = (item && 'hpBonus' in item && item.hpBonus !== undefined) ? `+${Math.round(item.hpBonus * 100)}%` : `+${tier * 2}%`;
-    const extraStatLabel = (item && 'dodgeBonus' in item && item.dodgeBonus !== undefined) ? 'Ухилення' : ((item && 'damageBonus' in item && item.damageBonus !== undefined) ? 'Шкода' : '');
-    const extraStatVal = (item && 'dodgeBonus' in item && item.dodgeBonus !== undefined) ? `+${Math.round(item.dodgeBonus * 100)}%` : ((item && 'damageBonus' in item && item.damageBonus !== undefined) ? `+${Math.round(item.damageBonus * 100)}%` : '');
-
-    const chips = [
-      { label: 'Слот', value: slotLabels[slot] ?? 'Броня' },
-      { label: 'Захист', value: `${defenseVal}` },
-      { label: 'Бонус HP', value: hpVal }
-    ];
-    if (extraStatLabel) {
-      chips.push({ label: extraStatLabel, value: extraStatVal });
-    }
-    chips.push({ label: 'Ефект', value: effect });
-    return chips;
-  }
-
-  if (slot === 'ring1' || slot === 'amulet') {
-    const slotLabel = slot === 'amulet' ? 'Амулет' : 'Кільце';
-    const defenseVal = (item && 'defense' in item && item.defense !== undefined) ? item.defense : ((item && 'armor' in item && item.armor !== undefined) ? item.armor : Math.max(1, Math.round(tier)));
-    const hpVal = (item && 'hpBonus' in item && item.hpBonus !== undefined) ? `+${Math.round(item.hpBonus * 100)}%` : `+${Math.max(1, Math.round(tier * 2))}%`;
-
-    const chips = [
-      { label: 'Слот', value: slotLabel },
-      { label: 'Захист', value: `${defenseVal}` },
-      { label: 'Бонус HP', value: hpVal }
-    ];
-
-    const extraStatLabel = (item && 'dodgeBonus' in item && item.dodgeBonus !== undefined) ? 'Ухилення' : ((item && 'damageBonus' in item && item.damageBonus !== undefined) ? 'Шкода' : '');
-    const extraStatVal = (item && 'dodgeBonus' in item && item.dodgeBonus !== undefined) ? `+${Math.round(item.dodgeBonus * 100)}%` : ((item && 'damageBonus' in item && item.damageBonus !== undefined) ? `+${Math.round(item.damageBonus * 100)}%` : '');
-    if (extraStatLabel) {
-      chips.push({ label: extraStatLabel, value: extraStatVal });
-    }
-
-    chips.push({ label: 'Ефект', value: effect });
-    return chips;
-  }
-
-  if (isMaterial) {
-    return [
-      { label: 'Категорія', value: 'Матеріал' },
-      { label: 'Ранг', value: `${tier}` },
-      { label: 'Ефект', value: effect }
-    ];
-  }
-
-  // Safe fallback and debug check
-  const isKeyOrMat = recipe.itemType && (recipe.itemType.toLowerCase().includes('key') || recipe.itemType.toLowerCase().includes('material'));
-  if (!isKeyOrMat && typeof console !== 'undefined' && console.warn) {
-    console.warn(`[CraftingScreen] Unresolved equipment slot for recipe result: ${recipe.result}`);
-  }
-
-  if (itemType.includes('key')) {
-    return [
-      { label: 'Категорія', value: 'Ключовий предмет' },
-      { label: 'Ранг', value: `${tier}` },
-      { label: 'Ефект', value: effect }
-    ];
-  }
-
-  return [
-    { label: 'Слот', value: 'Предмет' },
-    { label: 'Ефект', value: effect }
-  ];
-}
 
 type CraftResultDefinition = {
   id: string;
@@ -609,7 +476,6 @@ export function CraftingScreen({ hero, onHeroChange }: Props) {
                       const owned = stack?.qty ?? 0;
                       const enough = owned >= material.qty;
                       const catLabel = getMaterialCategoryLabel(material.id);
-                      const primaryUse = getMaterialPrimaryUse(material.id);
                       const sourceHint = getMaterialDisplaySourceHint(material.id);
                       const legacyNote = isLegacyMaterial(material.id);
 
@@ -619,9 +485,9 @@ export function CraftingScreen({ hero, onHeroChange }: Props) {
                           style={{
                             display: 'flex',
                             flexDirection: 'column',
-                            gap: '4px',
-                            padding: '8px 10px',
-                            borderRadius: '10px',
+                            gap: '2px',
+                            padding: '6px 8px',
+                            borderRadius: '8px',
                             border: `1px solid ${enough ? 'rgba(45, 130, 73, 0.25)' : 'rgba(255, 77, 77, 0.25)'}`,
                             background: enough ? 'rgba(45, 130, 73, 0.05)' : 'rgba(255, 77, 77, 0.05)',
                             color: enough ? '#eed1b3' : '#ff4d4d',
@@ -632,11 +498,14 @@ export function CraftingScreen({ hero, onHeroChange }: Props) {
                             <span style={{ color: enough ? '#fff' : '#ff4d4d' }}>{enough ? '✅' : '❌'} {matName}</span>
                             <span>{owned} / {material.qty} шт.</span>
                           </div>
-                          <div style={{ fontSize: '9.5px', color: 'var(--color-text-muted)', display: 'flex', flexDirection: 'column', gap: '2px', paddingLeft: '16px' }}>
-                            <div>🏷️ <strong>Категорія:</strong> {catLabel}</div>
-                            {primaryUse && <div>⚒️ <strong>Застосування:</strong> {primaryUse}</div>}
-                            {sourceHint && <div>📍 <strong>Джерело:</strong> {sourceHint}</div>}
-                            {legacyNote && <div style={{ color: 'var(--color-gold-gilded)', fontWeight: 'bold' }}>♻️ Спадковий матеріал (сумісний)</div>}
+                          {sourceHint && (
+                            <div style={{ fontSize: '9px', color: 'var(--color-text-muted)', opacity: 0.9 }}>
+                              📍 {sourceHint}
+                            </div>
+                          )}
+                          <div style={{ fontSize: '8.5px', color: 'var(--color-text-muted)', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                            <span>Тип: {catLabel}</span>
+                            {legacyNote && <span style={{ color: 'var(--color-gold-gilded)', fontWeight: 'bold' }}>♻️ Спадковий</span>}
                           </div>
                         </div>
                       );

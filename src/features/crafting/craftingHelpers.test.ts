@@ -3,9 +3,12 @@ import {
   getCraftingBlockedReason,
   getDisplayRecipeUnlockMethod,
   getDisplayRecipeUnlockSource,
-  getSafeVisibleRecipes
+  getSafeVisibleRecipes,
+  getRecipeStatChips,
+  resolveCraftResult
 } from './craftingHelpers';
 import type { HeroState, Recipe } from '../../game/types';
+import { weapons } from '../../data/weapons';
 
 describe('craftingHelpers tests', () => {
   const dummyHero: HeroState = {
@@ -61,14 +64,25 @@ describe('craftingHelpers tests', () => {
   };
 
   test('should return null when crafting is possible', () => {
-    const known = new Set(['recipe_weapon_blade_lvl_01']);
-    const blocked = getCraftingBlockedReason(starterRecipe, dummyHero, known);
+    // Note: since recipe_weapon_blade_lvl_01 is a starter recipe, we need to test with a non-starter recipe for success
+    const nonStarterRecipe: Recipe = {
+      ...starterRecipe,
+      id: 'recipe_ring_band_lvl_01',
+      result: 'ring_band_lvl_01'
+    };
+    const known = new Set(['recipe_ring_band_lvl_01']);
+    const blocked = getCraftingBlockedReason(nonStarterRecipe, dummyHero, known);
     expect(blocked).toBeNull();
   });
 
   test('should return RECIPE_NOT_LEARNED if not in known recipes', () => {
+    const nonStarterRecipe: Recipe = {
+      ...starterRecipe,
+      id: 'recipe_ring_band_lvl_01',
+      result: 'ring_band_lvl_01'
+    };
     const known = new Set<string>();
-    const blocked = getCraftingBlockedReason(starterRecipe, dummyHero, known);
+    const blocked = getCraftingBlockedReason(nonStarterRecipe, dummyHero, known);
     expect(blocked?.reason).toBe('RECIPE_NOT_LEARNED');
     expect(blocked?.text).toContain('Креслення не вивчено');
   });
@@ -76,9 +90,11 @@ describe('craftingHelpers tests', () => {
   test('should return LEVEL_TOO_LOW if player level is low', () => {
     const highLevelRecipe: Recipe = {
       ...starterRecipe,
+      id: 'recipe_ring_band_lvl_01',
+      result: 'ring_band_lvl_01',
       requiredLevel: 10
     };
-    const known = new Set(['recipe_weapon_blade_lvl_01']);
+    const known = new Set(['recipe_ring_band_lvl_01']);
     const blocked = getCraftingBlockedReason(highLevelRecipe, dummyHero, known);
     expect(blocked?.reason).toBe('LEVEL_TOO_LOW');
     expect(blocked?.text).toContain('Рівень героя занизький');
@@ -87,9 +103,11 @@ describe('craftingHelpers tests', () => {
   test('should return NOT_ENOUGH_GOLD if gold is insufficient', () => {
     const expensiveRecipe: Recipe = {
       ...starterRecipe,
+      id: 'recipe_ring_band_lvl_01',
+      result: 'ring_band_lvl_01',
       goldCost: 100
     };
-    const known = new Set(['recipe_weapon_blade_lvl_01']);
+    const known = new Set(['recipe_ring_band_lvl_01']);
     const blocked = getCraftingBlockedReason(expensiveRecipe, dummyHero, known);
     expect(blocked?.reason).toBe('NOT_ENOUGH_GOLD');
     expect(blocked?.text).toContain('Недостатньо золота');
@@ -98,9 +116,11 @@ describe('craftingHelpers tests', () => {
   test('should return MISSING_MATERIALS if materials are insufficient', () => {
     const resourceHeavyRecipe: Recipe = {
       ...starterRecipe,
+      id: 'recipe_ring_band_lvl_01',
+      result: 'ring_band_lvl_01',
       materials: [{ id: 'MAT_001', qty: 50 }]
     };
-    const known = new Set(['recipe_weapon_blade_lvl_01']);
+    const known = new Set(['recipe_ring_band_lvl_01']);
     const blocked = getCraftingBlockedReason(resourceHeavyRecipe, dummyHero, known);
     expect(blocked?.reason).toBe('MISSING_MATERIALS');
     expect(blocked?.text).toContain('Недостатньо матеріалів');
@@ -116,14 +136,51 @@ describe('craftingHelpers tests', () => {
     expect(getDisplayRecipeUnlockSource('recipe_ring_band_lvl_01')).toContain('Околиці Розбитої дороги');
   });
 
-  test('getSafeVisibleRecipes logic filters out far-progression recipes', () => {
+  test('getSafeVisibleRecipes logic filters out starter recipes and far-progression recipes', () => {
     const recipes: Recipe[] = [
-      { ...starterRecipe, id: 'recipe_a', requiredLevel: 1 }, // Level 1
-      { ...starterRecipe, id: 'recipe_b', requiredLevel: 8 }, // Level 8 (Locked, hero level 5 + 3 = 8, visible)
-      { ...starterRecipe, id: 'recipe_c', requiredLevel: 9 }  // Level 9 (Locked, too high, hidden)
+      { ...starterRecipe, id: 'recipe_weapon_blade_lvl_01', requiredLevel: 1 }, // Starter Level 1 -> Filtered out
+      { ...starterRecipe, id: 'recipe_ring_band_lvl_01', requiredLevel: 1 },    // Level 1 Ring -> NOT starter -> visible
+      { ...starterRecipe, id: 'recipe_ring_band_lvl_03', requiredLevel: 3 },    // Level 3 Ring -> visible (locked)
+      { ...starterRecipe, id: 'recipe_ring_band_lvl_15', requiredLevel: 15 }    // Level 15 Ring -> too high -> hidden
     ];
-    const known = new Set(['recipe_a']);
+    const known = new Set(['recipe_ring_band_lvl_01']);
     const visible = getSafeVisibleRecipes(recipes, known, 5);
-    expect(visible.map(r => r.id)).toEqual(['recipe_a', 'recipe_b']);
+    expect(visible.map(r => r.id)).toEqual(['recipe_ring_band_lvl_01', 'recipe_ring_band_lvl_03']);
+  });
+
+  test('debug resolveCraftResult', () => {
+    const res = resolveCraftResult('ring_band_lvl_01');
+    console.log('DEBUG:', res);
+    
+    // Check resolveItemDefinitionByIdOrName results
+    const weaponsList = weapons;
+    const normalized = 'ring band lvl 01';
+    weaponsList.forEach(item => {
+      const normId = item.id.toLowerCase().replace(/[’']/g, "'").replace(/[^a-z0-9]+/g, ' ').trim();
+      const normName = item.name.toLowerCase().replace(/[’']/g, "'").replace(/[^a-z0-9]+/g, ' ').trim();
+      const matchId = normId === normalized;
+      const matchName = normName === normalized;
+      const matchNameInc = normName.includes(normalized);
+      const matchNameIncRev = normalized.includes(normName);
+      if (matchId || matchName || matchNameInc || matchNameIncRev) {
+        console.log(`MATCHED WEAPON: id=${item.id}, name=${item.name}, normId=${normId}, normName=${normName}, matchId=${matchId}, matchName=${matchName}, matchNameInc=${matchNameInc}, matchNameIncRev=${matchNameIncRev}`);
+      }
+    });
+  });
+
+  test('getRecipeStatChips includes damage/speed for weapons and excludes them for non-weapons', () => {
+    const weaponChips = getRecipeStatChips(starterRecipe);
+    expect(weaponChips.find(c => c.label === 'Шкода')).toBeDefined();
+    expect(weaponChips.find(c => c.label === 'Швидкість')).toBeDefined();
+
+    const ringRecipe: Recipe = {
+      ...starterRecipe,
+      id: 'recipe_ring_band_lvl_01',
+      result: 'ring_band_lvl_01',
+      itemType: 'ring'
+    };
+    const ringChips = getRecipeStatChips(ringRecipe);
+    expect(ringChips.find(c => c.label === 'Шкода')).toBeUndefined();
+    expect(ringChips.find(c => c.label === 'Швидкість')).toBeUndefined();
   });
 });
