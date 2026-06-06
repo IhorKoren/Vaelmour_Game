@@ -168,8 +168,19 @@ export function CombatControls({
           >
             Завершити полювання
           </button>
-          <div style={{ textAlign: 'center', fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '8px', fontStyle: 'italic' }}>
-            ℹ️ Система лікування та відновлення розробляється окремо. Здоров'я безкоштовно відновлено у таборі.
+          <div style={{
+            textAlign: 'center',
+            fontSize: '12px',
+            color: '#ff4d4d',
+            marginTop: '10px',
+            padding: '8px',
+            background: 'rgba(163, 46, 46, 0.1)',
+            border: '1px solid rgba(163, 46, 46, 0.3)',
+            borderRadius: '4px',
+            lineHeight: '1.4'
+          }}>
+            💀 <strong>Герой зазнав поразки!</strong><br />
+            Ваше здоров’я критично низьке (1 HP). Ви повинні дочекатися пасивного відновлення здоров’я (кожні 5 секунд) щонайменше до 20% максимального запасу HP, перш ніж зможете знову вийти на полювання.
           </div>
         </div>
       )}

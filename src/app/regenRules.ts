@@ -9,12 +9,7 @@ export function shouldApplyPassiveHealthRegen({
   currentHp,
   maxHp,
   healthRegen,
-  isFighting,
 }: PassiveRegenParams): boolean {
-  if (isFighting) {
-    return false;
-  }
-
   if (currentHp <= 0) {
     return false;
   }

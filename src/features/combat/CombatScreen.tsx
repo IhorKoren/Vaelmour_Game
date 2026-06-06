@@ -9,6 +9,7 @@ import {
 import bossesJson from '../../data/generated/bosses.json';
 import type { Enemy, HeroState } from '../../game/types';
 import { getDisplayLocationName } from '../../utils/displayHelpers';
+import { calculateDerivedStats } from '../../game/formulas/stats';
 
 import { CombatArena, CombatControls, CombatLog } from './components';
 import { useCombatSession } from './hooks/useCombatSession';
@@ -70,7 +71,9 @@ export function CombatScreen({ hero, onHeroChange, selectedLocationId, onCombatS
     startBossFight,
     handleRetreat,
     handleReturn,
-    handleUseSkill
+    handleUseSkill,
+    isAutoHuntEnabled,
+    setIsAutoHuntEnabled
   } = useCombatSession({
     hero,
     onHeroChange,
@@ -79,38 +82,94 @@ export function CombatScreen({ hero, onHeroChange, selectedLocationId, onCombatS
     onVictoryCalculations
   });
 
+  const derived = useMemo(() => calculateDerivedStats(hero.stats, hero.baseHp, undefined, hero), [hero]);
+  const isLowHp = hero.currentHp < derived.maxHp * 0.20;
+
   return (
     <div className={`screen combat-screen ${huntState === 'idle' ? 'combat-screen--idle' : ''}`} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
       
+      {/* Auto-hunt toggle widget */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        justifyContent: 'center',
+        margin: '0',
+        padding: '8px 12px',
+        background: 'rgba(20,13,9,0.3)',
+        borderRadius: '6px',
+        border: '1px solid rgba(212,163,115,0.15)',
+        width: '100%'
+      }}>
+        <input
+          type="checkbox"
+          id="auto-hunt-checkbox"
+          checked={isAutoHuntEnabled}
+          onChange={(e) => setIsAutoHuntEnabled(e.target.checked)}
+          style={{ cursor: 'pointer', transform: 'scale(1.2)' }}
+        />
+        <label htmlFor="auto-hunt-checkbox" style={{ fontSize: '13px', cursor: 'pointer', color: 'var(--color-bronze-light)', userSelect: 'none', fontWeight: 'bold' }}>
+          🔄 Автополювання
+        </label>
+      </div>
+
       {/* 1. IDLE STATE PANEL */}
       {huntState === 'idle' && (
         <section className="hunt-start-panel" aria-label="Початок полювання">
           <div className="hunt-start-panel__location">
             <span>{getDisplayLocationName(currentLocation.id)}</span>
           </div>
+
+          {isLowHp && (
+            <div style={{
+              margin: '8px 0',
+              padding: '10px',
+              background: 'rgba(163, 46, 46, 0.15)',
+              border: '1.5px solid #a32e2e',
+              borderRadius: '6px',
+              fontSize: '12px',
+              color: '#ff4d4d',
+              textAlign: 'center',
+              fontWeight: 'bold',
+              lineHeight: '1.4'
+            }}>
+              ⚠️ Здоров’я занизьке для бою. Дочекайся відновлення хоча б до 20%.
+            </div>
+          )}
+
           <button
             className="hunt-start-button"
             type="button"
             onClick={startHunting}
+            disabled={isLowHp}
+            style={isLowHp ? {
+              opacity: 0.5,
+              cursor: 'not-allowed',
+              background: 'rgba(30, 30, 30, 0.4)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              color: 'var(--color-text-muted)',
+              boxShadow: 'none'
+            } : {}}
           >
-            Почати полювання
+            Шукати ворога
           </button>
           {locationBoss && (() => {
             const unlockStatus = canStartBossEncounter(hero, locationBoss);
+            const isBossDisabled = isLowHp || !unlockStatus.unlocked;
             return (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%', marginTop: '10px' }}>
                 <button
                   className="hunt-start-button boss-trigger-button"
                   type="button"
                   onClick={startBossFight}
-                  disabled={!unlockStatus.unlocked}
+                  disabled={isBossDisabled}
                   style={{
-                    background: unlockStatus.unlocked ? 'linear-gradient(180deg, #a32e2e, #611515)' : 'rgba(30, 15, 15, 0.4)',
-                    color: unlockStatus.unlocked ? '#ffffff' : 'var(--color-text-muted)',
-                    border: unlockStatus.unlocked ? '1.5px solid var(--color-gold-gilded)' : '1px dashed rgba(212, 163, 115, 0.15)',
-                    boxShadow: unlockStatus.unlocked ? '0 0 10px rgba(163, 46, 46, 0.5)' : 'none',
-                    cursor: unlockStatus.unlocked ? 'pointer' : 'not-allowed',
-                    opacity: unlockStatus.unlocked ? 1 : 0.6
+                    background: !isBossDisabled ? 'linear-gradient(180deg, #a32e2e, #611515)' : 'rgba(30, 15, 15, 0.4)',
+                    color: !isBossDisabled ? '#ffffff' : 'var(--color-text-muted)',
+                    border: !isBossDisabled ? '1.5px solid var(--color-gold-gilded)' : '1px dashed rgba(212, 163, 115, 0.15)',
+                    boxShadow: !isBossDisabled ? '0 0 10px rgba(163, 46, 46, 0.5)' : 'none',
+                    cursor: !isBossDisabled ? 'pointer' : 'not-allowed',
+                    opacity: !isBossDisabled ? 1 : 0.6
                   }}
                 >
                   💀 Бій з Босом: {locationBoss.name}
@@ -143,7 +202,7 @@ export function CombatScreen({ hero, onHeroChange, selectedLocationId, onCombatS
               onClick={handleRetreat}
               style={{ width: '100%', minHeight: '38px', border: '1px solid rgba(212,163,115,0.25)', background: 'rgba(20,13,9,0.3)', color: 'var(--color-text-muted)' }}
             >
-              🛡️ Відступити
+              🛡️ Зупинити пошук
             </button>
           </div>
         </Panel>

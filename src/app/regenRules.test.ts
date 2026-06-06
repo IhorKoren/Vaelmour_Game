@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { shouldApplyPassiveHealthRegen } from './regenRules';
 
 describe('shouldApplyPassiveHealthRegen', () => {
-  it('blocks passive regen during active combat', () => {
+  it('allows passive regen during active combat', () => {
     expect(
       shouldApplyPassiveHealthRegen({
         currentHp: 40,
@@ -11,7 +11,7 @@ describe('shouldApplyPassiveHealthRegen', () => {
         healthRegen: 5,
         isFighting: true,
       }),
-    ).toBe(false);
+    ).toBe(true);
   });
 
   it('allows passive regen outside combat when the hero is injured', () => {

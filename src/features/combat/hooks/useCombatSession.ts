@@ -101,6 +101,9 @@ export function useCombatSession({
   const [rageFlash, setRageFlash] = useState<{ amount: number; id: number } | null>(null);
 
   const [encounterId, setEncounterId] = useState(0);
+  const encounterIdRef = useRef(0);
+  const [isAutoHuntEnabled, setIsAutoHuntEnabled] = useState(true);
+
   const [enemyBleed, setEnemyBleed] = useState<BleedState | null>(null);
   const [heroBleed, setHeroBleed] = useState<BleedState | null>(null);
   const [enemyStagger, setEnemyStagger] = useState<StaggerState | null>(null);
@@ -116,17 +119,52 @@ export function useCombatSession({
     setLog((previous) => [entry, ...previous].slice(0, maxEntries));
   }, []);
 
+  const triggerDefeat = useCallback((defeatedHero: HeroState) => {
+    clearCombatTimeout(searchTimeoutRef);
+    clearCombatTimeout(victoryTimeoutRef);
+    
+    encounterIdRef.current += 1;
+    setEncounterId(encounterIdRef.current);
+    
+    const retreatedHero = {
+      ...defeatedHero,
+      currentHp: 1
+    };
+    latestHero.current = retreatedHero;
+    latestOnHeroChange.current(retreatedHero);
+    
+    setHeroRage(0);
+    setHuntState('defeat');
+    
+    setHeroAttacking(false);
+    setEnemyAttacking(false);
+    setHeroFlash(null);
+    setEnemyFlash(null);
+    setRageFlash(null);
+    
+    setEnemyBleed(null);
+    setHeroBleed(null);
+    setEnemyStagger(null);
+    setHeroStagger(null);
+    setGuardedReduction(0);
+    setFrenziedSwingsBuff(null);
+    setEnemyPoiseShred(null);
+    
+    appendCombatLog('Герой зазнав поразки! Ваше здоровʼя критично низьке (1 HP). Поверніться до табору для відновлення.');
+  }, [appendCombatLog]);
+
   // Sync state on location switch
   useEffect(() => {
     clearCombatTimeout(searchTimeoutRef);
     clearCombatTimeout(victoryTimeoutRef);
+    encounterIdRef.current += 1;
     
     const resetTimer = setTimeout(() => {
       setHuntState('idle');
       setLog(['Ви змінили локацію. Приготуйтеся до нового полювання.']);
       setHeroRage(0);
       setRageFlash(null);
-      setEncounterId((id) => id + 1);
+      setEncounterId(encounterIdRef.current);
       
       setHeroAttacking(false);
       setEnemyAttacking(false);
@@ -173,9 +211,11 @@ export function useCombatSession({
   const latestHeroStagger = useRef<StaggerState | null>(heroStagger);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability
     latestHero.current = hero;
     latestEnemy.current = enemy;
     latestEnemyHp.current = enemyHp;
+    // eslint-disable-next-line react-hooks/immutability
     latestOnHeroChange.current = onHeroChange;
     latestHeroRage.current = heroRage;
     latestEnemyBleed.current = enemyBleed;
@@ -196,11 +236,17 @@ export function useCombatSession({
     clearCombatTimeout(searchTimeoutRef);
     clearCombatTimeout(victoryTimeoutRef);
     
+    encounterIdRef.current += 1;
+    const localEncounterId = encounterIdRef.current;
+    setEncounterId(localEncounterId);
+    
     setVictoryRewards(null);
     setHuntState('searching');
     setLog(['Шукаємо ворога...']);
     
     const id = setTimeout(() => {
+      if (encounterIdRef.current !== localEncounterId) return;
+      
       const finalEnemy = createEncounterEnemy(currentLocation);
       setEnemy(finalEnemy);
       setEnemyHp(finalEnemy.hp);
@@ -216,7 +262,6 @@ export function useCombatSession({
       setHeroRage(0);
       setHuntState('fighting');
       rewardGrantedRef.current = false;
-      setEncounterId((prev) => prev + 1);
     }, 1500);
     searchTimeoutRef.current = id;
   }, [currentLocation]);
@@ -226,11 +271,17 @@ export function useCombatSession({
     clearCombatTimeout(searchTimeoutRef);
     clearCombatTimeout(victoryTimeoutRef);
 
+    encounterIdRef.current += 1;
+    const localEncounterId = encounterIdRef.current;
+    setEncounterId(localEncounterId);
+
     setVictoryRewards(null);
     setHuntState('searching');
     setLog([`Викликаємо боса локації: ${locationBoss.name}...`]);
 
     const id = setTimeout(() => {
+      if (encounterIdRef.current !== localEncounterId) return;
+
       setEnemy(locationBoss);
       setEnemyHp(locationBoss.hp);
       setEnemyBleed(null);
@@ -245,7 +296,6 @@ export function useCombatSession({
       setHeroRage(0);
       setHuntState('fighting');
       rewardGrantedRef.current = false;
-      setEncounterId((prev) => prev + 1);
     }, 1500);
     searchTimeoutRef.current = id;
   }, [locationBoss]);
@@ -253,19 +303,55 @@ export function useCombatSession({
   const handleRetreat = useCallback(() => {
     clearCombatTimeout(searchTimeoutRef);
     clearCombatTimeout(victoryTimeoutRef);
+    
+    encounterIdRef.current += 1;
+    setEncounterId(encounterIdRef.current);
+    
     setHeroRage(0);
     setHuntState('idle');
+    setVictoryRewards(null);
+    setHeroAttacking(false);
+    setEnemyAttacking(false);
+    setHeroFlash(null);
+    setEnemyFlash(null);
+    setRageFlash(null);
+    
+    setEnemyBleed(null);
+    setHeroBleed(null);
+    setEnemyStagger(null);
+    setHeroStagger(null);
+    setGuardedReduction(0);
+    setFrenziedSwingsBuff(null);
+    setEnemyPoiseShred(null);
+    
     setLog(['Ви успішно припинили полювання та повернулися до табору.']);
   }, []);
 
   const handleReturn = useCallback(() => {
     clearCombatTimeout(searchTimeoutRef);
     clearCombatTimeout(victoryTimeoutRef);
-    // Safe complete heal on returning to camp
-    latestOnHeroChange.current({ ...latestHero.current, currentHp: latestHero.current.maxHp });
+    
+    encounterIdRef.current += 1;
+    setEncounterId(encounterIdRef.current);
+    
     setHeroRage(0);
     setHuntState('idle');
-    setLog(['Ви повернулися до табору. Ваші сили повністю відновлені.']);
+    setVictoryRewards(null);
+    setHeroAttacking(false);
+    setEnemyAttacking(false);
+    setHeroFlash(null);
+    setEnemyFlash(null);
+    setRageFlash(null);
+    
+    setEnemyBleed(null);
+    setHeroBleed(null);
+    setEnemyStagger(null);
+    setHeroStagger(null);
+    setGuardedReduction(0);
+    setFrenziedSwingsBuff(null);
+    setEnemyPoiseShred(null);
+
+    setLog(['Ви повернулися до табору. Наберіться сил та відновіть здоров’я перед наступним походом.']);
   }, []);
 
   const processVictoryRewards = useCallback((nextEnemyHp: number, heroDamageLog: string) => {
@@ -285,23 +371,42 @@ export function useCombatSession({
     // Pass reward hero back to shell
     latestOnHeroChange.current(result.rewardedHero);
 
-    // Automatically hunt the next enemy in 2 seconds
-    const id = setTimeout(() => {
-      setVictoryRewards(null);
-      setHuntState('searching');
-      const nextId = setTimeout(() => {
-        const finalEnemy = createEncounterEnemy(currentLocation);
-        setEnemy(finalEnemy);
-        setEnemyHp(finalEnemy.hp);
-        setLog([buildEncounterStartLog(finalEnemy)]);
-        setHuntState('fighting');
-        rewardGrantedRef.current = false;
-        setEncounterId((prev) => prev + 1);
-      }, 1500);
-      searchTimeoutRef.current = nextId;
-    }, 2000);
-    victoryTimeoutRef.current = id;
-  }, [currentLocation, onVictoryCalculations]);
+    if (isAutoHuntEnabled) {
+      const localEncounterId = encounterIdRef.current;
+      // Automatically hunt the next enemy in 2 seconds
+      const id = setTimeout(() => {
+        if (encounterIdRef.current !== localEncounterId) return;
+        
+        setVictoryRewards(null);
+        setHuntState('searching');
+        const nextId = setTimeout(() => {
+          if (encounterIdRef.current !== localEncounterId) return;
+          
+          encounterIdRef.current += 1;
+          const newLocalId = encounterIdRef.current;
+          setEncounterId(newLocalId);
+          
+          const finalEnemy = createEncounterEnemy(currentLocation);
+          setEnemy(finalEnemy);
+          setEnemyHp(finalEnemy.hp);
+          setEnemyBleed(null);
+          setHeroBleed(null);
+          setEnemyStagger(null);
+          setHeroStagger(null);
+          setGuardedReduction(0);
+          setFrenziedSwingsBuff(null);
+          setEnemyPoiseShred(null);
+          setSkillCooldowns({});
+          setLog([buildEncounterStartLog(finalEnemy)]);
+          setHeroRage(0);
+          setHuntState('fighting');
+          rewardGrantedRef.current = false;
+        }, 1500);
+        searchTimeoutRef.current = nextId;
+      }, 2000);
+      victoryTimeoutRef.current = id;
+    }
+  }, [currentLocation, onVictoryCalculations, isAutoHuntEnabled]);
 
   const basicAttackSkill = useMemo<Skill>(() => ({
     id: 'basic_attack',
@@ -345,11 +450,15 @@ export function useCombatSession({
       return;
     }
 
+    const localEncounterId = encounterIdRef.current;
+
     let heroTimeoutId: ReturnType<typeof setTimeout>;
     let enemyTimeoutId: ReturnType<typeof setTimeout>;
 
     // Trigger basic attack for Hero
     const runHeroAttack = () => {
+      if (encounterIdRef.current !== localEncounterId) return;
+
       if (latestHeroStagger.current?.skipsRemaining) {
         setHeroStagger((current) => current && current.skipsRemaining > 1 ? { skipsRemaining: current.skipsRemaining - 1 } : null);
         appendCombatLog('⚠️ Ви приголомшені й пропускаєте атаку.');
@@ -366,7 +475,7 @@ export function useCombatSession({
         setHeroBleed((current) => current && current.ticksRemaining > 1 ? { ...current, ticksRemaining: current.ticksRemaining - 1 } : null);
         appendCombatLog(`☠️ Ви втрачаєте ${bleedDamage} HP від кровотечі.`);
         if (nextHeroFromBleed.currentHp <= 0) {
-          handleReturn();
+          triggerDefeat(nextHeroFromBleed);
           return;
         }
       }
@@ -465,6 +574,8 @@ export function useCombatSession({
 
     // Trigger basic attack for Enemy
     const runEnemyAttack = () => {
+      if (encounterIdRef.current !== localEncounterId) return;
+
       if (latestEnemyStagger.current?.skipsRemaining) {
         setEnemyStagger((current) => current && current.skipsRemaining > 1 ? { skipsRemaining: current.skipsRemaining - 1 } : null);
         appendCombatLog('🔨 Ворог приголомшений і пропускає атаку.');
@@ -546,22 +657,7 @@ export function useCombatSession({
       latestOnHeroChange.current(nextHero);
 
       if (nextHero.currentHp <= 0) {
-        clearCombatTimeout(searchTimeoutRef);
-        clearCombatTimeout(victoryTimeoutRef);
-        const retreatedHero = {
-          ...nextHero,
-          currentHp: 1
-        };
-        latestHero.current = retreatedHero;
-        latestOnHeroChange.current(retreatedHero);
-        setHeroRage(0);
-        setHuntState('idle');
-        setHeroAttacking(false);
-        setEnemyAttacking(false);
-        setHeroFlash(null);
-        setEnemyFlash(null);
-        setRageFlash(null);
-        appendCombatLog('Герой зазнав поразки, отримав 1 HP і автоматично відступив до табору.');
+        triggerDefeat(nextHero);
         return;
       }
 
@@ -773,6 +869,8 @@ export function useCombatSession({
     startBossFight,
     handleRetreat,
     handleReturn,
-    handleUseSkill
+    handleUseSkill,
+    isAutoHuntEnabled,
+    setIsAutoHuntEnabled
   };
 }
