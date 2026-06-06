@@ -77,7 +77,7 @@ export const MATERIAL_TAXONOMY = [
   {
     materialId: 'MAT_007',
     category: 'tier',
-    tierStep: 9,
+    tierStep: 6,
     levelRange: [7, 12],
     playerLabel: 'Тировий металевий компонент',
     primaryUse: 'Перехід до міцніших панцирів, кольчуг і середньої броні.',

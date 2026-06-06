@@ -219,7 +219,7 @@
       "uncommon_item": 3.5,
       "rare_item": 0.6,
       "epic_item": 0.02,
-      "primary_materials": "Raider Emblem / Executioner's Hook",
+      "primary_materials": "Raider Emblem / Bent Iron Scrap",
       "material_drop_chance": 22,
       "unique_notable_drops": null,
       "notes": "Berserker loot identity."
@@ -345,7 +345,7 @@
       "uncommon_item": 3.5,
       "rare_item": 0.6,
       "epic_item": 0.02,
-      "primary_materials": "Legion Steel Plate",
+      "primary_materials": "Guard Insignia / Iron Rivets",
       "material_drop_chance": 22,
       "unique_notable_drops": null,
       "notes": "Defender loot identity."
@@ -363,7 +363,7 @@
       "uncommon_item": 5,
       "rare_item": 1,
       "epic_item": 0.04,
-      "primary_materials": "Staggered Bone Plate",
+      "primary_materials": "Iron Rivets / Guard Insignia",
       "material_drop_chance": 26,
       "unique_notable_drops": null,
       "notes": "Brute loot identity."
@@ -579,7 +579,7 @@
       "uncommon_item": 5,
       "rare_item": 1,
       "epic_item": 0.04,
-      "primary_materials": "Ash Sigil Fragment",
+      "primary_materials": "Blood Ash / Ash Sigil Fragment",
       "material_drop_chance": 26,
       "unique_notable_drops": null,
       "notes": "Bleeder loot identity."
@@ -801,7 +801,7 @@
       "uncommon_item": "7",
       "rare_item": "2.28",
       "epic_item": "0.16",
-      "primary_materials": "Iron Rivets, Legion Steel Plate, Staggered Bone Plate",
+      "primary_materials": "Iron Rivets, Chain Links, Guard Insignia",
       "notable_items": "Ironbound Hammer, Gate Warden Cuirass, Iron Sigil",
       "best_for": "Armor / Poise"
     },
@@ -861,7 +861,7 @@
       "uncommon_item": "7",
       "rare_item": "2.87",
       "epic_item": "0.24",
-      "primary_materials": "Raven Feather, Wolf Fang, Blackfang Pelt",
+      "primary_materials": "Raven Feather, Blackfang Pelt, Rage-Etched Shard",
       "notable_items": "Ravenfang Harness, Blackfang Edge, Raven Eye Ring",
       "best_for": "Crit / Bleed"
     },
@@ -876,7 +876,7 @@
       "uncommon_item": "7",
       "rare_item": "3.01",
       "epic_item": "0.26",
-      "primary_materials": "Legion Steel Plate, Rage-Etched Shard, Staggered Bone Plate",
+      "primary_materials": "Legion Steel Plate, Staggered Bone Plate, Rage-Etched Shard",
       "notable_items": "Legion Protector Plate, Tyrant Guard Hammer, Iron Tyrant Seal",
       "best_for": "Heavy Armor / Poise"
     },
@@ -1026,8 +1026,8 @@
       "material_name": "Guard Insignia",
       "rarity": "Uncommon",
       "category": "Token",
-      "best_source_location": "Iron Bastion Approach",
-      "drops_from": "Iron Guard / Legion Protector",
+      "best_source_location": "Old Watchtower / Iron Bastion Approach",
+      "drops_from": "Iron Guard / Shield Veteran",
       "base_drop_chance": 10.4,
       "used_for": "Block/poise items",
       "notes": "Defender token. Reduced in Balance Patch 1.0 for slower leveling."
@@ -1046,8 +1046,8 @@
       "material_name": "Blood Ash",
       "rarity": "Rare",
       "category": "Alchemy",
-      "best_source_location": "Ash Cult Sanctuary",
-      "drops_from": "Ash-Cursed Champion",
+      "best_source_location": "Ashen Marsh / Ash Cult Sanctuary",
+      "drops_from": "Blood Priest / Ash-Cursed Champion",
       "base_drop_chance": 6,
       "used_for": "Rare bleed talismans",
       "notes": "Important bleed material. Reduced in Balance Patch 1.0 for slower leveling."
@@ -1066,8 +1066,8 @@
       "material_name": "Tempered Iron Bar",
       "rarity": "Common",
       "category": "Metal",
-      "best_source_location": "Iron Bastion Inner Yard",
-      "drops_from": "Legion Protector",
+      "best_source_location": "Mercenary Crossroads / Iron Bastion Inner Yard",
+      "drops_from": "Mercenary Swordsman / Legion Protector",
       "base_drop_chance": 19.8,
       "used_for": "Tier III weapons/armor",
       "notes": "General metal. Reduced in Balance Patch 1.0 for slower leveling."
@@ -1097,7 +1097,7 @@
       "rarity": "Uncommon",
       "category": "Metal",
       "best_source_location": "Iron Bastion Inner Yard",
-      "drops_from": "Legion Protector / Iron Tyrant Guard",
+      "drops_from": "Legion Protector / Iron Tyrant",
       "base_drop_chance": 10.4,
       "used_for": "Vanguard armor",
       "notes": "Heavy armor material. Reduced in Balance Patch 1.0 for slower leveling."
@@ -1146,8 +1146,8 @@
       "material_name": "Rage-Etched Shard",
       "rarity": "Rare",
       "category": "Essence",
-      "best_source_location": "Any level 15+ Elite",
-      "drops_from": "Elite Enemy",
+      "best_source_location": "Execution Grounds / Warbound Arena Ruins / Any level 15+ Elite",
+      "drops_from": "Elite Enemy / Blood Raider Captain / Arena Champion Spawn",
       "base_drop_chance": 3,
       "used_for": "Rage items",
       "notes": "Elite material. Reduced in Balance Patch 1.0 for slower leveling."
@@ -1156,8 +1156,8 @@
       "material_name": "Staggered Bone Plate",
       "rarity": "Rare",
       "category": "Bone",
-      "best_source_location": "Execution Grounds / Crimson Quarry",
-      "drops_from": "Brute enemies / Elite defenders",
+      "best_source_location": "Iron Bastion Inner Yard / Crimson Quarry",
+      "drops_from": "Pit Crusher / War Brute / Iron Tyrant Guard",
       "base_drop_chance": 4.5,
       "used_for": "Poise/stagger recipes",
       "notes": "Heavy build material. Reduced in Balance Patch 1.0 for slower leveling."

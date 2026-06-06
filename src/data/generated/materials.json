@@ -7,20 +7,24 @@
     "tier": 1,
     "rarity": "common",
     "category": "Fabric",
-    "levelBand": "1–6",
+    "taxonomyCategory": "base",
+    "tierStep": 1,
+    "levelBand": "1-6",
     "levelRange": [
       1,
       6
     ],
-    "primaryUsage": "Starter light armor, wraps",
+    "primaryUsage": "Starter light armor, wraps, and low-tier utility crafts.",
     "stackSize": 99,
     "sellValueGold": 1,
-    "source": "Basic material from humanoids and scavenged camps.",
+    "source": "Common drop from early humanoids, scavengers, and abandoned road camps.",
     "tags": [
       "fabric",
-      "common"
+      "base",
+      "common",
+      "step_1"
     ],
-    "notes": "Basic material from humanoids and scavenged camps."
+    "notes": "Base cloth material for early crafting and broad recipe compatibility."
   },
   {
     "id": "MAT_002",
@@ -30,20 +34,24 @@
     "tier": 1,
     "rarity": "common",
     "category": "Leather",
-    "levelBand": "1–6",
+    "taxonomyCategory": "base",
+    "tierStep": 1,
+    "levelBand": "1-6",
     "levelRange": [
       1,
       6
     ],
-    "primaryUsage": "Skirmisher armor, straps",
+    "primaryUsage": "Starter skirmisher armor, straps, and flexible armor parts.",
     "stackSize": 99,
     "sellValueGold": 2,
-    "source": "Dropped by wolves and raiders.",
+    "source": "Common drop from wolves, road hounds, and raider skirmishers.",
     "tags": [
       "leather",
-      "common"
+      "base",
+      "common",
+      "step_1"
     ],
-    "notes": "Dropped by wolves and raiders."
+    "notes": "Primary early leather base shared by beast and raider crafting themes."
   },
   {
     "id": "MAT_003",
@@ -53,20 +61,24 @@
     "tier": 1,
     "rarity": "common",
     "category": "Metal",
-    "levelBand": "1–6",
+    "taxonomyCategory": "base",
+    "tierStep": 1,
+    "levelBand": "1-6",
     "levelRange": [
       1,
       6
     ],
-    "primaryUsage": "Basic weapons, reinforced vests",
+    "primaryUsage": "Basic weapons, shield trims, and reinforced early armor.",
     "stackSize": 99,
     "sellValueGold": 3,
-    "source": "Low-tier metal material.",
+    "source": "Common drop from guards, raiders, and broken roadside caches.",
     "tags": [
       "metal",
-      "common"
+      "base",
+      "common",
+      "step_1"
     ],
-    "notes": "Low-tier metal material."
+    "notes": "Core early metal base that anchors the first weapon and armor recipes."
   },
   {
     "id": "MAT_004",
@@ -76,20 +88,25 @@
     "tier": 1,
     "rarity": "uncommon",
     "category": "Beast",
-    "levelBand": "3–8",
+    "taxonomyCategory": "faction",
+    "tierStep": 3,
+    "levelBand": "3-8",
     "levelRange": [
       3,
       8
     ],
-    "primaryUsage": "Bleed weapons, talismans",
+    "primaryUsage": "Bleed weapons, beast talismans, and agile Blackfang recipes.",
     "stackSize": 50,
     "sellValueGold": 8,
-    "source": "Used in bleed-oriented recipes.",
+    "source": "Uncommon drop from Blackfang wolves, stalkers, and marsh beasts.",
     "tags": [
       "beast",
-      "uncommon"
+      "faction",
+      "blackfang",
+      "uncommon",
+      "step_3"
     ],
-    "notes": "Used in bleed-oriented recipes."
+    "notes": "Early faction material that introduces beast-themed and bleed-oriented crafting."
   },
   {
     "id": "MAT_005",
@@ -99,20 +116,25 @@
     "tier": 1,
     "rarity": "uncommon",
     "category": "Humanoid Token",
-    "levelBand": "5–10",
+    "taxonomyCategory": "faction",
+    "tierStep": 6,
+    "levelBand": "5-10",
     "levelRange": [
       5,
       10
     ],
-    "primaryUsage": "Rage gear, axe recipes",
+    "primaryUsage": "Rage gear, raider weapons, and aggressive frontier recipes.",
     "stackSize": 50,
     "sellValueGold": 9,
-    "source": "Proof from raider enemies.",
+    "source": "Uncommon drop from Wild Raiders, Blood Raiders, and camp lieutenants.",
     "tags": [
       "humanoid_token",
-      "uncommon"
+      "faction",
+      "raider",
+      "uncommon",
+      "step_6"
     ],
-    "notes": "Proof from raider enemies."
+    "notes": "Frontier faction token used to signal the first real specialization jump."
   },
   {
     "id": "MAT_006",
@@ -122,20 +144,25 @@
     "tier": 2,
     "rarity": "rare",
     "category": "Beast",
-    "levelBand": "5–12",
+    "taxonomyCategory": "faction",
+    "tierStep": 6,
+    "levelBand": "5-12",
     "levelRange": [
       5,
       12
     ],
-    "primaryUsage": "Rare skirmisher armor",
+    "primaryUsage": "Rare skirmisher armor, bleed cloaks, and advanced beast crafts.",
     "stackSize": 25,
     "sellValueGold": 25,
-    "source": "Rare drop from Blackfang enemies.",
+    "source": "Rare drop from Blackfang Alpha variants and deeper forest predators.",
     "tags": [
       "beast",
-      "rare"
+      "faction",
+      "blackfang",
+      "rare",
+      "step_6"
     ],
-    "notes": "Rare drop from Blackfang enemies."
+    "notes": "Rare Blackfang trophy that bridges early beast crafting into midgame gear."
   },
   {
     "id": "MAT_007",
@@ -145,20 +172,24 @@
     "tier": 2,
     "rarity": "common",
     "category": "Metal",
-    "levelBand": "7–12",
+    "taxonomyCategory": "tier",
+    "tierStep": 6,
+    "levelBand": "7-12",
     "levelRange": [
       7,
       12
     ],
-    "primaryUsage": "Medium/heavy armor",
+    "primaryUsage": "Tier-step metal for medium armor, shields, and reinforced gear.",
     "stackSize": 99,
     "sellValueGold": 5,
-    "source": "Used for mail and brigandine.",
+    "source": "Common drop from watchtower defenders, guard patrols, and fortress stores.",
     "tags": [
       "metal",
-      "common"
+      "tier",
+      "common",
+      "step_6"
     ],
-    "notes": "Used for mail and brigandine."
+    "notes": "First clear progression-gating metal used to separate early scrap crafts from structured armor."
   },
   {
     "id": "MAT_008",
@@ -168,20 +199,24 @@
     "tier": 2,
     "rarity": "common",
     "category": "Metal",
-    "levelBand": "7–14",
+    "taxonomyCategory": "tier",
+    "tierStep": 9,
+    "levelBand": "7-14",
     "levelRange": [
       7,
       14
     ],
-    "primaryUsage": "Fighter mail",
+    "primaryUsage": "Mail foundations, fighter armor, and durable mid-tier crafts.",
     "stackSize": 99,
     "sellValueGold": 6,
-    "source": "Core mail armor component.",
+    "source": "Common drop from shield veterans, mercenary armor sets, and old fort stores.",
     "tags": [
       "metal",
-      "common"
+      "tier",
+      "common",
+      "step_9"
     ],
-    "notes": "Core mail armor component."
+    "notes": "Structured tier material that marks the shift into true midgame armor crafting."
   },
   {
     "id": "MAT_009",
@@ -191,20 +226,25 @@
     "tier": 2,
     "rarity": "uncommon",
     "category": "Humanoid Token",
-    "levelBand": "7–14",
+    "taxonomyCategory": "faction",
+    "tierStep": 9,
+    "levelBand": "7-14",
     "levelRange": [
       7,
       14
     ],
-    "primaryUsage": "Block/poise items",
+    "primaryUsage": "Block gear, poise gear, and disciplined legion-themed recipes.",
     "stackSize": 50,
     "sellValueGold": 12,
-    "source": "Dropped by Iron Legion enemies.",
+    "source": "Uncommon drop from Iron Legion guards, veterans, and bastion patrols.",
     "tags": [
       "humanoid_token",
-      "uncommon"
+      "faction",
+      "iron_legion",
+      "uncommon",
+      "step_9"
     ],
-    "notes": "Dropped by Iron Legion enemies."
+    "notes": "Faction token that anchors the early defender and fortress crafting path."
   },
   {
     "id": "MAT_010",
@@ -214,20 +254,25 @@
     "tier": 2,
     "rarity": "uncommon",
     "category": "Alchemy",
-    "levelBand": "11–16",
+    "taxonomyCategory": "faction",
+    "tierStep": 12,
+    "levelBand": "11-16",
     "levelRange": [
       11,
       16
     ],
-    "primaryUsage": "Bleed resistance, talismans",
+    "primaryUsage": "Bleed resistance gear, charms, and marsh-alchemy crafts.",
     "stackSize": 50,
     "sellValueGold": 13,
-    "source": "Gathered from Ashen Marsh enemies and nodes.",
+    "source": "Uncommon drop from Ashen Marsh cultists, marsh caches, and ritual growths.",
     "tags": [
       "alchemy",
-      "uncommon"
+      "faction",
+      "ash_cult",
+      "uncommon",
+      "step_12"
     ],
-    "notes": "Gathered from Ashen Marsh enemies and nodes."
+    "notes": "Ash-zone faction material that introduces swamp and ritual crafting identity."
   },
   {
     "id": "MAT_011",
@@ -237,20 +282,25 @@
     "tier": 3,
     "rarity": "rare",
     "category": "Alchemy",
-    "levelBand": "11–18",
+    "taxonomyCategory": "catalyst",
+    "tierStep": 12,
+    "levelBand": "11-18",
     "levelRange": [
       11,
       18
     ],
-    "primaryUsage": "Rare bleed talismans",
+    "primaryUsage": "Rare bleed talismans, ritual upgrades, and higher-rarity ash crafts.",
     "stackSize": 25,
     "sellValueGold": 30,
-    "source": "Rare cult material.",
+    "source": "Rare drop from blood priests, cult elites, and sanctuary ritual nodes.",
     "tags": [
       "alchemy",
-      "rare"
+      "catalyst",
+      "ash_cult",
+      "rare",
+      "step_12"
     ],
-    "notes": "Rare cult material."
+    "notes": "Early rare catalyst for ritual and bleed-focused crafting branches."
   },
   {
     "id": "MAT_012",
@@ -260,20 +310,25 @@
     "tier": 3,
     "rarity": "uncommon",
     "category": "Humanoid Token",
-    "levelBand": "13–20",
+    "taxonomyCategory": "faction",
+    "tierStep": 15,
+    "levelBand": "13-20",
     "levelRange": [
       13,
       20
     ],
-    "primaryUsage": "Fighter weapons, rings",
+    "primaryUsage": "Balanced weapons, duelist accessories, and contract-themed crafts.",
     "stackSize": 50,
     "sellValueGold": 16,
-    "source": "Used in balanced fighter recipes.",
+    "source": "Uncommon drop from mercenary swordsmen, duelists, and veteran sellblades.",
     "tags": [
       "humanoid_token",
-      "uncommon"
+      "faction",
+      "mercenary",
+      "uncommon",
+      "step_15"
     ],
-    "notes": "Used in balanced fighter recipes."
+    "notes": "Faction token for the balanced midgame equipment path."
   },
   {
     "id": "MAT_013",
@@ -283,20 +338,24 @@
     "tier": 3,
     "rarity": "common",
     "category": "Metal",
-    "levelBand": "13–20",
+    "taxonomyCategory": "tier",
+    "tierStep": 15,
+    "levelBand": "13-20",
     "levelRange": [
       13,
       20
     ],
-    "primaryUsage": "Tier III weapons/armor",
+    "primaryUsage": "Mid-progression weapons, armor frames, and reinforced utility crafts.",
     "stackSize": 99,
     "sellValueGold": 10,
-    "source": "Refined from scrap and rivets.",
+    "source": "Common drop from mercenary caches, bastion forges, and refined metal enemies.",
     "tags": [
       "metal",
-      "common"
+      "tier",
+      "common",
+      "step_15"
     ],
-    "notes": "Refined from scrap and rivets."
+    "notes": "Main midgame tier metal that prevents early drops from covering level 15 crafts."
   },
   {
     "id": "MAT_014",
@@ -306,20 +365,25 @@
     "tier": 3,
     "rarity": "rare",
     "category": "Brute Token",
-    "levelBand": "15–22",
+    "taxonomyCategory": "boss",
+    "tierStep": 18,
+    "levelBand": "15-22",
     "levelRange": [
       15,
       22
     ],
-    "primaryUsage": "Execute gear and heavy weapons",
+    "primaryUsage": "Execute gear, heavy weapons, and elite executioner-themed crafts.",
     "stackSize": 25,
     "sellValueGold": 35,
-    "source": "Rare drop from executioner enemies.",
+    "source": "Rare drop from executioners, headsmen, and brutal field officers.",
     "tags": [
       "brute_token",
-      "rare"
+      "boss",
+      "executioner",
+      "rare",
+      "step_18"
     ],
-    "notes": "Rare drop from executioner enemies."
+    "notes": "Elite trophy material used to signal dangerous execution-field crafting themes."
   },
   {
     "id": "MAT_015",
@@ -329,20 +393,25 @@
     "tier": 4,
     "rarity": "uncommon",
     "category": "Beast",
-    "levelBand": "17–24",
+    "taxonomyCategory": "faction",
+    "tierStep": 18,
+    "levelBand": "17-24",
     "levelRange": [
       17,
       24
     ],
-    "primaryUsage": "Crit gear and skirmisher items",
+    "primaryUsage": "Crit gear, skirmisher accessories, and Raven Hollow recipes.",
     "stackSize": 50,
     "sellValueGold": 18,
-    "source": "From Raven Hollow enemies.",
+    "source": "Uncommon drop from Raven Hollow predators and advanced Blackfang hunters.",
     "tags": [
       "beast",
-      "uncommon"
+      "faction",
+      "raven_hollow",
+      "uncommon",
+      "step_18"
     ],
-    "notes": "From Raven Hollow enemies."
+    "notes": "Faction material for the crit-oriented late-midgame skirmisher branch."
   },
   {
     "id": "MAT_016",
@@ -352,20 +421,25 @@
     "tier": 4,
     "rarity": "uncommon",
     "category": "Metal",
-    "levelBand": "19–26",
+    "taxonomyCategory": "tier",
+    "tierStep": 21,
+    "levelBand": "19-26",
     "levelRange": [
       19,
       26
     ],
-    "primaryUsage": "Vanguard armor",
+    "primaryUsage": "High-tier heavy armor, tower shields, and fortress plate recipes.",
     "stackSize": 50,
     "sellValueGold": 20,
-    "source": "Iron Bastion material.",
+    "source": "Uncommon drop from legion protectors, inner bastion elites, and iron vault caches.",
     "tags": [
       "metal",
-      "uncommon"
+      "tier",
+      "iron_legion",
+      "uncommon",
+      "step_21"
     ],
-    "notes": "Iron Bastion material."
+    "notes": "Heavy progression-gating plate for the late defender and vanguard recipe band."
   },
   {
     "id": "MAT_017",
@@ -375,20 +449,25 @@
     "tier": 4,
     "rarity": "rare",
     "category": "Key Fragment",
-    "levelBand": "21–28",
+    "taxonomyCategory": "boss",
+    "tierStep": 24,
+    "levelBand": "21-28",
     "levelRange": [
       21,
       28
     ],
-    "primaryUsage": "Ash sanctuary recipes and boss keys",
+    "primaryUsage": "Sanctuary crafts, key progression, and advanced ash ritual recipes.",
     "stackSize": 25,
     "sellValueGold": 45,
-    "source": "Progression material.",
+    "source": "Rare drop from ash zealots, sanctuary elites, and end-arc ritual progress.",
     "tags": [
       "key_fragment",
-      "rare"
+      "boss",
+      "ash_cult",
+      "rare",
+      "step_24"
     ],
-    "notes": "Progression material."
+    "notes": "Late ritual progression material that doubles as a boss and key-crafting bridge."
   },
   {
     "id": "MAT_018",
@@ -398,20 +477,25 @@
     "tier": 4,
     "rarity": "rare",
     "category": "Humanoid Token",
-    "levelBand": "23–28",
+    "taxonomyCategory": "faction",
+    "tierStep": 24,
+    "levelBand": "23-28",
     "levelRange": [
       23,
       28
     ],
-    "primaryUsage": "Counter gear, duelist recipes",
+    "primaryUsage": "Counter gear, arena contracts, and duelist-themed high-tier crafts.",
     "stackSize": 25,
     "sellValueGold": 45,
-    "source": "Arena-related rare material.",
+    "source": "Rare drop from arena duelists, champion echoes, and warbound caches.",
     "tags": [
       "humanoid_token",
-      "rare"
+      "faction",
+      "arena",
+      "rare",
+      "step_24"
     ],
-    "notes": "Arena-related rare material."
+    "notes": "Late faction token for duelist and counterplay equipment paths."
   },
   {
     "id": "MAT_019",
@@ -421,20 +505,25 @@
     "tier": 5,
     "rarity": "uncommon",
     "category": "Ore",
-    "levelBand": "25–30",
+    "taxonomyCategory": "tier",
+    "tierStep": 27,
+    "levelBand": "25-30",
     "levelRange": [
       25,
       30
     ],
-    "primaryUsage": "Heavy weapons and high-tier armor",
+    "primaryUsage": "Late heavy weapons, high-tier armor, and endgame forge crafts.",
     "stackSize": 50,
     "sellValueGold": 25,
-    "source": "Quarry material.",
+    "source": "Uncommon drop from quarry brutes, deep ore veins, and late-game mining encounters.",
     "tags": [
       "ore",
-      "uncommon"
+      "tier",
+      "quarry",
+      "uncommon",
+      "step_27"
     ],
-    "notes": "Quarry material."
+    "notes": "Primary late-game tier ore that gates the last major equipment jump before the finale."
   },
   {
     "id": "MAT_020",
@@ -444,20 +533,24 @@
     "tier": 5,
     "rarity": "epic",
     "category": "Boss Core",
-    "levelBand": "27–30",
+    "taxonomyCategory": "boss",
+    "tierStep": 30,
+    "levelBand": "27-30",
     "levelRange": [
       27,
       30
     ],
-    "primaryUsage": "Epic recipes and key crafts",
+    "primaryUsage": "Epic recipes, final boss crafts, and end-arc signature equipment.",
     "stackSize": 10,
     "sellValueGold": 120,
-    "source": "Late arc epic material.",
+    "source": "Epic drop from Ash Lord Vaelor and the final ash-citadel arc.",
     "tags": [
       "boss_core",
-      "epic"
+      "boss",
+      "epic",
+      "step_30"
     ],
-    "notes": "Late arc epic material."
+    "notes": "Top-end boss material reserved for late signature crafting paths."
   },
   {
     "id": "MAT_021",
@@ -467,20 +560,24 @@
     "tier": 2,
     "rarity": "common",
     "category": "Refined",
-    "levelBand": "7–30",
+    "taxonomyCategory": "legacy",
+    "tierStep": 9,
+    "levelBand": "7-30",
     "levelRange": [
       7,
       30
     ],
-    "primaryUsage": "Refined armor component",
+    "primaryUsage": "Legacy refined armor component kept for existing recipes and saved inventories.",
     "stackSize": 99,
     "sellValueGold": 7,
-    "source": "Crafted/refined from leather and cloth.",
+    "source": "Legacy material retained for compatibility with older crafted equipment paths.",
     "tags": [
       "refined",
-      "common"
+      "legacy",
+      "common",
+      "step_9"
     ],
-    "notes": "Crafted/refined from leather and cloth."
+    "notes": "Preserved as a valid material rather than auto-converted in this phase."
   },
   {
     "id": "MAT_022",
@@ -490,20 +587,24 @@
     "tier": 3,
     "rarity": "common",
     "category": "Refined",
-    "levelBand": "13–30",
+    "taxonomyCategory": "legacy",
+    "tierStep": 15,
+    "levelBand": "13-30",
     "levelRange": [
       13,
       30
     ],
-    "primaryUsage": "Weapons",
+    "primaryUsage": "Legacy weapon component kept live for old save and recipe compatibility.",
     "stackSize": 99,
     "sellValueGold": 12,
-    "source": "Generic weapon component.",
+    "source": "Legacy material retained as a safe bridge for existing weapon recipes.",
     "tags": [
       "refined",
-      "common"
+      "legacy",
+      "common",
+      "step_15"
     ],
-    "notes": "Generic weapon component."
+    "notes": "Remains valid and resolved without forced migration in Phase 2A."
   },
   {
     "id": "MAT_023",
@@ -513,20 +614,24 @@
     "tier": 3,
     "rarity": "rare",
     "category": "Essence",
-    "levelBand": "15–30",
+    "taxonomyCategory": "catalyst",
+    "tierStep": 18,
+    "levelBand": "15-30",
     "levelRange": [
       15,
       30
     ],
-    "primaryUsage": "Rage-based items",
+    "primaryUsage": "Rare catalyst for aggressive, rage-based, and affix-heavy crafts.",
     "stackSize": 25,
     "sellValueGold": 40,
-    "source": "Rare essence from elites.",
+    "source": "Rare drop from level 15+ elites, raider champions, and high-risk encounters.",
     "tags": [
       "essence",
-      "rare"
+      "catalyst",
+      "rare",
+      "step_18"
     ],
-    "notes": "Rare essence from elites."
+    "notes": "General late-midgame catalyst that supports future rarity scaling without overuse."
   },
   {
     "id": "MAT_024",
@@ -536,19 +641,23 @@
     "tier": 4,
     "rarity": "rare",
     "category": "Bone",
-    "levelBand": "19–30",
+    "taxonomyCategory": "catalyst",
+    "tierStep": 21,
+    "levelBand": "19-30",
     "levelRange": [
       19,
       30
     ],
-    "primaryUsage": "Poise/stagger recipes",
+    "primaryUsage": "Rare catalyst for poise, stagger, and brute-themed defensive crafts.",
     "stackSize": 25,
     "sellValueGold": 42,
-    "source": "From brutes and elite defenders.",
+    "source": "Rare drop from brute elites, quarry breakers, and heavy defender encounters.",
     "tags": [
       "bone",
-      "rare"
+      "catalyst",
+      "rare",
+      "step_21"
     ],
-    "notes": "From brutes and elite defenders."
+    "notes": "Late defensive catalyst reserved for heavy-impact and stagger-resistant equipment themes."
   }
 ]

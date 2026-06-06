@@ -44,6 +44,18 @@ function splitCsv(value) {
     .filter(Boolean);
 }
 
+function splitMaterialReferences(value) {
+  return String(value ?? '')
+    .split(/[\/,]/)
+    .map((entry) =>
+      entry
+        .replace(/\s+x[\d\-–—]+$/i, '')
+        .replace(/\s+chance$/i, '')
+        .trim()
+    )
+    .filter(Boolean);
+}
+
 function parseNumberish(value) {
   if (typeof value === 'number' && Number.isFinite(value)) return value;
   if (typeof value === 'string') {
@@ -51,6 +63,11 @@ function parseNumberish(value) {
     if (Number.isFinite(parsed)) return parsed;
   }
   return null;
+}
+
+function matchesGenericSourceText(value) {
+  const normalized = normalizeLooseText(value);
+  return genericSourceTextAllowList.some((entry) => normalized.includes(entry));
 }
 
 function addError(errors, message) {
@@ -106,6 +123,7 @@ function resolveRecord(lookups, value) {
 
 const validRarities = new Set(['common', 'uncommon', 'rare', 'epic', 'legendary']);
 const validEquipmentSlots = new Set(['weapon', 'head', 'chest', 'hands', 'legs', 'feet', 'shield', 'ring', 'amulet']);
+const genericSourceTextAllowList = ['common enemies', 'elite spawn', 'zone progress', 'zone milestone', 'elite enemy', 'any level'];
 const statKeys = new Set([
   'minDamage',
   'maxDamage',
@@ -148,7 +166,11 @@ const materials = readJson('src/data/generated/materials.json');
 const bosses = readJson('src/data/generated/bosses.json');
 const spawnPools = readJson('src/data/generated/spawnPools.json');
 const baseRecipeDrops = readJson('src/data/generated/recipeDrops.json');
-const bossLoot = readJson('src/data/generated/lootTables.json').bossLoot ?? [];
+const lootTables = readJson('src/data/generated/lootTables.json');
+const bossLoot = lootTables.bossLoot ?? [];
+const enemyLootData = lootTables.enemyLoot ?? [];
+const locationLootData = lootTables.locationLoot ?? [];
+const materialLootData = lootTables.materialLoot ?? [];
 
 const ringRecipes = readJson('src/data/generated/ringRecipes.json');
 const shieldRecipes = readJson('src/data/generated/shieldRecipes.json');
@@ -208,7 +230,7 @@ const allEquipmentCatalogs = [
 ];
 
 const allUniqueItemDrops = [
-  ...(readJson('src/data/generated/lootTables.json').uniqueItemDrops ?? []),
+  ...(lootTables.uniqueItemDrops ?? []),
   ...shieldUniqueItemDrops,
   ...ringUniqueItemDrops,
   ...amuletUniqueItemDrops,
@@ -216,7 +238,7 @@ const allUniqueItemDrops = [
 ];
 
 const allLocationLoot = [
-  ...(readJson('src/data/generated/lootTables.json').locationLoot ?? []),
+  ...locationLootData,
   ...shieldLocationLoot,
   ...ringLocationLoot,
   ...amuletLocationLoot,
@@ -280,6 +302,7 @@ const usedRecipeIds = new Set();
 const usedMaterialIds = new Set();
 
 const materialTaxonomyIds = new Set();
+const materialTaxonomyById = new Map();
 for (const entry of materialTaxonomy) {
   const materialId = normalizeValue(entry.materialId);
   if (!materialId) {
@@ -292,6 +315,7 @@ for (const entry of materialTaxonomy) {
     continue;
   }
   materialTaxonomyIds.add(materialId);
+  materialTaxonomyById.set(materialId, entry);
 
   if (!materialIdSet.has(materialId)) {
     addError(errors, `materialTaxonomy: unknown material id "${entry.materialId}"`);
@@ -620,10 +644,9 @@ for (const rule of allRecipeDrops) {
 
   if (
     !sourceLocationParts.some((part) => hasRecord(locationLookups, part)) &&
+    !matchesGenericSourceText(rule.source_location) &&
     !normalizeLooseText(rule.source_location).includes('elite') &&
-    !normalizeLooseText(rule.source_location).includes('zone') &&
-    !normalizeLooseText(rule.source_location).includes('milestone') &&
-    !normalizeLooseText(rule.source_location).includes('any level')
+    !normalizeLooseText(rule.source_location).includes('zone')
   ) {
     addError(errors, `recipeDrops ${rule.recipe_id}: unknown source location "${rule.source_location}"`);
   }
@@ -639,8 +662,7 @@ for (const rule of allRecipeDrops) {
         hasRecord(enemyLookups, part) ||
         hasRecord(sourceEnemyLookups, part) ||
         hasRecord(bossNameLookups, part) ||
-        normalizeLooseText(part).includes('elite spawn') ||
-        normalizeLooseText(part).includes('zone milestone'),
+        matchesGenericSourceText(part),
     )
   ) {
     addError(errors, `recipeDrops ${rule.recipe_id}: unknown source enemy "${rule.drops_from}"`);
@@ -732,6 +754,39 @@ for (const material of materials) {
   if (material.rarity && !validRarities.has(normalizeValue(material.rarity))) {
     addError(errors, `material ${material.id}: invalid rarity "${material.rarity}"`);
   }
+  if (!material.primaryUsage || !String(material.primaryUsage).trim()) {
+    addError(errors, `material ${material.id}: missing primaryUsage`);
+  }
+  const taxonomyEntry = materialTaxonomyById.get(normalizeValue(material.id));
+  const declaredTaxonomyCategory = normalizeValue(material.taxonomyCategory);
+  if (declaredTaxonomyCategory && !validMaterialTaxonomyCategories.has(declaredTaxonomyCategory)) {
+    addError(errors, `material ${material.id}: invalid taxonomyCategory "${material.taxonomyCategory}"`);
+  }
+  if (taxonomyEntry) {
+    if (!taxonomyEntry.isLegacy && (!material.source || !String(material.source).trim())) {
+      addError(errors, `material ${material.id}: missing source hint`);
+    }
+    if (declaredTaxonomyCategory && declaredTaxonomyCategory !== normalizeValue(taxonomyEntry.category)) {
+      addError(
+        errors,
+        `material ${material.id}: taxonomyCategory "${material.taxonomyCategory}" does not match taxonomy entry "${taxonomyEntry.category}"`,
+      );
+    }
+
+    const tierStep = parseNumberish(material.tierStep);
+    if (tierStep === null || !validCraftingLevelSteps.has(tierStep)) {
+      addError(errors, `material ${material.id}: invalid tierStep "${material.tierStep}"`);
+    } else if (tierStep !== parseNumberish(taxonomyEntry.tierStep)) {
+      addError(
+        errors,
+        `material ${material.id}: tierStep ${material.tierStep} does not match taxonomy step ${taxonomyEntry.tierStep}`,
+      );
+    }
+
+    if (normalizeValue(taxonomyEntry.category) === 'tier' && (!Array.isArray(material.levelRange) || material.levelRange.length !== 2)) {
+      addError(errors, `material ${material.id}: tier material must define a levelRange`);
+    }
+  }
   if (!Array.isArray(material.tags)) {
     addError(errors, `material ${material.id}: missing tags array`);
   }
@@ -740,6 +795,75 @@ for (const material of materials) {
     if (minLevel === null || maxLevel === null || minLevel < 0 || maxLevel < minLevel) {
       addError(errors, `material ${material.id}: invalid levelRange ${JSON.stringify(material.levelRange)}`);
     }
+  }
+}
+
+for (const entry of enemyLootData) {
+  for (const materialName of splitMaterialReferences(entry.primary_materials)) {
+    if (!hasRecord(materialLookups, materialName)) {
+      addError(errors, `enemyLoot ${entry.enemy_name}: unknown primary material "${materialName}"`);
+    } else {
+      usedMaterialIds.add(normalizeValue(resolveRecord(materialLookups, materialName).id));
+    }
+  }
+}
+
+for (const entry of locationLootData) {
+  for (const materialName of splitMaterialReferences(entry.primary_materials)) {
+    if (!hasRecord(materialLookups, materialName)) {
+      addError(errors, `locationLoot ${entry.location_id}: unknown primary material "${materialName}"`);
+    } else {
+      usedMaterialIds.add(normalizeValue(resolveRecord(materialLookups, materialName).id));
+    }
+  }
+}
+
+for (const entry of materialLootData) {
+  if (!hasRecord(materialLookups, entry.material_name)) {
+    addError(errors, `materialLoot: unknown material "${entry.material_name}"`);
+    continue;
+  }
+
+  const resolvedMaterial = resolveRecord(materialLookups, entry.material_name);
+  usedMaterialIds.add(normalizeValue(resolvedMaterial.id));
+
+  if (!entry.category || !String(entry.category).trim()) {
+    addError(errors, `materialLoot ${entry.material_name}: missing category`);
+  }
+
+  const sourceLocations = String(entry.best_source_location)
+    .split('/')
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  if (
+    sourceLocations.length > 0 &&
+    !sourceLocations.every((part) => hasRecord(locationLookups, part) || matchesGenericSourceText(part))
+  ) {
+    addError(errors, `materialLoot ${entry.material_name}: unknown source location "${entry.best_source_location}"`);
+  }
+
+  const dropSources = String(entry.drops_from)
+    .split('/')
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  if (
+    dropSources.length > 0 &&
+    !dropSources.every(
+      (part) =>
+        hasRecord(enemyLookups, part) ||
+        hasRecord(sourceEnemyLookups, part) ||
+        hasRecord(bossNameLookups, part) ||
+        matchesGenericSourceText(part)
+    )
+  ) {
+    addError(errors, `materialLoot ${entry.material_name}: unknown drop source "${entry.drops_from}"`);
+  }
+
+  const chance = parseNumberish(entry.base_drop_chance);
+  if (chance === null || chance < 0) {
+    addError(errors, `materialLoot ${entry.material_name}: invalid base_drop_chance "${entry.base_drop_chance}"`);
   }
 }
 
@@ -786,9 +910,7 @@ for (const drop of allUniqueItemDrops) {
         hasRecord(sourceEnemyLookups, entry) ||
         hasRecord(enemyLookups, entry) ||
         hasRecord(bossNameLookups, entry) ||
-        normalizeLooseText(entry).includes('common enemies') ||
-        normalizeLooseText(entry).includes('elite spawn') ||
-        normalizeLooseText(entry).includes('zone progress'),
+        matchesGenericSourceText(entry),
     )
   ) {
     addError(errors, `unique loot "${drop.item_name}": unknown source "${drop.drops_from}"`);
