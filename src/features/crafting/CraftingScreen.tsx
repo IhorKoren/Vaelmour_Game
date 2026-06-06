@@ -1,12 +1,7 @@
 import { useState, useMemo } from 'react';
 import { recipes } from '../../data/recipes';
-import { items } from '../../data/items';
-import { weapons } from '../../data/weapons';
-import { armors } from '../../data/armors';
-import { shields } from '../../data/shields';
 import { getCraftingRecipeMetadata } from '../../data/craftingRecipeMetadata';
 import { STARTER_RECIPE_IDS } from '../../data/recipeDropSources';
-import { resolveItemDefinitionByIdOrName } from '../../data/itemResolver';
 import { Panel } from '../../components/ui/Panel';
 import type { HeroState, Recipe } from '../../game/types';
 import { getDisplayItemName, formatRarity, formatItemType, getDisplayOutputEffect, getDisplayItemDescription } from '../../utils/displayHelpers';
@@ -14,6 +9,20 @@ import { rollCraftSuccess } from '../../game/formulas/crafting';
 import { generateItemAffixes } from '../../game/formulas/affixes';
 import { updateQuestProgressOnCraftCompleted } from '../../game/formulas/quests';
 import { getEquippableSlot } from '../../game/formulas/equipment';
+import {
+  getMaterialCategoryLabel,
+  getMaterialDisplaySourceHint,
+  getMaterialPrimaryUse,
+  isLegacyMaterial
+} from '../../data/materialTaxonomy';
+import {
+  getCraftingBlockedReason,
+  getDisplayRecipeUnlockMethod,
+  getDisplayRecipeUnlockSource,
+  getSafeVisibleRecipes,
+  resolveCraftResult
+} from './craftingHelpers';
+
 
 type Props = {
   hero: HeroState;
@@ -60,28 +69,8 @@ const RECIPE_PURPOSES: Record<string, string> = {
   REC_030: 'Ключове креслення для фінальної зустрічі. Створює печатки, потрібні для доступу до Лорда Попелу Велора.'
 };
 
-function resolveCraftResult(resultId: string) {
-  const match =
-    resolveItemDefinitionByIdOrName(resultId, weapons) ??
-    resolveItemDefinitionByIdOrName(resultId, armors) ??
-    resolveItemDefinitionByIdOrName(resultId, shields) ??
-    resolveItemDefinitionByIdOrName(resultId, items);
+void resolveCraftResult;
 
-  if (match) {
-    const weaponsSet = new Set(weapons.map(w => w.id.toLowerCase()));
-    const armorsSet = new Set(armors.map(a => a.id.toLowerCase()));
-    const shieldsSet = new Set(shields.map(s => s.id.toLowerCase()));
-    const matchIdLower = match.id.toLowerCase();
-
-    let cat = 'category' in match ? (match as Record<string, unknown>).category as string : 'crafted';
-    if (weaponsSet.has(matchIdLower)) cat = 'weapon';
-    else if (armorsSet.has(matchIdLower)) cat = 'chest';
-    else if (shieldsSet.has(matchIdLower)) cat = 'shield';
-
-    return { ...match, category: cat };
-  }
-  return null;
-}
 
 function getRecipeCraftingDescription(recipe: Recipe): string {
   const itemName = getDisplayItemName(recipe.result);
@@ -288,21 +277,15 @@ export function CraftingScreen({ hero, onHeroChange }: Props) {
     return new Set(hero.knownRecipeIds ?? [...STARTER_RECIPE_IDS]);
   }, [hero.knownRecipeIds]);
 
-  const learnedRecipes = useMemo(
-    () => recipes.filter((recipe) => knownRecipeIds.has(recipe.id)),
-    [knownRecipeIds]
-  );
+  const visibleRecipes = useMemo(() => {
+    return getSafeVisibleRecipes(recipes, knownRecipeIds, hero.level);
+  }, [knownRecipeIds, hero.level]);
 
   function canCraft(recipeId: string): boolean {
     const recipe = recipes.find((item) => item.id === recipeId);
-    if (!recipe || !knownRecipeIds.has(recipe.id) || hero.level < recipe.requiredLevel || hero.gold < recipe.goldCost) {
-      return false;
-    }
-
-    return recipe.materials.every((material) => {
-      const stack = hero.inventory.find((item) => item.itemId.toLowerCase() === material.id.toLowerCase());
-      return (stack?.qty ?? 0) >= material.qty;
-    });
+    if (!recipe) return false;
+    const blockedInfo = getCraftingBlockedReason(recipe, hero, knownRecipeIds);
+    return blockedInfo === null;
   }
 
   function craft(recipeId: string) {
@@ -367,8 +350,9 @@ export function CraftingScreen({ hero, onHeroChange }: Props) {
 
   // Filter recipes based on tab
   const filteredRecipes = useMemo(() => {
-    if (activeTab === 'all') return learnedRecipes;
-    return learnedRecipes.filter((recipe) => {
+    const base = visibleRecipes;
+    if (activeTab === 'all') return base;
+    return base.filter((recipe) => {
       if (activeTab === 'weapon') {
         return isWeaponRecipe(recipe);
       }
@@ -377,7 +361,7 @@ export function CraftingScreen({ hero, onHeroChange }: Props) {
       }
       return !isWeaponRecipe(recipe) && !isArmorRecipe(recipe) && !isShieldRecipe(recipe);
     });
-  }, [activeTab, learnedRecipes]);
+  }, [activeTab, visibleRecipes]);
 
   // Rarity styling mapping
   const rarityColors: Record<string, string> = {
@@ -434,8 +418,9 @@ export function CraftingScreen({ hero, onHeroChange }: Props) {
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px', margin: '4px 0' }}>
             {filteredRecipes.map((recipe) => {
+              const isKnown = knownRecipeIds.has(recipe.id);
               const isSelected = selectedRecipeId === recipe.id || (!selectedRecipeId && filteredRecipes[0]?.id === recipe.id);
-              const craftable = canCraft(recipe.id);
+              const craftable = isKnown && canCraft(recipe.id);
               const rarity = recipe.rarity || 'common';
               const rarityColor = rarityColors[rarity] || rarityColors.common;
               const resultName = getDisplayItemName(recipe.result);
@@ -463,14 +448,15 @@ export function CraftingScreen({ hero, onHeroChange }: Props) {
                     fontSize: '11px',
                     fontWeight: 'bold',
                     boxShadow: isSelected ? 'var(--shadow-active-glow)' : 'none',
-                    transition: 'all 0.15s ease'
+                    transition: 'all 0.15s ease',
+                    opacity: isKnown ? 1 : 0.55
                   }}
                 >
-                  <span style={{ fontSize: '16px' }}>{typeIcon}</span>
+                  <span style={{ fontSize: '16px' }}>{isKnown ? typeIcon : '🔒'}</span>
                   <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, minWidth: 0 }}>
-                    {resultName}
+                    {resultName} {!isKnown && <span style={{ fontSize: '9px', color: 'var(--color-text-muted)' }}>(Закрито)</span>}
                   </span>
-                  {!craftable && <span style={{ fontSize: '9px', opacity: 0.6 }}>🔒</span>}
+                  {!craftable && isKnown && <span style={{ fontSize: '9px', opacity: 0.6 }}>🔒</span>}
                 </button>
               );
             })}
@@ -484,7 +470,8 @@ export function CraftingScreen({ hero, onHeroChange }: Props) {
         if (!activeRecipe) return null;
 
         const recipe = activeRecipe;
-        const craftable = canCraft(recipe.id);
+        const knownRecipeIdsSet = knownRecipeIds;
+        const blockedInfo = getCraftingBlockedReason(recipe, hero, knownRecipeIdsSet);
         const rarity = recipe.rarity || 'common';
         const rarityColor = rarityColors[rarity] || rarityColors.common;
         const resultName = getDisplayItemName(recipe.result);
@@ -565,34 +552,11 @@ export function CraftingScreen({ hero, onHeroChange }: Props) {
                   gap: '4px'
                 }}>
                   <div><strong style={{ color: 'var(--color-bronze-light)' }}>Роль:</strong> {recipeMetadata.slotLabel}</div>
-                  <div><strong style={{ color: 'var(--color-bronze-light)' }}>Джерело схеми:</strong> {recipeMetadata.sourceHint}</div>
+                  <div><strong style={{ color: 'var(--color-bronze-light)' }}>Тип розблокування:</strong> {getDisplayRecipeUnlockMethod(recipe.id)}</div>
+                  <div><strong style={{ color: 'var(--color-bronze-light)' }}>Де шукати:</strong> {getDisplayRecipeUnlockSource(recipe.id)}</div>
                   <div><strong style={{ color: 'var(--color-bronze-light)' }}>Тип матеріалів:</strong> {recipeMetadata.materialCategorySummary}</div>
                   <div><strong style={{ color: 'var(--color-bronze-light)' }}>Афікси:</strong> {recipeMetadata.expectedAffixBehavior}</div>
                 </div>
-                {/* Output Stats Effect */}
-                <div className="forge-stat-grid" aria-label="Характеристики предмета">
-                  {statChips.map((stat) => (
-                    <div className="forge-stat-chip" key={`${stat.label}-${stat.value}`}>
-                      <span>{stat.label}</span>
-                      <strong>{stat.value}</strong>
-                    </div>
-                  ))}
-                </div>
-
-                {recipe.outputEffect && (
-                  <div style={{
-                    fontSize: '11.5px',
-                    fontStyle: 'italic',
-                    color: 'var(--color-gold-light)',
-                    background: 'rgba(0,0,0,0.4)',
-                    padding: '8px 10px',
-                    borderRadius: '8px',
-                    borderLeft: `3px solid ${rarityColor}`,
-                    marginBottom: '8px'
-                  }}>
-                    ✨ <strong>Бойовий ефект:</strong> {getDisplayOutputEffect(recipe.outputEffect)}
-                  </div>
-                )}
 
                 {/* Cost & Requirements Badges */}
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '8px' }}>
@@ -634,7 +598,7 @@ export function CraftingScreen({ hero, onHeroChange }: Props) {
                     color: 'var(--color-bronze-light)',
                     textTransform: 'uppercase',
                     letterSpacing: '0.04em',
-                    marginBottom: '4px'
+                    marginBottom: '6px'
                   }}>
                     Необхідні матеріали
                   </span>
@@ -644,33 +608,74 @@ export function CraftingScreen({ hero, onHeroChange }: Props) {
                       const stack = hero.inventory.find((inv) => inv.itemId.toLowerCase() === material.id.toLowerCase());
                       const owned = stack?.qty ?? 0;
                       const enough = owned >= material.qty;
+                      const catLabel = getMaterialCategoryLabel(material.id);
+                      const primaryUse = getMaterialPrimaryUse(material.id);
+                      const sourceHint = getMaterialDisplaySourceHint(material.id);
+                      const legacyNote = isLegacyMaterial(material.id);
 
                       return (
                         <div
                           key={material.id}
                           style={{
                             display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            padding: '6px 10px',
-                            borderRadius: '8px',
-                            border: `1px solid ${enough ? 'rgba(45, 130, 73, 0.2)' : 'rgba(255, 77, 77, 0.2)'}`,
+                            flexDirection: 'column',
+                            gap: '4px',
+                            padding: '8px 10px',
+                            borderRadius: '10px',
+                            border: `1px solid ${enough ? 'rgba(45, 130, 73, 0.25)' : 'rgba(255, 77, 77, 0.25)'}`,
                             background: enough ? 'rgba(45, 130, 73, 0.05)' : 'rgba(255, 77, 77, 0.05)',
-                            color: enough ? '#2d8249' : '#ff4d4d',
-                            fontSize: '11.5px',
-                            fontWeight: 'bold'
+                            color: enough ? '#eed1b3' : '#ff4d4d',
+                            fontSize: '11px'
                           }}
                         >
-                          <span>{enough ? '✅' : '❌'} {matName}</span>
-                          <span>{owned} / {material.qty} шт.</span>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
+                            <span style={{ color: enough ? '#fff' : '#ff4d4d' }}>{enough ? '✅' : '❌'} {matName}</span>
+                            <span>{owned} / {material.qty} шт.</span>
+                          </div>
+                          <div style={{ fontSize: '9.5px', color: 'var(--color-text-muted)', display: 'flex', flexDirection: 'column', gap: '2px', paddingLeft: '16px' }}>
+                            <div>🏷️ <strong>Категорія:</strong> {catLabel}</div>
+                            {primaryUse && <div>⚒️ <strong>Застосування:</strong> {primaryUse}</div>}
+                            {sourceHint && <div>📍 <strong>Джерело:</strong> {sourceHint}</div>}
+                            {legacyNote && <div style={{ color: 'var(--color-gold-gilded)', fontWeight: 'bold' }}>♻️ Спадковий матеріал (сумісний)</div>}
+                          </div>
                         </div>
                       );
                     })}
                   </div>
-                  <div style={{ marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '9.5px', color: 'var(--color-text-muted)' }}>
-                    {recipeMetadata.materialSourceHints.map((hint) => (
-                      <span key={hint}>{hint}</span>
+                </div>
+
+                {/* Output Preview Card */}
+                <div style={{
+                  marginTop: '10px',
+                  padding: '10px',
+                  borderRadius: '12px',
+                  background: 'rgba(0,0,0,0.35)',
+                  border: `1.5px solid ${rarityColor}77`,
+                  fontSize: '11px',
+                  color: 'var(--color-text-muted)',
+                  marginBottom: '10px'
+                }}>
+                  <span style={{ display: 'block', fontWeight: 'bold', color: 'var(--color-gold-gilded)', marginBottom: '4px', textTransform: 'uppercase', fontSize: '9px', letterSpacing: '0.04em' }}>
+                    📦 Очікуваний результат створення:
+                  </span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', color: '#fff', fontWeight: 'bold', marginBottom: '4px' }}>
+                    <span>{resultName}</span>
+                    <span style={{ color: rarityColor }}>{formatRarity(rarity)}</span>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '4px', margin: '6px 0', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '6px' }}>
+                    <div>Слот: <strong style={{ color: '#eed1b3' }}>{recipeMetadata.slotLabel}</strong></div>
+                    <div>Рівень: <strong style={{ color: '#eed1b3' }}>{recipe.requiredLevel}</strong></div>
+                    {statChips.filter(c => c.label !== 'Слот' && c.label !== 'Ефект').map((chip) => (
+                      <div key={chip.label}>{chip.label}: <strong style={{ color: '#eed1b3' }}>{chip.value}</strong></div>
                     ))}
+                  </div>
+                  {recipe.outputEffect && (
+                    <div style={{ color: 'var(--color-gold-light)', margin: '4px 0' }}>
+                      ✨ <strong>Бойовий ефект:</strong> {getDisplayOutputEffect(recipe.outputEffect)}
+                    </div>
+                  )}
+                  <div style={{ borderTop: '1px dashed rgba(255,255,255,0.06)', paddingTop: '6px', fontSize: '9.5px', fontStyle: 'italic', color: 'var(--color-text-muted)' }}>
+                    🎲 <strong>Афікси:</strong> {recipeMetadata.expectedAffixBehavior} (Характеристики будуть випадково згенеровані під час кування).
                   </div>
                 </div>
 
@@ -698,7 +703,7 @@ export function CraftingScreen({ hero, onHeroChange }: Props) {
                 {/* Craft Action Button */}
                 <button
                   type="button"
-                  disabled={!craftable}
+                  disabled={blockedInfo !== null}
                   onClick={() => craft(recipe.id)}
                   style={{
                     width: '100%',
@@ -707,18 +712,18 @@ export function CraftingScreen({ hero, onHeroChange }: Props) {
                     padding: '8px 12px',
                     fontWeight: 'bold',
                     fontSize: '13px',
-                    cursor: craftable ? 'pointer' : 'not-allowed',
-                    color: craftable ? '#fff9eb' : 'rgba(253, 245, 234, 0.3)',
-                    background: craftable
+                    cursor: blockedInfo === null ? 'pointer' : 'not-allowed',
+                    color: blockedInfo === null ? '#fff9eb' : 'rgba(253, 245, 234, 0.3)',
+                    background: blockedInfo === null
                       ? 'linear-gradient(180deg, var(--color-bronze), var(--color-bronze-dark))'
                       : 'rgba(20, 13, 9, 0.4)',
-                    border: craftable ? 'none' : '1px dashed rgba(212, 163, 115, 0.15)',
-                    boxShadow: craftable ? '0 6px 18px rgba(0, 0, 0, 0.45)' : 'none',
+                    border: blockedInfo === null ? 'none' : '1px dashed rgba(212, 163, 115, 0.15)',
+                    boxShadow: blockedInfo === null ? '0 6px 18px rgba(0, 0, 0, 0.45)' : 'none',
                     transition: 'all 0.15s ease',
                     marginTop: '4px'
                   }}
                 >
-                  {craftable ? '⚒️ Викувати спорядження на ковадлі' : '🔒 Недостатньо ресурсів'}
+                  {blockedInfo === null ? '⚒️ Викувати спорядження на ковадлі' : `🔒 ${blockedInfo.text}`}
                 </button>
               </div>
             </div>
