@@ -1,7 +1,7 @@
 import { armors } from '../data/armors';
 import { weapons } from '../data/weapons';
 import { shields } from '../data/shields';
-import { recipes } from '../data/recipes';
+import { STARTER_RECIPE_IDS } from '../data/recipeDropSources';
 import { calculateDerivedStats } from './formulas/stats';
 import { initializeQuests } from './formulas/quests';
 import type { EquipmentSlot, HeroState } from './types';
@@ -47,10 +47,6 @@ export function createInitialHero(): HeroState {
   const startingShield =
     shields.find((shield) => shield.id === STARTER_EQUIPMENT.shield) ?? shields[0];
 
-  const autoKnownRecipes = recipes
-    .filter((recipe) => recipe.unlockMethod?.toLowerCase().includes('auto-known'))
-    .map((recipe) => recipe.id);
-
   const baseHero = {
     id: 'player',
     name: 'Wanderer',
@@ -58,7 +54,7 @@ export function createInitialHero(): HeroState {
     level: 1,
     xp: 0,
     gold: 40,
-    knownRecipeIds: autoKnownRecipes,
+    knownRecipeIds: [...STARTER_RECIPE_IDS],
     baseHp: 100,
     stats: {
       strength: 5,

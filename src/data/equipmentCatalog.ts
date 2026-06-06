@@ -1,5 +1,5 @@
-import rawMaterials from './generated/materials.json';
-import type { Armor, ItemCategory, Material, Recipe, Rarity, Shield, Weapon } from '../game/types';
+import type { Armor, ItemCategory, Recipe, Rarity, Shield, Weapon } from '../game/types';
+import { getRecipeSourceDescriptor, getRecipeUnlockMethodDescriptor } from './recipeDropSources';
 
 export const EQUIPMENT_LEVELS = [1, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30] as const;
 
@@ -343,60 +343,194 @@ function toItemDefinition(item: EquipmentItemDefinition): ItemDefinition {
   };
 }
 
-function createMaterialsByTier() {
-  const map = new Map<number, Material[]>();
-  for (const material of rawMaterials as Material[]) {
-    const list = map.get(material.tier) ?? [];
-    list.push(material);
-    map.set(material.tier, list);
+export const LIVE_RECIPE_SLOT_PROFILES = [
+  {
+    slot: 'weapon',
+    goldCosts: [12, 18, 30, 44, 58, 78, 102, 132, 168, 214, 278],
+    materialSets: [
+      [{ id: 'MAT_003', qty: 3 }, { id: 'MAT_001', qty: 2 }],
+      [{ id: 'MAT_003', qty: 4 }, { id: 'MAT_002', qty: 2 }, { id: 'MAT_004', qty: 1 }],
+      [{ id: 'MAT_003', qty: 5 }, { id: 'MAT_007', qty: 2 }, { id: 'MAT_005', qty: 2 }],
+      [{ id: 'MAT_003', qty: 6 }, { id: 'MAT_008', qty: 2 }, { id: 'MAT_009', qty: 2 }],
+      [{ id: 'MAT_003', qty: 6 }, { id: 'MAT_008', qty: 2 }, { id: 'MAT_010', qty: 2 }],
+      [{ id: 'MAT_003', qty: 7 }, { id: 'MAT_013', qty: 3 }, { id: 'MAT_012', qty: 2 }, { id: 'MAT_023', qty: 1 }],
+      [{ id: 'MAT_003', qty: 8 }, { id: 'MAT_013', qty: 3 }, { id: 'MAT_014', qty: 2 }, { id: 'MAT_023', qty: 1 }],
+      [{ id: 'MAT_003', qty: 9 }, { id: 'MAT_016', qty: 3 }, { id: 'MAT_015', qty: 2 }, { id: 'MAT_024', qty: 1 }],
+      [{ id: 'MAT_003', qty: 10 }, { id: 'MAT_016', qty: 4 }, { id: 'MAT_018', qty: 2 }, { id: 'MAT_023', qty: 1 }],
+      [{ id: 'MAT_003', qty: 12 }, { id: 'MAT_019', qty: 4 }, { id: 'MAT_017', qty: 2 }, { id: 'MAT_024', qty: 1 }],
+      [{ id: 'MAT_003', qty: 14 }, { id: 'MAT_019', qty: 5 }, { id: 'MAT_020', qty: 1 }, { id: 'MAT_023', qty: 2 }]
+    ]
+  },
+  {
+    slot: 'shield',
+    goldCosts: [14, 20, 34, 48, 64, 84, 108, 140, 176, 224, 290],
+    materialSets: [
+      [{ id: 'MAT_003', qty: 3 }, { id: 'MAT_001', qty: 2 }],
+      [{ id: 'MAT_003', qty: 4 }, { id: 'MAT_001', qty: 2 }],
+      [{ id: 'MAT_003', qty: 5 }, { id: 'MAT_007', qty: 2 }, { id: 'MAT_005', qty: 1 }],
+      [{ id: 'MAT_003', qty: 6 }, { id: 'MAT_008', qty: 2 }, { id: 'MAT_009', qty: 2 }],
+      [{ id: 'MAT_003', qty: 7 }, { id: 'MAT_008', qty: 3 }, { id: 'MAT_010', qty: 2 }],
+      [{ id: 'MAT_003', qty: 8 }, { id: 'MAT_013', qty: 3 }, { id: 'MAT_009', qty: 3 }],
+      [{ id: 'MAT_003', qty: 9 }, { id: 'MAT_013', qty: 3 }, { id: 'MAT_014', qty: 1 }, { id: 'MAT_024', qty: 1 }],
+      [{ id: 'MAT_003', qty: 10 }, { id: 'MAT_016', qty: 4 }, { id: 'MAT_009', qty: 3 }, { id: 'MAT_024', qty: 1 }],
+      [{ id: 'MAT_003', qty: 11 }, { id: 'MAT_016', qty: 4 }, { id: 'MAT_017', qty: 1 }, { id: 'MAT_024', qty: 1 }],
+      [{ id: 'MAT_003', qty: 12 }, { id: 'MAT_019', qty: 4 }, { id: 'MAT_016', qty: 2 }, { id: 'MAT_024', qty: 2 }],
+      [{ id: 'MAT_003', qty: 14 }, { id: 'MAT_019', qty: 5 }, { id: 'MAT_020', qty: 1 }, { id: 'MAT_024', qty: 2 }]
+    ]
+  },
+  {
+    slot: 'chest',
+    goldCosts: [16, 24, 38, 54, 70, 92, 118, 152, 190, 240, 308],
+    materialSets: [
+      [{ id: 'MAT_002', qty: 4 }, { id: 'MAT_001', qty: 3 }],
+      [{ id: 'MAT_002', qty: 5 }, { id: 'MAT_001', qty: 3 }, { id: 'MAT_004', qty: 1 }],
+      [{ id: 'MAT_002', qty: 6 }, { id: 'MAT_007', qty: 2 }, { id: 'MAT_005', qty: 2 }],
+      [{ id: 'MAT_002', qty: 7 }, { id: 'MAT_008', qty: 3 }, { id: 'MAT_009', qty: 2 }],
+      [{ id: 'MAT_002', qty: 8 }, { id: 'MAT_008', qty: 3 }, { id: 'MAT_010', qty: 2 }],
+      [{ id: 'MAT_002', qty: 9 }, { id: 'MAT_013', qty: 3 }, { id: 'MAT_012', qty: 2 }, { id: 'MAT_011', qty: 1 }],
+      [{ id: 'MAT_002', qty: 10 }, { id: 'MAT_013', qty: 3 }, { id: 'MAT_014', qty: 2 }, { id: 'MAT_023', qty: 1 }],
+      [{ id: 'MAT_002', qty: 11 }, { id: 'MAT_016', qty: 4 }, { id: 'MAT_015', qty: 2 }, { id: 'MAT_024', qty: 1 }],
+      [{ id: 'MAT_002', qty: 12 }, { id: 'MAT_016', qty: 4 }, { id: 'MAT_018', qty: 2 }, { id: 'MAT_023', qty: 1 }],
+      [{ id: 'MAT_002', qty: 14 }, { id: 'MAT_019', qty: 5 }, { id: 'MAT_017', qty: 1 }, { id: 'MAT_024', qty: 2 }],
+      [{ id: 'MAT_002', qty: 16 }, { id: 'MAT_019', qty: 6 }, { id: 'MAT_020', qty: 1 }, { id: 'MAT_024', qty: 2 }]
+    ]
+  },
+  {
+    slot: 'head',
+    goldCosts: [12, 18, 28, 40, 54, 72, 94, 122, 154, 196, 252],
+    materialSets: [
+      [{ id: 'MAT_002', qty: 2 }, { id: 'MAT_001', qty: 2 }],
+      [{ id: 'MAT_002', qty: 3 }, { id: 'MAT_001', qty: 2 }, { id: 'MAT_004', qty: 1 }],
+      [{ id: 'MAT_002', qty: 4 }, { id: 'MAT_007', qty: 1 }, { id: 'MAT_005', qty: 1 }],
+      [{ id: 'MAT_002', qty: 4 }, { id: 'MAT_008', qty: 2 }, { id: 'MAT_009', qty: 1 }],
+      [{ id: 'MAT_002', qty: 5 }, { id: 'MAT_008', qty: 2 }, { id: 'MAT_010', qty: 1 }],
+      [{ id: 'MAT_002', qty: 6 }, { id: 'MAT_013', qty: 2 }, { id: 'MAT_012', qty: 1 }, { id: 'MAT_011', qty: 1 }],
+      [{ id: 'MAT_002', qty: 6 }, { id: 'MAT_013', qty: 2 }, { id: 'MAT_015', qty: 2 }, { id: 'MAT_023', qty: 1 }],
+      [{ id: 'MAT_002', qty: 7 }, { id: 'MAT_016', qty: 2 }, { id: 'MAT_014', qty: 1 }, { id: 'MAT_024', qty: 1 }],
+      [{ id: 'MAT_002', qty: 8 }, { id: 'MAT_016', qty: 3 }, { id: 'MAT_018', qty: 1 }, { id: 'MAT_023', qty: 1 }],
+      [{ id: 'MAT_002', qty: 9 }, { id: 'MAT_019', qty: 3 }, { id: 'MAT_017', qty: 1 }, { id: 'MAT_024', qty: 1 }],
+      [{ id: 'MAT_002', qty: 10 }, { id: 'MAT_019', qty: 4 }, { id: 'MAT_020', qty: 1 }, { id: 'MAT_023', qty: 1 }]
+    ]
+  },
+  {
+    slot: 'hands',
+    goldCosts: [11, 17, 27, 39, 52, 68, 90, 118, 148, 190, 246],
+    materialSets: [
+      [{ id: 'MAT_002', qty: 2 }, { id: 'MAT_001', qty: 1 }],
+      [{ id: 'MAT_002', qty: 3 }, { id: 'MAT_001', qty: 1 }, { id: 'MAT_004', qty: 1 }],
+      [{ id: 'MAT_002', qty: 4 }, { id: 'MAT_007', qty: 1 }, { id: 'MAT_005', qty: 1 }],
+      [{ id: 'MAT_002', qty: 4 }, { id: 'MAT_008', qty: 2 }, { id: 'MAT_009', qty: 1 }],
+      [{ id: 'MAT_002', qty: 5 }, { id: 'MAT_008', qty: 2 }, { id: 'MAT_010', qty: 1 }],
+      [{ id: 'MAT_002', qty: 5 }, { id: 'MAT_013', qty: 2 }, { id: 'MAT_012', qty: 1 }, { id: 'MAT_011', qty: 1 }],
+      [{ id: 'MAT_002', qty: 6 }, { id: 'MAT_013', qty: 2 }, { id: 'MAT_014', qty: 1 }, { id: 'MAT_023', qty: 1 }],
+      [{ id: 'MAT_002', qty: 7 }, { id: 'MAT_016', qty: 2 }, { id: 'MAT_015', qty: 1 }, { id: 'MAT_024', qty: 1 }],
+      [{ id: 'MAT_002', qty: 8 }, { id: 'MAT_016', qty: 3 }, { id: 'MAT_018', qty: 1 }, { id: 'MAT_023', qty: 1 }],
+      [{ id: 'MAT_002', qty: 9 }, { id: 'MAT_019', qty: 3 }, { id: 'MAT_017', qty: 1 }, { id: 'MAT_024', qty: 1 }],
+      [{ id: 'MAT_002', qty: 10 }, { id: 'MAT_019', qty: 4 }, { id: 'MAT_020', qty: 1 }, { id: 'MAT_023', qty: 1 }]
+    ]
+  },
+  {
+    slot: 'legs',
+    goldCosts: [13, 19, 31, 44, 58, 76, 100, 130, 164, 208, 268],
+    materialSets: [
+      [{ id: 'MAT_002', qty: 3 }, { id: 'MAT_001', qty: 2 }],
+      [{ id: 'MAT_002', qty: 4 }, { id: 'MAT_001', qty: 2 }, { id: 'MAT_004', qty: 1 }],
+      [{ id: 'MAT_002', qty: 5 }, { id: 'MAT_007', qty: 2 }, { id: 'MAT_005', qty: 1 }],
+      [{ id: 'MAT_002', qty: 5 }, { id: 'MAT_008', qty: 2 }, { id: 'MAT_009', qty: 1 }],
+      [{ id: 'MAT_002', qty: 6 }, { id: 'MAT_008', qty: 2 }, { id: 'MAT_010', qty: 2 }],
+      [{ id: 'MAT_002', qty: 7 }, { id: 'MAT_013', qty: 2 }, { id: 'MAT_012', qty: 1 }, { id: 'MAT_011', qty: 1 }],
+      [{ id: 'MAT_002', qty: 8 }, { id: 'MAT_013', qty: 3 }, { id: 'MAT_014', qty: 1 }, { id: 'MAT_023', qty: 1 }],
+      [{ id: 'MAT_002', qty: 9 }, { id: 'MAT_016', qty: 3 }, { id: 'MAT_015', qty: 1 }, { id: 'MAT_024', qty: 1 }],
+      [{ id: 'MAT_002', qty: 10 }, { id: 'MAT_016', qty: 3 }, { id: 'MAT_018', qty: 1 }, { id: 'MAT_023', qty: 1 }],
+      [{ id: 'MAT_002', qty: 11 }, { id: 'MAT_019', qty: 4 }, { id: 'MAT_017', qty: 1 }, { id: 'MAT_024', qty: 1 }],
+      [{ id: 'MAT_002', qty: 12 }, { id: 'MAT_019', qty: 5 }, { id: 'MAT_020', qty: 1 }, { id: 'MAT_024', qty: 1 }]
+    ]
+  },
+  {
+    slot: 'feet',
+    goldCosts: [11, 17, 27, 39, 52, 68, 90, 118, 148, 190, 246],
+    materialSets: [
+      [{ id: 'MAT_002', qty: 2 }, { id: 'MAT_001', qty: 2 }],
+      [{ id: 'MAT_002', qty: 3 }, { id: 'MAT_001', qty: 2 }, { id: 'MAT_004', qty: 1 }],
+      [{ id: 'MAT_002', qty: 4 }, { id: 'MAT_007', qty: 1 }, { id: 'MAT_006', qty: 1 }],
+      [{ id: 'MAT_002', qty: 4 }, { id: 'MAT_008', qty: 1 }, { id: 'MAT_009', qty: 1 }],
+      [{ id: 'MAT_002', qty: 5 }, { id: 'MAT_008', qty: 2 }, { id: 'MAT_010', qty: 1 }],
+      [{ id: 'MAT_002', qty: 5 }, { id: 'MAT_013', qty: 2 }, { id: 'MAT_012', qty: 1 }],
+      [{ id: 'MAT_002', qty: 6 }, { id: 'MAT_013', qty: 2 }, { id: 'MAT_015', qty: 2 }, { id: 'MAT_023', qty: 1 }],
+      [{ id: 'MAT_002', qty: 7 }, { id: 'MAT_016', qty: 2 }, { id: 'MAT_015', qty: 2 }, { id: 'MAT_024', qty: 1 }],
+      [{ id: 'MAT_002', qty: 8 }, { id: 'MAT_016', qty: 2 }, { id: 'MAT_018', qty: 1 }, { id: 'MAT_023', qty: 1 }],
+      [{ id: 'MAT_002', qty: 9 }, { id: 'MAT_019', qty: 3 }, { id: 'MAT_017', qty: 1 }, { id: 'MAT_024', qty: 1 }],
+      [{ id: 'MAT_002', qty: 10 }, { id: 'MAT_019', qty: 4 }, { id: 'MAT_020', qty: 1 }, { id: 'MAT_023', qty: 1 }]
+    ]
+  },
+  {
+    slot: 'ring',
+    goldCosts: [10, 16, 28, 40, 56, 76, 100, 130, 166, 212, 274],
+    materialSets: [
+      [{ id: 'MAT_003', qty: 1 }, { id: 'MAT_004', qty: 1 }],
+      [{ id: 'MAT_003', qty: 1 }, { id: 'MAT_004', qty: 2 }],
+      [{ id: 'MAT_003', qty: 1 }, { id: 'MAT_005', qty: 2 }, { id: 'MAT_007', qty: 1 }],
+      [{ id: 'MAT_003', qty: 1 }, { id: 'MAT_009', qty: 2 }, { id: 'MAT_008', qty: 1 }],
+      [{ id: 'MAT_003', qty: 1 }, { id: 'MAT_010', qty: 2 }, { id: 'MAT_011', qty: 1 }],
+      [{ id: 'MAT_003', qty: 1 }, { id: 'MAT_012', qty: 2 }, { id: 'MAT_013', qty: 1 }, { id: 'MAT_011', qty: 1 }],
+      [{ id: 'MAT_003', qty: 1 }, { id: 'MAT_015', qty: 2 }, { id: 'MAT_014', qty: 1 }, { id: 'MAT_023', qty: 1 }],
+      [{ id: 'MAT_003', qty: 1 }, { id: 'MAT_016', qty: 1 }, { id: 'MAT_015', qty: 2 }, { id: 'MAT_024', qty: 1 }],
+      [{ id: 'MAT_003', qty: 1 }, { id: 'MAT_018', qty: 2 }, { id: 'MAT_017', qty: 1 }, { id: 'MAT_023', qty: 1 }],
+      [{ id: 'MAT_003', qty: 1 }, { id: 'MAT_019', qty: 2 }, { id: 'MAT_018', qty: 2 }, { id: 'MAT_024', qty: 1 }],
+      [{ id: 'MAT_003', qty: 1 }, { id: 'MAT_020', qty: 1 }, { id: 'MAT_019', qty: 2 }, { id: 'MAT_023', qty: 2 }]
+    ]
+  },
+  {
+    slot: 'amulet',
+    goldCosts: [10, 16, 28, 40, 56, 76, 102, 132, 170, 218, 282],
+    materialSets: [
+      [{ id: 'MAT_001', qty: 1 }, { id: 'MAT_004', qty: 1 }],
+      [{ id: 'MAT_001', qty: 1 }, { id: 'MAT_004', qty: 2 }],
+      [{ id: 'MAT_001', qty: 1 }, { id: 'MAT_005', qty: 1 }, { id: 'MAT_007', qty: 1 }],
+      [{ id: 'MAT_001', qty: 1 }, { id: 'MAT_009', qty: 1 }, { id: 'MAT_008', qty: 1 }],
+      [{ id: 'MAT_001', qty: 1 }, { id: 'MAT_010', qty: 2 }, { id: 'MAT_011', qty: 1 }],
+      [{ id: 'MAT_001', qty: 1 }, { id: 'MAT_012', qty: 2 }, { id: 'MAT_013', qty: 1 }, { id: 'MAT_011', qty: 1 }],
+      [{ id: 'MAT_001', qty: 1 }, { id: 'MAT_014', qty: 1 }, { id: 'MAT_015', qty: 2 }, { id: 'MAT_023', qty: 1 }],
+      [{ id: 'MAT_001', qty: 1 }, { id: 'MAT_016', qty: 1 }, { id: 'MAT_017', qty: 1 }, { id: 'MAT_024', qty: 1 }],
+      [{ id: 'MAT_001', qty: 1 }, { id: 'MAT_017', qty: 2 }, { id: 'MAT_018', qty: 1 }, { id: 'MAT_023', qty: 1 }],
+      [{ id: 'MAT_001', qty: 1 }, { id: 'MAT_019', qty: 2 }, { id: 'MAT_017', qty: 2 }, { id: 'MAT_024', qty: 1 }],
+      [{ id: 'MAT_001', qty: 1 }, { id: 'MAT_020', qty: 1 }, { id: 'MAT_018', qty: 2 }, { id: 'MAT_023', qty: 2 }]
+    ]
   }
-  return map;
+] as const;
+
+type LiveRecipeSlotProfile = (typeof LIVE_RECIPE_SLOT_PROFILES)[number];
+
+const recipeProfileBySlot = new Map<EquipmentItemDefinition['slot'], LiveRecipeSlotProfile>(
+  LIVE_RECIPE_SLOT_PROFILES.map((profile) => [profile.slot, profile])
+);
+
+function getRecipeProfile(slot: EquipmentItemDefinition['slot']): LiveRecipeSlotProfile {
+  const profile = recipeProfileBySlot.get(slot);
+  if (!profile) {
+    throw new Error(`Missing live recipe profile for slot: ${slot}`);
+  }
+  return profile;
 }
 
-const materialsByTier = createMaterialsByTier();
-
-function selectMaterial(tier: number, preference: Array<'metal' | 'leather' | 'fabric' | 'beast'>): string {
-  const tierMaterials = materialsByTier.get(tier) ?? materialsByTier.get(1) ?? [];
-  for (const wanted of preference) {
-    const match = tierMaterials.find((material) => (material.category ?? '').toLowerCase().includes(wanted));
-    if (match) return match.id;
+function recipeMaterialsFor(slot: EquipmentItemDefinition['slot'], level: number): Recipe['materials'] {
+  const profile = getRecipeProfile(slot);
+  const levelIndex = EQUIPMENT_LEVELS.indexOf(level as (typeof EQUIPMENT_LEVELS)[number]);
+  if (levelIndex < 0) {
+    throw new Error(`Unsupported equipment level for recipe materials: ${level}`);
   }
-  return tierMaterials[0]?.id ?? 'MAT_001';
+
+  return profile.materialSets[levelIndex].map((material) => ({ ...material }));
 }
 
-function recipeMaterialsFor(slot: EquipmentItemDefinition['slot'], tier: number): Recipe['materials'] {
-  const costBase = Math.max(1, tier);
-  switch (slot) {
-    case 'weapon':
-      return [
-        { id: selectMaterial(tier, ['metal']), qty: 2 + costBase },
-        { id: selectMaterial(tier, ['leather', 'fabric']), qty: 1 + Math.floor(costBase / 2) }
-      ];
-    case 'shield':
-      return [
-        { id: selectMaterial(tier, ['metal']), qty: 2 + costBase },
-        { id: selectMaterial(tier, ['fabric', 'leather']), qty: 1 + Math.floor(costBase / 2) }
-      ];
-    case 'chest':
-      return [
-        { id: selectMaterial(tier, ['metal', 'leather']), qty: 2 + costBase },
-        { id: selectMaterial(tier, ['fabric', 'leather']), qty: 2 + Math.floor(costBase / 2) }
-      ];
-    case 'head':
-    case 'hands':
-    case 'legs':
-    case 'feet':
-      return [
-        { id: selectMaterial(tier, ['leather', 'fabric', 'metal']), qty: 1 + costBase },
-        { id: selectMaterial(tier, ['fabric', 'metal', 'beast']), qty: 1 + Math.floor(costBase / 2) }
-      ];
-    case 'ring':
-    case 'amulet':
-      return [
-        { id: selectMaterial(tier, ['metal', 'beast']), qty: 1 + Math.floor(costBase / 2) },
-        { id: selectMaterial(tier, ['beast', 'fabric', 'leather']), qty: 1 + Math.floor(costBase / 2) }
-      ];
+function goldCostFor(slot: EquipmentItemDefinition['slot'], level: number): number {
+  const profile = getRecipeProfile(slot);
+  const levelIndex = EQUIPMENT_LEVELS.indexOf(level as (typeof EQUIPMENT_LEVELS)[number]);
+  if (levelIndex < 0) {
+    throw new Error(`Unsupported equipment level for recipe gold cost: ${level}`);
   }
+
+  return profile.goldCosts[levelIndex];
 }
 
 export const equipmentCatalog: EquipmentItemDefinition[] = SLOT_CONFIGS.flatMap((config) =>
@@ -489,11 +623,11 @@ export const equipmentRecipes: Recipe[] = equipmentCatalog.map((item) => ({
   tierRaw: String(item.tier),
   tier: item.tier,
   rarity: item.rarity,
-  unlockMethod: item.level === 1 ? 'Auto-known' : 'Level unlock',
-  recipeSource: item.level === 1 ? 'Starter blacksmith patterns' : 'Progression smithing manuals',
+  unlockMethod: getRecipeUnlockMethodDescriptor(`recipe_${item.codeName}`),
+  recipeSource: getRecipeSourceDescriptor(`recipe_${item.codeName}`),
   station: 'forge',
-  materials: recipeMaterialsFor(item.slot, item.tier),
-  goldCost: 8 + item.tier * 6,
+  materials: recipeMaterialsFor(item.slot, item.level),
+  goldCost: goldCostFor(item.slot, item.level),
   successChance: 1,
   outputEffect: `${item.name}: ${statSummary(item.slot, item.stats)}`
 }));

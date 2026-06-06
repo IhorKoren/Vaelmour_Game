@@ -1,7 +1,7 @@
 import { items } from '../../data/items';
 import { normalizeLegacyMaterialId } from '../../data/legacyMaterialMap';
+import { getCompatibleKnownRecipeIds, isCompatibleKnownRecipeId } from '../../data/recipeDropSources';
 import { locations } from '../../data/locations';
-import { recipes } from '../../data/recipes';
 import type {
   EquipmentSlot,
   EquipmentState,
@@ -26,7 +26,7 @@ const VALID_EQUIPMENT_SLOTS: EquipmentSlot[] = [
 const VALID_EQUIPMENT_SLOT_SET = new Set<string>(VALID_EQUIPMENT_SLOTS);
 const VALID_ITEM_IDS = new Set(items.map((item) => item.id.toLowerCase()));
 const VALID_LOCATION_IDS = new Set(locations.map((location) => location.id));
-const VALID_RECIPE_IDS = new Set(recipes.map((recipe) => recipe.id));
+const COMPATIBLE_RECIPE_IDS = new Set(getCompatibleKnownRecipeIds());
 const VALID_AFFIX_VALUE_TYPES = new Set(['flat', 'percent']);
 
 const MAX_LEVEL = 999;
@@ -354,12 +354,12 @@ export function sanitizeCloudSavePayload(
   const knownRecipeIds = Array.isArray(hero.knownRecipeIds)
     ? hero.knownRecipeIds.filter(
         (value): value is string =>
-          typeof value === 'string' && VALID_RECIPE_IDS.has(value),
+          typeof value === 'string' && COMPATIBLE_RECIPE_IDS.has(value) && isCompatibleKnownRecipeId(value),
       )
     : Array.isArray(existingHero.knownRecipeIds)
       ? existingHero.knownRecipeIds.filter(
-          (value): value is string =>
-            typeof value === 'string' && VALID_RECIPE_IDS.has(value),
+        (value): value is string =>
+            typeof value === 'string' && COMPATIBLE_RECIPE_IDS.has(value) && isCompatibleKnownRecipeId(value),
         )
       : undefined;
 

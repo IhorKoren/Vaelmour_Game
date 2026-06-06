@@ -5,6 +5,7 @@ import { weapons } from '../../data/weapons';
 import { armors } from '../../data/armors';
 import { shields } from '../../data/shields';
 import { getCraftingRecipeMetadata } from '../../data/craftingRecipeMetadata';
+import { STARTER_RECIPE_IDS } from '../../data/recipeDropSources';
 import { resolveItemDefinitionByIdOrName } from '../../data/itemResolver';
 import { Panel } from '../../components/ui/Panel';
 import type { HeroState, Recipe } from '../../game/types';
@@ -284,10 +285,7 @@ export function CraftingScreen({ hero, onHeroChange }: Props) {
   }
 
   const knownRecipeIds = useMemo(() => {
-    const autoKnown = recipes
-      .filter((recipe) => recipe.unlockMethod?.toLowerCase().includes('auto-known'))
-      .map((recipe) => recipe.id);
-    return new Set(hero.knownRecipeIds ?? autoKnown);
+    return new Set(hero.knownRecipeIds ?? [...STARTER_RECIPE_IDS]);
   }, [hero.knownRecipeIds]);
 
   const learnedRecipes = useMemo(

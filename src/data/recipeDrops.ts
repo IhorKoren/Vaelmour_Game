@@ -12,5 +12,18 @@ export type RecipeDropRule = {
   dropped_recipe: string;
 };
 
-export const recipeDrops = [...(rawData as RecipeDropRule[]), ...(shieldRecipeDropData as RecipeDropRule[]), ...(ringRecipeDropData as RecipeDropRule[]), ...(minorArmorRecipeDropData as RecipeDropRule[]), ...(amuletRecipeDropData as RecipeDropRule[])];
+function isPlaceholderRule(rule: RecipeDropRule): boolean {
+  return (
+    rule.recipe_id.trim() === '---' &&
+    rule.source_location.trim() === '---' &&
+    rule.drops_from.trim() === '---'
+  );
+}
 
+export const recipeDrops = [
+  ...(rawData as RecipeDropRule[]),
+  ...(shieldRecipeDropData as RecipeDropRule[]),
+  ...(ringRecipeDropData as RecipeDropRule[]),
+  ...(minorArmorRecipeDropData as RecipeDropRule[]),
+  ...(amuletRecipeDropData as RecipeDropRule[])
+].filter((rule) => !isPlaceholderRule(rule));

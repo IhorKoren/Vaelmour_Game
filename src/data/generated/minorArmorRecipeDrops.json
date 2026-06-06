@@ -1,12 +1,5 @@
 [
   {
-    "recipe_id": "---",
-    "source_location": "---",
-    "drops_from": "---",
-    "recipe_drop_chance": "---:",
-    "dropped_recipe": "---"
-  },
-  {
     "recipe_id": "REC_HEAD_NEW_003",
     "source_location": "Blackfang Forest",
     "drops_from": "Young Wolf / Fang Stalker",

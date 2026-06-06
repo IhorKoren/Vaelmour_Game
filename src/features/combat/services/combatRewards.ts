@@ -2,7 +2,7 @@ import type { Enemy, HeroState, Location } from '../../../game/types';
 import { skills } from '../../../data/skills';
 import { items } from '../../../data/items';
 import { recipes } from '../../../data/recipes';
-import { recipeDrops } from '../../../data/recipeDrops';
+import { STARTER_RECIPE_IDS, rollLiveRecipeUnlock } from '../../../data/recipeDropSources';
 import { calculateDerivedStats } from '../../../game/formulas/stats';
 import { getEnemyXpReward, getEnemyGoldReward } from '../../../game/formulas/rewards';
 import { rollLootDrop, rollGeneratedEquipmentDrop } from '../../../game/formulas/loot';
@@ -34,49 +34,11 @@ interface VictoryCalculationResult {
   logLines: string[];
 }
 
-const AUTO_KNOWN_RECIPE_IDS = recipes
-  .filter((recipe) => recipe.unlockMethod?.toLowerCase().includes('auto-known'))
-  .map((recipe) => recipe.id);
+const AUTO_KNOWN_RECIPE_IDS = [...STARTER_RECIPE_IDS];
+const recipeNameById = new Map(recipes.map((recipe) => [recipe.id, recipe.name]));
 
 function getKnownRecipeIds(hero: HeroState): string[] {
   return Array.from(new Set([...(hero.knownRecipeIds ?? AUTO_KNOWN_RECIPE_IDS), ...AUTO_KNOWN_RECIPE_IDS]));
-}
-
-function rollLearnedRecipe(enemy: Enemy, locationName: string, knownRecipeIds: string[]): { id: string; name: string } | null {
-  const known = new Set(knownRecipeIds);
-  const enemySignature = `${enemy.id} ${enemy.name} ${enemy.family ?? ''} ${enemy.archetype ?? ''}`
-    .toLowerCase()
-    .replace(/[_-]/g, ' ');
-  const locationSignature = locationName.toLowerCase();
-
-  for (const rule of recipeDrops) {
-    if (known.has(rule.recipe_id)) continue;
-
-    const sourceLocation = rule.source_location.toLowerCase();
-    const sourceMatches =
-      sourceLocation.includes('any') ||
-      sourceLocation.includes(locationSignature) ||
-      locationSignature.includes(sourceLocation);
-
-    const enemySources = rule.drops_from
-      .split(new RegExp('[/,;+]'))
-      .map((entry) => entry.trim().toLowerCase())
-      .filter(Boolean);
-
-    const enemyMatches = enemySources.some((source) => {
-      if (source.includes('elite')) return enemySignature.includes('elite');
-      if (source.includes('zone milestone')) return false;
-      return enemySignature.includes(source);
-    });
-
-    const chance = Number.parseFloat(rule.recipe_drop_chance);
-    if (sourceMatches && enemyMatches && Number.isFinite(chance) && Math.random() * 100 <= chance) {
-      const recipe = recipes.find((item) => item.id === rule.recipe_id);
-      return recipe ? { id: recipe.id, name: recipe.name } : null;
-    }
-  }
-
-  return null;
 }
 
 export function calculateVictoryRewards(
@@ -91,7 +53,7 @@ export function calculateVictoryRewards(
   const lootResult = rollLootDrop(enemy, items, riskRaw);
   const generatedEquipmentDrop = rollGeneratedEquipmentDrop(enemy, hero, currentLocation.id);
   const knownRecipeIds = getKnownRecipeIds(hero);
-  const learnedRecipe = rollLearnedRecipe(enemy, currentLocation.name, knownRecipeIds);
+  const learnedRecipe = rollLiveRecipeUnlock(enemy.name, currentLocation.id, knownRecipeIds);
   const nextKnownRecipeIds = learnedRecipe
     ? Array.from(new Set([...knownRecipeIds, learnedRecipe.id]))
     : knownRecipeIds;
@@ -200,7 +162,8 @@ export function calculateVictoryRewards(
   ];
 
   if (learnedRecipe) {
-    logLines.unshift(`Вивчено креслення: ${getDisplayItemName(learnedRecipe.name)}.`);
+    const recipeName = recipeNameById.get(learnedRecipe.id) ?? learnedRecipe.id;
+    logLines.unshift(`Вивчено креслення: ${getDisplayItemName(recipeName)}.`);
   }
 
   if (didLevelUp) {

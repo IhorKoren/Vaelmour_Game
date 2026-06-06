@@ -1,4 +1,5 @@
 import { equipmentCatalog, EQUIPMENT_LEVELS } from './equipmentCatalog';
+import { isStarterRecipeId } from './recipeDropSources';
 import { recipes } from './recipes';
 import {
   getMaterialCategoryLabel,
@@ -144,7 +145,7 @@ function defaultPurposeText(recipe: Recipe, slotLabel: string, slotMetadata: Cra
 }
 
 function defaultSourceHint(recipe: Recipe, slotMetadata: CraftingSlotMetadataEntry | null): string {
-  if (recipe.unlockMethod?.toLowerCase().includes('auto-known')) {
+  if (isStarterRecipeId(recipe.id)) {
     return 'Стартова кузнярська схема, доступна без додаткового пошуку рецепта.';
   }
 

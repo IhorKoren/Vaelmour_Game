@@ -203,6 +203,9 @@ const materialTaxonomyCategories = readTsConstArray('src/data/materialTaxonomy.t
 const legacyMaterialCompatibility = readTsConstArray('src/data/legacyMaterialMap.ts', 'LEGACY_MATERIAL_COMPATIBILITY');
 const craftingSlotMetadata = readTsConstArray('src/data/craftingRecipeMetadata.ts', 'CRAFTING_SLOT_METADATA');
 const craftingRecipeMetadataOverrides = readTsConstArray('src/data/craftingRecipeMetadata.ts', 'CRAFTING_RECIPE_METADATA_OVERRIDES');
+const liveRecipeSlotProfiles = readTsConstArray('src/data/equipmentCatalog.ts', 'LIVE_RECIPE_SLOT_PROFILES');
+const starterRecipeIds = readTsConstArray('src/data/recipeDropSources.ts', 'STARTER_RECIPE_IDS');
+const liveRecipeUnlockTemplates = readTsConstArray('src/data/recipeDropSources.ts', 'LIVE_RECIPE_UNLOCK_TEMPLATES');
 
 const allRecipes = [
   ...recipes,
@@ -274,6 +277,7 @@ const materialNameSet = new Set(materials.map((material) => normalizeLooseText(m
 const validCraftingLevelSteps = new Set(craftingLevelSteps.map((value) => Number(value)));
 const validMaterialTaxonomyCategories = new Set(materialTaxonomyCategories.map((value) => normalizeValue(value)));
 const validCraftingSlotIds = new Set(['weapon', 'shield', 'head', 'chest', 'hands', 'legs', 'feet', 'ring', 'amulet']);
+const validLiveRecipeUnlockTypes = new Set(['starter', 'drop', 'elite', 'boss']);
 
 const locationLookups = makeIndexedLookups(locations);
 const enemyLookups = makeIndexedLookups(enemies);
@@ -407,6 +411,105 @@ for (const entry of craftingSlotMetadata) {
   }
 }
 
+const liveRecipeProfileSlots = new Set();
+for (const profile of liveRecipeSlotProfiles) {
+  const slot = normalizeValue(profile.slot);
+  if (!slot) {
+    addError(errors, 'equipmentCatalog live recipe profiles: missing slot');
+    continue;
+  }
+
+  if (liveRecipeProfileSlots.has(slot)) {
+    addError(errors, `equipmentCatalog live recipe profiles: duplicate slot "${profile.slot}"`);
+    continue;
+  }
+  liveRecipeProfileSlots.add(slot);
+
+  if (!validCraftingSlotIds.has(slot)) {
+    addError(errors, `equipmentCatalog live recipe profiles: invalid slot "${profile.slot}"`);
+  }
+
+  if (!Array.isArray(profile.goldCosts) || profile.goldCosts.length !== craftingLevelSteps.length) {
+    addError(errors, `equipmentCatalog ${profile.slot}: goldCosts must cover all ${craftingLevelSteps.length} crafting steps`);
+  }
+
+  if (!Array.isArray(profile.materialSets) || profile.materialSets.length !== craftingLevelSteps.length) {
+    addError(errors, `equipmentCatalog ${profile.slot}: materialSets must cover all ${craftingLevelSteps.length} crafting steps`);
+    continue;
+  }
+
+  for (const [index, materialSet] of profile.materialSets.entries()) {
+    const levelStep = Number(craftingLevelSteps[index]);
+    const goldCost = parseNumberish(profile.goldCosts?.[index]);
+
+    if (goldCost === null || goldCost <= 0) {
+      addError(errors, `equipmentCatalog ${profile.slot} step ${levelStep}: invalid gold cost "${profile.goldCosts?.[index]}"`);
+    }
+
+    if (!Array.isArray(materialSet) || materialSet.length === 0) {
+      addError(errors, `equipmentCatalog ${profile.slot} step ${levelStep}: missing material costs`);
+      continue;
+    }
+
+    const categoriesInRecipe = new Set();
+    let catalystCount = 0;
+    let bossCount = 0;
+
+    for (const material of materialSet) {
+      const materialId = normalizeValue(material.id);
+      const qty = parseNumberish(material.qty);
+
+      if (!materialIdSet.has(materialId)) {
+        addError(errors, `equipmentCatalog ${profile.slot} step ${levelStep}: unknown material "${material.id}"`);
+        continue;
+      }
+
+      if (qty === null || qty <= 0) {
+        addError(errors, `equipmentCatalog ${profile.slot} step ${levelStep}: invalid quantity for "${material.id}"`);
+      }
+
+      const taxonomyEntry = materialTaxonomyById.get(materialId);
+      if (!taxonomyEntry) {
+        addError(errors, `equipmentCatalog ${profile.slot} step ${levelStep}: material "${material.id}" has no taxonomy coverage`);
+        continue;
+      }
+
+      const category = normalizeValue(taxonomyEntry.category);
+      categoriesInRecipe.add(category);
+      if (category === 'catalyst') catalystCount += 1;
+      if (category === 'boss') bossCount += 1;
+    }
+
+    if (levelStep >= 3 && categoriesInRecipe.size === 0) {
+      addError(errors, `equipmentCatalog ${profile.slot} step ${levelStep}: no meaningful material categories found`);
+    }
+
+    if (levelStep >= 6 && categoriesInRecipe.size === 1 && categoriesInRecipe.has('base')) {
+      addError(errors, `equipmentCatalog ${profile.slot} step ${levelStep}: high-progress recipe uses only base materials`);
+    }
+
+    if (levelStep <= 9 && (categoriesInRecipe.has('boss') || categoriesInRecipe.has('catalyst'))) {
+      addError(errors, `equipmentCatalog ${profile.slot} step ${levelStep}: low-level recipe requires boss or catalyst materials`);
+    }
+
+    if (levelStep <= 12 && categoriesInRecipe.has('boss')) {
+      addError(errors, `equipmentCatalog ${profile.slot} step ${levelStep}: boss material appears too early`);
+    }
+
+    if (catalystCount > 2) {
+      addWarning(warnings, `equipmentCatalog ${profile.slot} step ${levelStep}: catalyst usage looks excessive`);
+    }
+
+    if (bossCount > 1) {
+      addWarning(warnings, `equipmentCatalog ${profile.slot} step ${levelStep}: boss-material usage looks excessive`);
+    }
+
+    if (levelStep >= 24 && !categoriesInRecipe.has('tier') && !categoriesInRecipe.has('boss')) {
+      addWarning(warnings, `equipmentCatalog ${profile.slot} step ${levelStep}: late recipe may be missing a strong progression material`);
+    }
+  }
+}
+
 const liveRecipePrefixes = [
   'weapon_blade',
   'head_helmet',
@@ -436,12 +539,133 @@ const slotByRecipePrefix = new Map([
   ['ring_band', 'ring'],
   ['amulet_charm', 'amulet']
 ]);
+const recipePrefixBySlot = new Map([...slotByRecipePrefix.entries()].map(([prefix, slot]) => [slot, prefix]));
+const starterRecipeIdSet = new Set(starterRecipeIds.map((value) => String(value)));
+const liveUnlockRecipeIds = new Set();
+const liveUnlockCoverageBySlot = new Map();
+const liveUnlockCoverageByRecipeId = new Map();
+
+for (const template of liveRecipeUnlockTemplates) {
+  const slot = normalizeValue(template.slot);
+
+  if (!slot) {
+    addError(errors, 'recipeDropSources: unlock template missing slot');
+    continue;
+  }
+
+  if (!validCraftingSlotIds.has(slot)) {
+    addError(errors, `recipeDropSources: invalid unlock slot "${template.slot}"`);
+    continue;
+  }
+
+  if (!Array.isArray(template.unlocks) || template.unlocks.length !== craftingLevelSteps.length) {
+    addError(errors, `recipeDropSources ${template.slot}: unlock list must cover all ${craftingLevelSteps.length} crafting steps`);
+    continue;
+  }
+
+  const expectedPrefix = recipePrefixBySlot.get(slot);
+  const slotCoverage = new Set();
+  liveUnlockCoverageBySlot.set(slot, slotCoverage);
+
+  for (const unlock of template.unlocks) {
+    const level = parseNumberish(unlock.level);
+    if (level === null || !validCraftingLevelSteps.has(level)) {
+      addError(errors, `recipeDropSources ${template.slot}: invalid unlock level "${unlock.level}"`);
+      continue;
+    }
+
+    if (slotCoverage.has(level)) {
+      addError(errors, `recipeDropSources ${template.slot}: duplicate unlock entry for level ${level}`);
+      continue;
+    }
+    slotCoverage.add(level);
+
+    const recipeId = `recipe_${expectedPrefix}_lvl_${String(level).padStart(2, '0')}`;
+    liveUnlockRecipeIds.add(recipeId);
+    if (liveUnlockCoverageByRecipeId.has(recipeId)) {
+      addError(errors, `recipeDropSources: duplicate live unlock mapping for "${recipeId}"`);
+      continue;
+    }
+    liveUnlockCoverageByRecipeId.set(recipeId, unlock);
+
+    const unlockType = normalizeValue(unlock.unlockType);
+    if (!validLiveRecipeUnlockTypes.has(unlockType)) {
+      addError(errors, `recipeDropSources ${recipeId}: invalid unlock type "${unlock.unlockType}"`);
+    }
+
+    if (!hasRecord(locationLookups, unlock.locationId)) {
+      addError(errors, `recipeDropSources ${recipeId}: unknown location "${unlock.locationId}"`);
+    }
+
+    if (!unlock.notes || !String(unlock.notes).trim()) {
+      addWarning(warnings, `recipeDropSources ${recipeId}: missing unlock notes`);
+    }
+
+    const chancePercent = parseNumberish(unlock.chancePercent);
+    if (chancePercent === null || chancePercent < 0) {
+      addError(errors, `recipeDropSources ${recipeId}: invalid chancePercent "${unlock.chancePercent}"`);
+    } else if (chancePercent > 100) {
+      addError(errors, `recipeDropSources ${recipeId}: chancePercent "${unlock.chancePercent}" exceeds 100`);
+    } else if (unlockType === 'starter' && chancePercent !== 0) {
+      addError(errors, `recipeDropSources ${recipeId}: starter unlock must use 0 chancePercent`);
+    } else if (unlockType !== 'starter' && chancePercent === 0) {
+      addError(errors, `recipeDropSources ${recipeId}: non-starter unlock must have a positive chancePercent`);
+    } else if (unlockType !== 'starter' && (chancePercent < 2 || chancePercent > 15)) {
+      addWarning(warnings, `recipeDropSources ${recipeId}: chancePercent ${chancePercent} looks outside the normal live unlock range`);
+    }
+
+    const enemyNames = ensureArray(unlock.enemyNames).map((value) => String(value).trim()).filter(Boolean);
+    if (unlockType === 'starter' && enemyNames.length > 0) {
+      addError(errors, `recipeDropSources ${recipeId}: starter unlock should not list enemyNames`);
+    }
+    if (unlockType !== 'starter' && enemyNames.length === 0) {
+      addError(errors, `recipeDropSources ${recipeId}: non-starter unlock is missing enemyNames`);
+    }
+
+    for (const enemyName of enemyNames) {
+      if (
+        !hasRecord(enemyLookups, enemyName) &&
+        !hasRecord(sourceEnemyLookups, enemyName) &&
+        !hasRecord(bossNameLookups, enemyName) &&
+        !matchesGenericSourceText(enemyName)
+      ) {
+        addError(errors, `recipeDropSources ${recipeId}: unknown enemy source "${enemyName}"`);
+      }
+    }
+
+    if (starterRecipeIdSet.has(recipeId) && unlockType !== 'starter') {
+      addError(errors, `recipeDropSources ${recipeId}: starter recipe is not marked as starter`);
+    }
+
+    if (!starterRecipeIdSet.has(recipeId) && unlockType === 'starter') {
+      addError(errors, `recipeDropSources ${recipeId}: non-starter recipe is marked as starter`);
+    }
+  }
+}
 
 for (const recipeId of expectedLiveRecipeIds) {
   const prefix = recipeId.replace(/^recipe_/, '').replace(/_lvl_\d+$/, '');
   const slot = slotByRecipePrefix.get(prefix);
   if (!slot || !craftingSlotMetadataIds.has(slot)) {
     addWarning(warnings, `live crafting recipe ${recipeId}: no rich metadata slot mapping found`);
+  }
+
+  if (!liveUnlockRecipeIds.has(recipeId)) {
+    addError(errors, `recipeDropSources: live recipe "${recipeId}" has no unlock path`);
+  }
+}
+
+for (const starterRecipeId of starterRecipeIdSet) {
+  if (!expectedLiveRecipeIds.has(starterRecipeId)) {
+    addError(errors, `recipeDropSources: starter recipe "${starterRecipeId}" is not a live recipe id`);
+  }
+}
+
+for (const [slot, levelCoverage] of liveUnlockCoverageBySlot.entries()) {
+  for (const step of craftingLevelSteps) {
+    if (!levelCoverage.has(Number(step))) {
+      addError(errors, `recipeDropSources ${slot}: missing unlock entry for level ${step}`);
+    }
   }
 }
 
@@ -607,16 +831,8 @@ for (const recipe of allRecipes) {
 }
 
 const recipeDropDuplicateKeys = new Set();
+const legacyGeneratedRecipeIds = new Set(allRecipes.map((recipe) => normalizeValue(recipe.id)));
 for (const rule of allRecipeDrops) {
-  if (
-    String(rule.recipe_id).trim() === '---' &&
-    String(rule.source_location).trim() === '---' &&
-    String(rule.drops_from).trim() === '---'
-  ) {
-    addWarning(warnings, 'recipeDrops: ignored placeholder separator row in minor armor recipe drops');
-    continue;
-  }
-
   const recipeId = normalizeValue(rule.recipe_id);
   const duplicateKey = [
     normalizeValue(rule.recipe_id),
@@ -629,6 +845,19 @@ for (const rule of allRecipeDrops) {
     addError(errors, `recipeDrops: duplicate mapping for recipe "${rule.recipe_id}" from "${rule.drops_from}"`);
   } else {
     recipeDropDuplicateKeys.add(duplicateKey);
+  }
+
+  if (!recipeId) {
+    addError(errors, 'recipeDrops: missing recipe_id');
+    continue;
+  }
+
+  if (!legacyGeneratedRecipeIds.has(recipeId)) {
+    if (expectedLiveRecipeIds.has(recipeId)) {
+      addWarning(warnings, `recipeDrops ${rule.recipe_id}: legacy drop dataset now points at a live runtime recipe id`);
+    } else {
+      addError(errors, `recipeDrops ${rule.recipe_id}: unknown recipe id "${rule.recipe_id}"`);
+    }
   }
 
   if (!recipeIds.has(recipeId) && !hasRecord(recipeLookups, rule.dropped_recipe)) {
@@ -676,6 +905,9 @@ for (const rule of allRecipeDrops) {
   } else if (chance > 1 && chance <= 100) {
     if (chance < 1 || chance > 25) {
       addWarning(warnings, `recipeDrops ${rule.recipe_id}: suspicious percentage drop chance ${chance}`);
+    }
+    if (chance === 100) {
+      addWarning(warnings, `recipeDrops ${rule.recipe_id}: guaranteed legacy unlock should stay documented during runtime migration`);
     }
   } else if (chance > 1) {
     addError(errors, `recipeDrops ${rule.recipe_id}: drop chance "${rule.recipe_drop_chance}" exceeds expected bounds`);
