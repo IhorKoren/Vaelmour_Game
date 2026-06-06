@@ -1,4 +1,4 @@
-import type { HeroState, Recipe } from '../../game/types';
+import type { HeroState, Recipe, Armor, EquipmentSlot } from '../../game/types';
 import { weapons } from '../../data/weapons';
 import { armors } from '../../data/armors';
 import { shields } from '../../data/shields';
@@ -7,6 +7,8 @@ import { resolveItemDefinitionByIdOrName } from '../../data/itemResolver';
 import { getDisplayLocationName, getDisplayEnemyName } from '../../utils/displayHelpers';
 import { getLiveRecipeUnlockRule, isStarterRecipeId } from '../../data/recipeDropSources';
 import { getEquippableSlot } from '../../game/formulas/equipment';
+import { createGeneratedEquipmentItem } from '../../game/equipment/generatedEquipment';
+import { updateQuestProgressOnCraftCompleted } from '../../game/formulas/quests';
 
 export type CraftingBlockedReason =
   | 'INVALID_RECIPE'
@@ -42,7 +44,7 @@ export function resolveCraftResult(resultId: string) {
 
     let cat = 'category' in match ? (match as Record<string, unknown>).category as string : 'crafted';
     if (weaponsSet.has(matchIdLower)) cat = 'weapon';
-    else if (armorsSet.has(matchIdLower)) cat = 'chest';
+    else if (armorsSet.has(matchIdLower)) cat = (match as Armor).archetype || 'chest';
     else if (shieldsSet.has(matchIdLower)) cat = 'shield';
 
     return { ...match, category: cat };
@@ -272,4 +274,70 @@ export function getRecipeStatChips(recipe: Recipe): RecipeStatChip[] {
   }
 
   return chips;
+}
+
+export function executeCraftTransaction(
+  recipe: Recipe,
+  hero: HeroState,
+  rollSuccess: (chance: number) => boolean
+): { success: boolean; hero: HeroState } {
+  const knownRecipeIds = new Set(hero.knownRecipeIds ?? []);
+  const blocked = getCraftingBlockedReason(recipe, hero, knownRecipeIds);
+  if (blocked) {
+    return { success: false, hero };
+  }
+
+  const outputItem = resolveCraftResult(recipe.result);
+  if (!outputItem) {
+    return { success: false, hero };
+  }
+
+  const nextInventory = hero.inventory
+    .map((stack) => {
+      const required = recipe.materials.find((item) => item.id.toLowerCase() === stack.itemId.toLowerCase());
+      return required ? { ...stack, qty: stack.qty - required.qty } : stack;
+    })
+    .filter((stack) => stack.qty > 0);
+
+  const isSuccess = rollSuccess(recipe.successChance);
+
+  if (isSuccess) {
+    const slot = getEquippableSlot(outputItem);
+    const isEquip = slot !== null;
+
+    if (isEquip) {
+      const generated = createGeneratedEquipmentItem({
+        slot: slot as EquipmentSlot,
+        level: recipe.requiredLevel,
+        rarity: recipe.rarity || 'common'
+      });
+      nextInventory.push({
+        itemId: generated.id,
+        qty: 1,
+        affixes: generated.affixes,
+        durability: generated.durability,
+        rerollCount: 0,
+        generatedItem: generated
+      });
+    } else {
+      const resultId = outputItem.id;
+      const existingResult = nextInventory.find((stack) => stack.itemId.toLowerCase() === resultId.toLowerCase() && (!stack.affixes || stack.affixes.length === 0));
+      if (existingResult) {
+        existingResult.qty += 1;
+      } else {
+        nextInventory.push({ itemId: resultId, qty: 1 });
+      }
+    }
+  }
+
+  const nextHero = {
+    ...hero,
+    gold: hero.gold - recipe.goldCost,
+    inventory: nextInventory
+  };
+
+  return {
+    success: isSuccess,
+    hero: isSuccess ? updateQuestProgressOnCraftCompleted(nextHero) : nextHero
+  };
 }

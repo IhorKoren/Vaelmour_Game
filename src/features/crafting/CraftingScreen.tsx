@@ -6,8 +6,6 @@ import { Panel } from '../../components/ui/Panel';
 import type { HeroState, Recipe } from '../../game/types';
 import { getDisplayItemName, formatRarity, formatItemType, getDisplayOutputEffect, getDisplayItemDescription } from '../../utils/displayHelpers';
 import { rollCraftSuccess } from '../../game/formulas/crafting';
-import { generateItemAffixes } from '../../game/formulas/affixes';
-import { updateQuestProgressOnCraftCompleted } from '../../game/formulas/quests';
 import { getEquippableSlot } from '../../game/formulas/equipment';
 import {
   getMaterialCategoryLabel,
@@ -20,7 +18,8 @@ import {
   getDisplayRecipeUnlockSource,
   getSafeVisibleRecipes,
   resolveCraftResult,
-  getRecipeStatChips
+  getRecipeStatChips,
+  executeCraftTransaction
 } from './craftingHelpers';
 
 
@@ -167,49 +166,11 @@ export function CraftingScreen({ hero, onHeroChange }: Props) {
       return;
     }
 
-    const nextInventory = hero.inventory
-      .map((stack) => {
-        const required = recipe.materials.find((item) => item.id.toLowerCase() === stack.itemId.toLowerCase());
-        return required ? { ...stack, qty: stack.qty - required.qty } : stack;
-      })
-      .filter((stack) => stack.qty > 0);
-
-    const isSuccess = rollCraftSuccess(recipe.successChance);
-    const resultId = craftResultDefinition.id;
     const resultName = craftResultDefinition.name;
+    const transaction = executeCraftTransaction(recipe, hero, rollCraftSuccess);
 
-    if (isSuccess) {
-      const resultItem = resolveCraftResult(resultId);
-      const slot = resultItem ? getEquippableSlot(resultItem) : null;
-      const isEquip = slot !== null;
-      const category = slot === 'weapon' ? 'weapon' : (['chest', 'shield', 'head', 'hands', 'legs', 'feet'].includes(slot ?? '') ? 'armor' : 'accessory');
-
-      const affixes = isEquip ? generateItemAffixes(recipe.rarity || 'common', category, recipe.tier || 1) : [];
-
-      if (affixes.length > 0) {
-        nextInventory.push({ itemId: resultId, qty: 1, affixes });
-      } else if (isEquip) {
-        nextInventory.push({ itemId: resultId, qty: 1 });
-      } else {
-        const existingResult = nextInventory.find((stack) => stack.itemId.toLowerCase() === resultId.toLowerCase() && (!stack.affixes || stack.affixes.length === 0));
-        if (existingResult) {
-          existingResult.qty += 1;
-        } else {
-          nextInventory.push({ itemId: resultId, qty: 1 });
-        }
-      }
-      setCraftResult({ success: true, itemName: resultName });
-    } else {
-      setCraftResult({ success: false, itemName: resultName });
-    }
-
-    const nextHero = {
-      ...hero,
-      gold: hero.gold - recipe.goldCost,
-      inventory: nextInventory
-    };
-
-    onHeroChange(isSuccess ? updateQuestProgressOnCraftCompleted(nextHero) : nextHero);
+    setCraftResult({ success: transaction.success, itemName: resultName });
+    onHeroChange(transaction.hero);
   }
 
   const hasLevelFor = (requiredLevel: number) => hero.level >= requiredLevel;

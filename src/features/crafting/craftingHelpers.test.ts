@@ -5,7 +5,8 @@ import {
   getDisplayRecipeUnlockSource,
   getSafeVisibleRecipes,
   getRecipeStatChips,
-  resolveCraftResult
+  resolveCraftResult,
+  executeCraftTransaction
 } from './craftingHelpers';
 import type { HeroState, Recipe } from '../../game/types';
 import { weapons } from '../../data/weapons';
@@ -182,5 +183,86 @@ describe('craftingHelpers tests', () => {
     const ringChips = getRecipeStatChips(ringRecipe);
     expect(ringChips.find(c => c.label === 'Шкода')).toBeUndefined();
     expect(ringChips.find(c => c.label === 'Швидкість')).toBeUndefined();
+  });
+
+  test('executeCraftTransaction successfully crafts an item and rolls generated stats', () => {
+    const recipe: Recipe = {
+      id: 'recipe_ring_band_lvl_01',
+      result: 'ring_band_lvl_01',
+      name: 'Ring Blueprint',
+      requiredLevel: 1,
+      goldCost: 10,
+      materials: [{ id: 'MAT_001', qty: 2 }],
+      tier: 1,
+      rarity: 'common',
+      successChance: 1,
+      station: 'forge',
+      itemType: 'ring',
+      outputEffect: ''
+    };
+
+    const hero: HeroState = {
+      ...dummyHero,
+      knownRecipeIds: ['recipe_ring_band_lvl_01'],
+      gold: 50,
+      inventory: [
+        { itemId: 'MAT_001', qty: 10 }
+      ]
+    };
+
+    const result = executeCraftTransaction(recipe, hero, () => true);
+    expect(result.success).toBe(true);
+    expect(result.hero.gold).toBe(40);
+    
+    // Mat MAT_001 should be reduced to 8
+    const matStack = result.hero.inventory.find(s => s.itemId === 'MAT_001');
+    expect(matStack?.qty).toBe(8);
+
+    // Should contain a generated equipment item stack
+    const itemStack = result.hero.inventory.find(s => s.itemId.startsWith('generated_'));
+    expect(itemStack).toBeDefined();
+    expect(itemStack?.qty).toBe(1);
+    expect(itemStack?.generatedItem).toBeDefined();
+    expect(itemStack?.generatedItem?.rarity).toBe('common');
+    expect(itemStack?.generatedItem?.level).toBe(1);
+    expect(itemStack?.generatedItem?.slot).toBe('ring1');
+  });
+
+  test('executeCraftTransaction consumes materials and gold on failure without creating item', () => {
+    const recipe: Recipe = {
+      id: 'recipe_ring_band_lvl_01',
+      result: 'ring_band_lvl_01',
+      name: 'Ring Blueprint',
+      requiredLevel: 1,
+      goldCost: 10,
+      materials: [{ id: 'MAT_001', qty: 2 }],
+      tier: 1,
+      rarity: 'common',
+      successChance: 1,
+      station: 'forge',
+      itemType: 'ring',
+      outputEffect: ''
+    };
+
+    const hero: HeroState = {
+      ...dummyHero,
+      knownRecipeIds: ['recipe_ring_band_lvl_01'],
+      gold: 50,
+      inventory: [
+        { itemId: 'MAT_001', qty: 10 }
+      ]
+    };
+
+    const result = executeCraftTransaction(recipe, hero, () => false);
+    expect(result.success).toBe(false);
+    expect(result.hero.gold).toBe(40);
+    
+    // Mat MAT_001 should be reduced to 8
+    const matStack = result.hero.inventory.find(s => s.itemId === 'MAT_001');
+    expect(matStack?.qty).toBe(8);
+
+    // Should NOT contain a generated item
+    const itemStack = result.hero.inventory.find(s => s.itemId.startsWith('generated_'));
+    expect(itemStack).toBeUndefined();
   });
 });
