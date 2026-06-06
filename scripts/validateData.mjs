@@ -13,12 +13,12 @@ function readJson(relativePath) {
 
 function readTsConstArray(relativePath, exportName) {
   const source = fs.readFileSync(path.join(repoRoot, relativePath), 'utf8');
-  const pattern = new RegExp(`export const ${exportName} = (\\[[\\s\\S]*?\\]) as const;`);
+  const pattern = new RegExp(`export const ${exportName}(?::[^=]+)? = (\\[[\\s\\S]*?\\]) as const;`);
   const match = source.match(pattern);
   if (!match) {
     throw new Error(`Unable to read ${exportName} from ${relativePath}`);
   }
-  return JSON.parse(match[1]);
+  return Function(`"use strict"; return (${match[1]});`)();
 }
 
 function normalizeValue(value) {
@@ -175,6 +175,12 @@ const amuletUniqueItemDrops = readTsConstArray('src/data/amuletLoot.ts', 'amulet
 const amuletLocationLoot = readTsConstArray('src/data/amuletLoot.ts', 'amuletLocationLoot');
 const minorArmorUniqueItemDrops = readTsConstArray('src/data/minorArmorLoot.ts', 'minorArmorUniqueItemDrops');
 const minorArmorLocationLoot = readTsConstArray('src/data/minorArmorLoot.ts', 'minorArmorLocationLoot');
+const materialTaxonomy = readTsConstArray('src/data/materialTaxonomy.ts', 'MATERIAL_TAXONOMY');
+const craftingLevelSteps = readTsConstArray('src/data/materialTaxonomy.ts', 'CRAFTING_LEVEL_STEPS');
+const materialTaxonomyCategories = readTsConstArray('src/data/materialTaxonomy.ts', 'MATERIAL_TAXONOMY_CATEGORIES');
+const legacyMaterialCompatibility = readTsConstArray('src/data/legacyMaterialMap.ts', 'LEGACY_MATERIAL_COMPATIBILITY');
+const craftingSlotMetadata = readTsConstArray('src/data/craftingRecipeMetadata.ts', 'CRAFTING_SLOT_METADATA');
+const craftingRecipeMetadataOverrides = readTsConstArray('src/data/craftingRecipeMetadata.ts', 'CRAFTING_RECIPE_METADATA_OVERRIDES');
 
 const allRecipes = [
   ...recipes,
@@ -243,6 +249,9 @@ const itemIdSet = new Set(allItemRecords.map((item) => normalizeValue(item.id)))
 const itemNameSet = new Set(allItemRecords.map((item) => normalizeLooseText(item.name)));
 const materialIdSet = new Set(materials.map((material) => normalizeValue(material.id)));
 const materialNameSet = new Set(materials.map((material) => normalizeLooseText(material.name)));
+const validCraftingLevelSteps = new Set(craftingLevelSteps.map((value) => Number(value)));
+const validMaterialTaxonomyCategories = new Set(materialTaxonomyCategories.map((value) => normalizeValue(value)));
+const validCraftingSlotIds = new Set(['weapon', 'shield', 'head', 'chest', 'hands', 'legs', 'feet', 'ring', 'amulet']);
 
 const locationLookups = makeIndexedLookups(locations);
 const enemyLookups = makeIndexedLookups(enemies);
@@ -269,6 +278,158 @@ const sourceEnemyLookups = makeIndexedLookups([
 const usedItemIds = new Set();
 const usedRecipeIds = new Set();
 const usedMaterialIds = new Set();
+
+const materialTaxonomyIds = new Set();
+for (const entry of materialTaxonomy) {
+  const materialId = normalizeValue(entry.materialId);
+  if (!materialId) {
+    addError(errors, 'materialTaxonomy: missing materialId');
+    continue;
+  }
+
+  if (materialTaxonomyIds.has(materialId)) {
+    addError(errors, `materialTaxonomy: duplicate material entry "${entry.materialId}"`);
+    continue;
+  }
+  materialTaxonomyIds.add(materialId);
+
+  if (!materialIdSet.has(materialId)) {
+    addError(errors, `materialTaxonomy: unknown material id "${entry.materialId}"`);
+  }
+
+  const category = normalizeValue(entry.category);
+  if (!validMaterialTaxonomyCategories.has(category)) {
+    addError(errors, `materialTaxonomy ${entry.materialId}: invalid category "${entry.category}"`);
+  }
+
+  const tierStep = parseNumberish(entry.tierStep);
+  if (tierStep === null || !validCraftingLevelSteps.has(tierStep)) {
+    addError(errors, `materialTaxonomy ${entry.materialId}: invalid tier step "${entry.tierStep}"`);
+  }
+
+  if (!entry.playerLabel || !String(entry.playerLabel).trim()) {
+    addError(errors, `materialTaxonomy ${entry.materialId}: missing player-facing category label`);
+  }
+
+  if (!entry.primaryUse || !String(entry.primaryUse).trim()) {
+    addWarning(warnings, `materialTaxonomy ${entry.materialId}: vague or missing primary use`);
+  }
+
+  if (!entry.isLegacy && (!entry.sourceHint || !String(entry.sourceHint).trim())) {
+    addWarning(warnings, `materialTaxonomy ${entry.materialId}: missing source hint`);
+  }
+}
+
+for (const material of materials) {
+  const normalizedId = normalizeValue(material.id);
+  if (!materialTaxonomyIds.has(normalizedId)) {
+    addWarning(warnings, `material ${material.id}: no taxonomy entry found`);
+  }
+}
+
+const legacyMaterialIds = new Set();
+for (const entry of legacyMaterialCompatibility) {
+  const legacyId = normalizeValue(entry.legacyId);
+  const canonicalMaterialId = normalizeValue(entry.canonicalMaterialId);
+
+  if (!legacyId) {
+    addError(errors, 'legacyMaterialMap: missing legacyId');
+    continue;
+  }
+
+  if (legacyMaterialIds.has(legacyId)) {
+    addError(errors, `legacyMaterialMap: duplicate legacy id "${entry.legacyId}"`);
+    continue;
+  }
+  legacyMaterialIds.add(legacyId);
+
+  if (!canonicalMaterialId || !materialIdSet.has(canonicalMaterialId)) {
+    addError(errors, `legacyMaterialMap ${entry.legacyId}: canonical material "${entry.canonicalMaterialId}" does not exist`);
+  }
+
+  if (!validMaterialTaxonomyCategories.has(normalizeValue(entry.category))) {
+    addError(errors, `legacyMaterialMap ${entry.legacyId}: invalid category "${entry.category}"`);
+  }
+
+  if (!entry.futureReplacementId && !entry.category) {
+    addWarning(warnings, `legacyMaterialMap ${entry.legacyId}: no replacement or category mapping provided`);
+  }
+}
+
+const craftingSlotMetadataIds = new Set();
+for (const entry of craftingSlotMetadata) {
+  const slot = normalizeValue(entry.slot);
+  if (!slot) {
+    addError(errors, 'craftingRecipeMetadata: slot metadata entry missing slot');
+    continue;
+  }
+
+  if (craftingSlotMetadataIds.has(slot)) {
+    addError(errors, `craftingRecipeMetadata: duplicate slot metadata "${entry.slot}"`);
+    continue;
+  }
+  craftingSlotMetadataIds.add(slot);
+
+  if (!validCraftingSlotIds.has(slot)) {
+    addError(errors, `craftingRecipeMetadata: invalid slot "${entry.slot}"`);
+  }
+
+  if (!entry.sourceHint || !String(entry.sourceHint).trim()) {
+    addWarning(warnings, `craftingRecipeMetadata ${entry.slot}: missing source hint`);
+  }
+
+  if (!entry.purposeTemplate || String(entry.purposeTemplate).trim().length < 20) {
+    addWarning(warnings, `craftingRecipeMetadata ${entry.slot}: vague purpose text`);
+  }
+}
+
+const liveRecipePrefixes = [
+  'weapon_blade',
+  'head_helmet',
+  'chest_armor',
+  'hands_gloves',
+  'legs_pants',
+  'feet_boots',
+  'shield_guard',
+  'ring_band',
+  'amulet_charm'
+];
+
+const expectedLiveRecipeIds = new Set(
+  liveRecipePrefixes.flatMap((prefix) =>
+    [...validCraftingLevelSteps].map((level) => `recipe_${prefix}_lvl_${String(level).padStart(2, '0')}`)
+  )
+);
+
+const slotByRecipePrefix = new Map([
+  ['weapon_blade', 'weapon'],
+  ['head_helmet', 'head'],
+  ['chest_armor', 'chest'],
+  ['hands_gloves', 'hands'],
+  ['legs_pants', 'legs'],
+  ['feet_boots', 'feet'],
+  ['shield_guard', 'shield'],
+  ['ring_band', 'ring'],
+  ['amulet_charm', 'amulet']
+]);
+
+for (const recipeId of expectedLiveRecipeIds) {
+  const prefix = recipeId.replace(/^recipe_/, '').replace(/_lvl_\d+$/, '');
+  const slot = slotByRecipePrefix.get(prefix);
+  if (!slot || !craftingSlotMetadataIds.has(slot)) {
+    addWarning(warnings, `live crafting recipe ${recipeId}: no rich metadata slot mapping found`);
+  }
+}
+
+for (const entry of craftingRecipeMetadataOverrides) {
+  if (!expectedLiveRecipeIds.has(String(entry.recipeId))) {
+    addError(errors, `craftingRecipeMetadata override: unknown live recipe "${entry.recipeId}"`);
+  }
+
+  if (!entry.purposeText && !entry.sourceHint) {
+    addWarning(warnings, `craftingRecipeMetadata override ${entry.recipeId}: no override content provided`);
+  }
+}
 
 for (const location of locations) {
   if (!location.name) addError(errors, `location ${location.id}: missing display name`);

@@ -1,5 +1,11 @@
 import { useState, useMemo } from 'react';
 import { resolveBaseItemDefinition, resolveInventoryItemDefinition } from '../../data/resolvedItems';
+import {
+  getMaterialCategoryLabel,
+  getMaterialDisplaySourceHint,
+  getMaterialPrimaryUse,
+  isLegacyMaterial
+} from '../../data/materialTaxonomy';
 import { Panel } from '../../components/ui/Panel';
 import { CraftingScreen } from '../crafting/CraftingScreen';
 import { 
@@ -541,6 +547,10 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
         const { item } = selectedStack;
         const rarity = item.rarity || 'common';
         const rarityColor = rarityColors[rarity] || rarityColors.common;
+        const materialCategoryLabel = item.category === 'material' ? getMaterialCategoryLabel(item.id) : null;
+        const materialSourceHint = item.category === 'material' ? getMaterialDisplaySourceHint(item.id) : null;
+        const materialPrimaryUse = item.category === 'material' ? getMaterialPrimaryUse(item.id) : null;
+        const materialIsLegacy = item.category === 'material' ? isLegacyMaterial(item.id) : false;
 
         const slot = getEquippableSlot(item);
         const isEquippable = slot !== null;
@@ -718,6 +728,29 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
                 <p style={{ margin: '8px 0 0', fontSize: '11.5px', fontStyle: 'italic', color: 'var(--color-text-muted)', lineHeight: '1.4' }}>
                   "{getDisplayItemDescription(item.id, item.description)}"
                 </p>
+              )}
+
+              {item.category === 'material' && materialCategoryLabel && (
+                <div style={{ marginTop: '8px', padding: '6px 8px', borderRadius: '8px', background: 'rgba(0,0,0,0.18)', border: '1px dashed rgba(212,163,115,0.08)', fontSize: '10px', color: 'var(--color-text-muted)' }}>
+                  <div style={{ marginBottom: '4px' }}>
+                    🧭 <strong>Категорія:</strong> {materialCategoryLabel}
+                  </div>
+                  {materialPrimaryUse && (
+                    <div style={{ marginBottom: '4px' }}>
+                      ⚒️ <strong>Основне застосування:</strong> {materialPrimaryUse}
+                    </div>
+                  )}
+                  {materialSourceHint && (
+                    <div style={{ marginBottom: '4px' }}>
+                      📍 <strong>Підказка щодо здобичі:</strong> {materialSourceHint}
+                    </div>
+                  )}
+                  {materialIsLegacy && (
+                    <div style={{ color: 'var(--color-gold-gilded)' }}>
+                      ♻️ <strong>Сумісність:</strong> цей матеріал збережено для старих запасів і рецептів.
+                    </div>
+                  )}
+                </div>
               )}
 
               {item.category === 'material' && (

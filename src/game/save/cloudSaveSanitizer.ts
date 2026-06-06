@@ -1,4 +1,5 @@
 import { items } from '../../data/items';
+import { normalizeLegacyMaterialId } from '../../data/legacyMaterialMap';
 import { locations } from '../../data/locations';
 import { recipes } from '../../data/recipes';
 import type {
@@ -65,7 +66,7 @@ function isGeneratedItemId(value: string): boolean {
 }
 
 function isValidKnownItemId(value: string): boolean {
-  return VALID_ITEM_IDS.has(value.toLowerCase());
+  return VALID_ITEM_IDS.has(normalizeLegacyMaterialId(value).toLowerCase());
 }
 
 function sanitizeAffix(value: unknown): ItemAffix | null {

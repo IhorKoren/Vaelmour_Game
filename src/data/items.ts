@@ -5,6 +5,7 @@ import generatedMinorArmor from './generated/minorArmor.json';
 import generatedRings from './generated/rings.json';
 import generatedShields from './generated/shields.json';
 import { equipmentItems } from './equipmentCatalog';
+import { normalizeLegacyMaterialId } from './legacyMaterialMap';
 import type { ItemCategory, Rarity } from '../game/types';
 
 export type ItemDefinition = {
@@ -147,3 +148,7 @@ export const items: ItemDefinition[] = Array.from(
     return map;
   }, new Map<string, ItemDefinition>()).values(),
 );
+
+export function resolveCanonicalItemId(itemId: string): string {
+  return normalizeLegacyMaterialId(itemId);
+}

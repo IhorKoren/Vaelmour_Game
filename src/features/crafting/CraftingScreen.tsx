@@ -4,6 +4,7 @@ import { items } from '../../data/items';
 import { weapons } from '../../data/weapons';
 import { armors } from '../../data/armors';
 import { shields } from '../../data/shields';
+import { getCraftingRecipeMetadata } from '../../data/craftingRecipeMetadata';
 import { resolveItemDefinitionByIdOrName } from '../../data/itemResolver';
 import { Panel } from '../../components/ui/Panel';
 import type { HeroState, Recipe } from '../../game/types';
@@ -490,6 +491,7 @@ export function CraftingScreen({ hero, onHeroChange }: Props) {
         const rarityColor = rarityColors[rarity] || rarityColors.common;
         const resultName = getDisplayItemName(recipe.result);
         const statChips = getRecipeStatChips(recipe);
+        const recipeMetadata = getCraftingRecipeMetadata(recipe);
         const levelOk = hasLevelFor(recipe.requiredLevel);
         const goldOk = hasGoldFor(recipe.goldCost);
 
@@ -539,6 +541,9 @@ export function CraftingScreen({ hero, onHeroChange }: Props) {
                   <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', display: 'block', marginTop: '2px', fontWeight: 'bold' }}>
                     Креслення: {getDisplayItemName(recipe.name)} · Ранг {recipe.tier ?? 1} {formatItemType(recipe.itemType ?? '')}
                   </span>
+                  <span style={{ fontSize: '11px', color: 'var(--color-bronze-light)', display: 'block', marginTop: '4px', lineHeight: '1.35' }}>
+                    {recipeMetadata.purposeText}
+                  </span>
                   {resolvedDesc && (
                     <span style={{ fontSize: '11px', color: 'var(--color-gold-light)', display: 'block', marginTop: '4px', fontStyle: 'italic', opacity: 0.9 }}>
                       {resolvedDesc}
@@ -549,6 +554,23 @@ export function CraftingScreen({ hero, onHeroChange }: Props) {
 
               {/* Blueprint details roll */}
               <div className="forge-blueprint-paper">
+                <div style={{
+                  fontSize: '10.5px',
+                  color: 'var(--color-text-muted)',
+                  background: 'rgba(0,0,0,0.22)',
+                  padding: '8px 10px',
+                  borderRadius: '8px',
+                  border: '1px dashed rgba(212, 163, 115, 0.15)',
+                  marginBottom: '8px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px'
+                }}>
+                  <div><strong style={{ color: 'var(--color-bronze-light)' }}>Роль:</strong> {recipeMetadata.slotLabel}</div>
+                  <div><strong style={{ color: 'var(--color-bronze-light)' }}>Джерело схеми:</strong> {recipeMetadata.sourceHint}</div>
+                  <div><strong style={{ color: 'var(--color-bronze-light)' }}>Тип матеріалів:</strong> {recipeMetadata.materialCategorySummary}</div>
+                  <div><strong style={{ color: 'var(--color-bronze-light)' }}>Афікси:</strong> {recipeMetadata.expectedAffixBehavior}</div>
+                </div>
                 {/* Output Stats Effect */}
                 <div className="forge-stat-grid" aria-label="Характеристики предмета">
                   {statChips.map((stat) => (
@@ -646,6 +668,11 @@ export function CraftingScreen({ hero, onHeroChange }: Props) {
                         </div>
                       );
                     })}
+                  </div>
+                  <div style={{ marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '9.5px', color: 'var(--color-text-muted)' }}>
+                    {recipeMetadata.materialSourceHints.map((hint) => (
+                      <span key={hint}>{hint}</span>
+                    ))}
                   </div>
                 </div>
 

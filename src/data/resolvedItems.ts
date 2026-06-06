@@ -1,5 +1,5 @@
 import { armors } from './armors';
-import { items, type ItemDefinition } from './items';
+import { items, resolveCanonicalItemId, type ItemDefinition } from './items';
 import { weapons } from './weapons';
 import type { GeneratedEquipmentItem, InventoryStack } from '../game/types';
 
@@ -24,7 +24,7 @@ function buildGeneratedItemDefinition(
 }
 
 export function resolveBaseItemDefinition(itemId: string): ResolvedInventoryItem | null {
-  const normalizedItemId = itemId.toLowerCase();
+  const normalizedItemId = resolveCanonicalItemId(itemId).toLowerCase();
 
   const itemMatch = items.find((entry) => entry.id.toLowerCase() === normalizedItemId);
 
