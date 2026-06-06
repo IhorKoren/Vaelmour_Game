@@ -1,6 +1,6 @@
 import { Panel } from '../../../components/ui/Panel';
 
-interface CombatLogProps {
+interface CombatLogPanelProps {
   log: string[];
 }
 
@@ -55,7 +55,7 @@ function renderLogEntry(entry: string, index: number) {
   );
 }
 
-export function CombatLog({ log }: CombatLogProps) {
+export function CombatLogPanel({ log }: CombatLogPanelProps) {
   return (
     <Panel title="Бойовий журнал">
       <div className="combat-log-container">

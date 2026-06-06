@@ -13,7 +13,7 @@ import { isHeroHpTooLow } from './combatDisplayHelpers';
 import {
   CombatArena,
   CombatControls,
-  CombatLog,
+  CombatLogPanel,
   CombatIdlePanel,
   CombatSearchingPanel,
   AutoHuntToggle
@@ -148,7 +148,7 @@ export function CombatScreen({ hero, onHeroChange, selectedLocationId, onCombatS
             onReturn={handleReturn}
           />
 
-          <CombatLog log={log} />
+          <CombatLogPanel log={log} />
         </>
       )}
 
