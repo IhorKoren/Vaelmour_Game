@@ -24,7 +24,7 @@ function readJson(repoRoot, relativePath) {
 
 function readTsConstArray(repoRoot, relativePath, exportName) {
   const source = fs.readFileSync(path.join(repoRoot, relativePath), 'utf8');
-  const pattern = new RegExp(`export const ${exportName}(?::[^=]+)? = (\\[[\\s\\S]*?\\]) as const;`);
+  const pattern = new RegExp(`export const ${exportName}(?::[^=]+)? = (\\[[\\s\\S]*?\\])(?: as const)?;`);
   const match = source.match(pattern);
   if (!match) {
     throw new Error(`Unable to read ${exportName} from ${relativePath}`);
@@ -34,6 +34,14 @@ function readTsConstArray(repoRoot, relativePath, exportName) {
 
 function normalizeId(value) {
   return String(value ?? '').trim().toUpperCase();
+}
+
+function normalizeText(value) {
+  return String(value ?? '')
+    .toLowerCase()
+    .replace(/[’']/g, "'")
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
 }
 
 function resultItemIdFor(slot, level) {
@@ -95,6 +103,133 @@ function makeSourceIndex(materialSources, locations, materialById, taxonomyByMat
   return byMaterial;
 }
 
+function getQuestRewardMaterialIds(curatedCraftingQuests) {
+  const questRewardMaterialIds = new Set();
+  for (const quest of curatedCraftingQuests) {
+    for (const materialId of quest.rewards?.materialIds ?? []) {
+      questRewardMaterialIds.add(normalizeId(materialId));
+    }
+    for (const materialId of Object.keys(quest.rewards?.materialQuantities ?? {})) {
+      questRewardMaterialIds.add(normalizeId(materialId));
+    }
+  }
+  return questRewardMaterialIds;
+}
+
+function parseSourceKinds(entry) {
+  const sourceType = normalizeText(entry.source_type);
+  const sourceLocation = normalizeText(entry.source_location);
+  const sourceEnemyMethod = normalizeText(entry.source_enemy_method);
+
+  const isCraftingOnly = sourceType.includes('craft') || sourceLocation === 'crafting';
+  const supportsElite = sourceType.includes('elite');
+  const supportsBoss = sourceType.includes('boss');
+  const isBossOnly = supportsBoss && !supportsElite;
+  const isRuntimeDrop = !isCraftingOnly;
+  const isNonBossRuntime = isRuntimeDrop && !isBossOnly;
+
+  return {
+    isCraftingOnly,
+    isRuntimeDrop,
+    isNonBossRuntime,
+    isBossOnly,
+    sourceEnemyMethod
+  };
+}
+
+function makeRuntimeSourceIndex(materialSources, locations, taxonomyByMaterialId, curatedCraftingQuests) {
+  const locationByName = new Map(locations.map((location) => [normalizeText(location.name), location]));
+  const questRewardMaterialIds = getQuestRewardMaterialIds(curatedCraftingQuests);
+  const byMaterial = new Map();
+
+  for (const entry of materialSources) {
+    const materialId = normalizeId(entry.material_id);
+    const sourceKinds = parseSourceKinds(entry);
+    const locationName = String(entry.source_location ?? '').trim();
+    const location = locationByName.get(normalizeText(locationName)) ?? null;
+    const taxonomy = taxonomyByMaterialId.get(materialId) ?? null;
+    const minLevel =
+      locationMinLevel(location) ??
+      taxonomy?.levelRange?.[0] ??
+      null;
+
+    const current = byMaterial.get(materialId) ?? {
+      materialId,
+      hasDesignSource: false,
+      hasRuntimeSource: false,
+      hasNonBossRuntimeSource: false,
+      hasQuestRewardSource: questRewardMaterialIds.has(materialId),
+      hasBossOnlySource: false,
+      earliestRuntimeSourceLocationId: null,
+      earliestRuntimeSourceLocationName: null,
+      earliestRuntimeSourceMinLevel: null,
+      earliestRuntimeSourceType: null
+    };
+
+    current.hasDesignSource = true;
+    current.hasBossOnlySource = current.hasBossOnlySource || sourceKinds.isBossOnly;
+
+    if (sourceKinds.isRuntimeDrop && location) {
+      current.hasRuntimeSource = true;
+
+      if (
+        current.earliestRuntimeSourceMinLevel === null ||
+        (minLevel !== null && minLevel < current.earliestRuntimeSourceMinLevel)
+      ) {
+        current.earliestRuntimeSourceLocationId = location.id;
+        current.earliestRuntimeSourceLocationName = location.name;
+        current.earliestRuntimeSourceMinLevel = minLevel;
+        current.earliestRuntimeSourceType = entry.source_type ?? null;
+      }
+    }
+
+    if (sourceKinds.isNonBossRuntime && location) {
+      current.hasNonBossRuntimeSource = true;
+    }
+
+    byMaterial.set(materialId, current);
+  }
+
+  for (const location of locations) {
+    for (const materialIdRaw of location.materials ?? []) {
+      const materialId = normalizeId(materialIdRaw);
+      const taxonomy = taxonomyByMaterialId.get(materialId) ?? null;
+      const current = byMaterial.get(materialId) ?? {
+        materialId,
+        hasDesignSource: false,
+        hasRuntimeSource: false,
+        hasNonBossRuntimeSource: false,
+        hasQuestRewardSource: questRewardMaterialIds.has(materialId),
+        hasBossOnlySource: false,
+        earliestRuntimeSourceLocationId: null,
+        earliestRuntimeSourceLocationName: null,
+        earliestRuntimeSourceMinLevel: null,
+        earliestRuntimeSourceType: null
+      };
+
+      current.hasRuntimeSource = true;
+      if (taxonomy?.category !== 'boss') {
+        current.hasNonBossRuntimeSource = true;
+      }
+
+      const minLevel = locationMinLevel(location);
+      if (
+        current.earliestRuntimeSourceMinLevel === null ||
+        (minLevel !== null && minLevel < current.earliestRuntimeSourceMinLevel)
+      ) {
+        current.earliestRuntimeSourceLocationId = location.id;
+        current.earliestRuntimeSourceLocationName = location.name;
+        current.earliestRuntimeSourceMinLevel = minLevel;
+        current.earliestRuntimeSourceType = current.earliestRuntimeSourceType ?? 'Location Materials';
+      }
+
+      byMaterial.set(materialId, current);
+    }
+  }
+
+  return byMaterial;
+}
+
 function countUsageByMaterial(rows) {
   const usage = new Map();
   for (const row of rows) {
@@ -112,6 +247,7 @@ export function buildCraftingMaterialAudit(repoRoot) {
   const liveRecipeSlotProfiles = readTsConstArray(repoRoot, 'src/data/equipmentCatalog.ts', 'LIVE_RECIPE_SLOT_PROFILES');
   const materialTaxonomy = readTsConstArray(repoRoot, 'src/data/materialTaxonomy.ts', 'MATERIAL_TAXONOMY');
   const starterRecipeIds = new Set(readTsConstArray(repoRoot, 'src/data/recipeDropSources.ts', 'STARTER_RECIPE_IDS').map(String));
+  const curatedCraftingQuests = readTsConstArray(repoRoot, 'src/data/quests.ts', 'curatedCraftingQuests');
   const locations = readJson(repoRoot, 'src/data/generated/locations.json');
   const materials = readJson(repoRoot, 'src/data/generated/materials.json');
   const materialSources = readJson(repoRoot, 'src/data/generated/materialSources.json');
@@ -119,6 +255,7 @@ export function buildCraftingMaterialAudit(repoRoot) {
   const taxonomyByMaterialId = new Map(materialTaxonomy.map((entry) => [normalizeId(entry.materialId), entry]));
   const materialById = new Map(materials.map((entry) => [normalizeId(entry.id), entry]));
   const earliestSourceByMaterialId = makeSourceIndex(materialSources, locations, materialById, taxonomyByMaterialId);
+  const runtimeSourceByMaterialId = makeRuntimeSourceIndex(materialSources, locations, taxonomyByMaterialId, curatedCraftingQuests);
 
   const rows = [];
   for (const profile of liveRecipeSlotProfiles) {
@@ -131,6 +268,7 @@ export function buildCraftingMaterialAudit(repoRoot) {
         const materialId = normalizeId(material.id);
         const taxonomy = taxonomyByMaterialId.get(materialId) ?? null;
         const source = earliestSourceByMaterialId.get(materialId) ?? null;
+        const runtimeSource = runtimeSourceByMaterialId.get(materialId) ?? null;
         const isAcceptedException = ACCEPTED_PROGRESS_EXCEPTIONS.has(`${recipeId}|${materialId}`);
         const isLegacy = Boolean(taxonomy?.isLegacy);
 
@@ -167,6 +305,15 @@ export function buildCraftingMaterialAudit(repoRoot) {
           earliestSourceLocationMinLevel: source?.sourceLocationMinLevel ?? null,
           sourceType: source?.sourceType ?? null,
           sourceEnemyMethod: source?.sourceEnemyMethod ?? null,
+          hasDesignSource: runtimeSource?.hasDesignSource ?? false,
+          hasRuntimeSource: runtimeSource?.hasRuntimeSource ?? false,
+          hasNonBossRuntimeSource: runtimeSource?.hasNonBossRuntimeSource ?? false,
+          hasQuestRewardSource: runtimeSource?.hasQuestRewardSource ?? false,
+          hasBossOnlySource: runtimeSource?.hasBossOnlySource ?? false,
+          runtimeSourceLocationId: runtimeSource?.earliestRuntimeSourceLocationId ?? null,
+          runtimeSourceLocationName: runtimeSource?.earliestRuntimeSourceLocationName ?? null,
+          runtimeSourceMinLevel: runtimeSource?.earliestRuntimeSourceMinLevel ?? null,
+          runtimeSourceType: runtimeSource?.earliestRuntimeSourceType ?? null,
           isLegacy,
           isAcceptedException,
           isStarterRecipe: starterRecipeIds.has(recipeId),
@@ -191,6 +338,10 @@ export function buildCraftingMaterialAudit(repoRoot) {
           `${row.recipeId}: ${row.materialId} first appears at level ${row.earliestSourceLocationMinLevel} (${row.earliestSourceLocationId}), after recipe level ${row.requiredLevel}`
         );
       }
+    }
+
+    if (!row.isLegacy && !row.hasNonBossRuntimeSource && !row.hasQuestRewardSource) {
+      errors.push(`${row.recipeId}: ${row.materialId} has no non-boss runtime source or quest reward path`);
     }
   }
 

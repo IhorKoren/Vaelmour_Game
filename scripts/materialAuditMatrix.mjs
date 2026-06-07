@@ -14,14 +14,14 @@ console.log(`Recipes: ${audit.summary.recipeCount}`);
 console.log(`Rows: ${audit.summary.rowCount}`);
 console.log(`Errors: ${audit.summary.errorCount}`);
 console.log(`Warnings: ${audit.summary.warningCount}\n`);
-console.log('| Recipe ID | Result Item ID | Slot | Level | Material | Qty | Category | Tier Step | Level Range | Earliest Source | Source Loc ID | Source Min Level | Source Type | Status |');
-console.log('| --- | --- | --- | ---: | --- | ---: | --- | ---: | --- | --- | --- | ---: | --- | --- |');
+console.log('| Recipe ID | Result Item ID | Slot | Level | Material | Qty | Category | Tier Step | Level Range | Earliest Source | Source Loc ID | Source Min Level | Runtime Source | Runtime Loc ID | Runtime Min Level | Design Source | Runtime Drop | Quest Source | Boss-only Source | Source Type | Status |');
+console.log('| --- | --- | --- | ---: | --- | ---: | --- | ---: | --- | --- | --- | ---: | --- | --- | ---: | --- | --- | --- | --- | --- | --- |');
 
 for (const row of audit.rows) {
   const levelRange = Array.isArray(row.materialLevelRange) ? row.materialLevelRange.join('-') : 'n/a';
   const earliestSource = row.earliestSourceLocationName ?? 'n/a';
   console.log(
-    `| ${row.recipeId} | ${row.resultItemId} | ${row.slot} | ${row.requiredLevel} | ${row.materialId} | ${row.materialQty} | ${row.materialCategory ?? 'n/a'} | ${row.materialTierStep ?? 'n/a'} | ${levelRange} | ${earliestSource} | ${row.earliestSourceLocationId ?? 'n/a'} | ${row.earliestSourceLocationMinLevel ?? 'n/a'} | ${row.sourceType ?? 'n/a'} | ${row.alignmentStatus} |`
+    `| ${row.recipeId} | ${row.resultItemId} | ${row.slot} | ${row.requiredLevel} | ${row.materialId} | ${row.materialQty} | ${row.materialCategory ?? 'n/a'} | ${row.materialTierStep ?? 'n/a'} | ${levelRange} | ${earliestSource} | ${row.earliestSourceLocationId ?? 'n/a'} | ${row.earliestSourceLocationMinLevel ?? 'n/a'} | ${row.runtimeSourceLocationName ?? 'n/a'} | ${row.runtimeSourceLocationId ?? 'n/a'} | ${row.runtimeSourceMinLevel ?? 'n/a'} | ${row.hasDesignSource ? 'yes' : 'no'} | ${row.hasRuntimeSource ? 'yes' : 'no'} | ${row.hasQuestRewardSource ? 'yes' : 'no'} | ${row.hasBossOnlySource ? 'yes' : 'no'} | ${row.sourceType ?? 'n/a'} | ${row.alignmentStatus} |`
   );
 }
 

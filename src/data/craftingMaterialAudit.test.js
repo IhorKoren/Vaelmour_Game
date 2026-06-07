@@ -48,4 +48,17 @@ describe('crafting material audit', () => {
     expect(audit.rows.some((row) => row.materialId === 'MAT_021')).toBe(false);
     expect(audit.rows.some((row) => row.materialId === 'MAT_022')).toBe(false);
   });
+
+  it('keeps all live recipe materials reachable from a non-boss runtime source or quest reward', () => {
+    for (const row of audit.rows) {
+      expect(row.hasNonBossRuntimeSource || row.hasQuestRewardSource).toBe(true);
+    }
+  });
+
+  it('marks MAT_020 as quest-supported even though it is not guaranteed by a normal runtime drop', () => {
+    const mat020Rows = audit.rows.filter((row) => row.materialId === 'MAT_020');
+    for (const row of mat020Rows) {
+      expect(row.hasQuestRewardSource).toBe(true);
+    }
+  });
 });

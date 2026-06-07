@@ -8,6 +8,7 @@ import {
   rollWeightedEquipmentSlot
 } from '../equipment/generatedEquipment';
 import { calculateSecondaryStats } from './secondaryStats';
+import { getRuntimeMaterialDropPool, resolveDropLocation } from './materialDropResolver';
 
 export type LootDropResult = {
   dropped: boolean;
@@ -32,20 +33,18 @@ export function rollLootDrop(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _risk: 'Safe' | 'Risky' | 'Dangerous' = 'Safe',
   random: () => number = Math.random,
-  location?: { materials: string[] }
+  location?: { id?: string; name?: string; materials: string[]; levelRange?: [number, number] | number[]; biome?: string; combatIdentity?: string; uniqueLootTheme?: string }
 ): LootDropResult {
   if (!availableItems || availableItems.length === 0) return { dropped: false };
 
   const targetLevel = getEquipmentLevelForEnemy(enemy.level ?? 1);
-  let materialPool = availableItems.filter((item) => item.category === 'material' && item.tier <= Math.max(1, targetLevel));
-
-  if (location && location.materials && location.materials.length > 0) {
-    const locMaterials = new Set(location.materials.map((m) => m.toLowerCase()));
-    const filteredPool = materialPool.filter((item) => locMaterials.has(item.id.toLowerCase()));
-    if (filteredPool.length > 0) {
-      materialPool = filteredPool;
-    }
-  }
+  const resolvedLocation = resolveDropLocation(location);
+  const { pool: materialPool } = getRuntimeMaterialDropPool({
+    enemy,
+    location: resolvedLocation,
+    targetLevel,
+    availableItems
+  });
 
   const rolledMaterial = chooseRandomItem(materialPool, random);
 

@@ -12,6 +12,7 @@ import {
   calculateEnemyStats
 } from './progression';
 import { rollLootDrop, rollGeneratedEquipmentDrop } from './loot';
+import { getRuntimeMaterialDropPool } from './materialDropResolver';
 import { rollCraftSuccess } from './crafting';
 import { generateItemAffixes } from './affixes';
 import { calculateRerollCost, rerollItemAffix } from './reroll';
@@ -470,6 +471,144 @@ describe('Loot Drop Formulas (loot.ts)', () => {
     const result = rollLootDrop(beastEnemy, pool, 'Safe', () => 0.0, mockLocation);
     expect(result.dropped).toBe(true);
     expect(result.itemId).toBe('MAT_002');
+  });
+
+  it('should prefer explicit source matches before generic location materials', () => {
+    const raiderEnemy: Enemy = {
+      ...mockEnemy,
+      name: 'Blood Raider',
+      family: 'Frontier Raiders',
+      archetype: 'Berserker',
+      level: 6,
+      rank: 'normal'
+    };
+
+    const location = {
+      id: 'LOC_003',
+      name: 'Raider Camp',
+      levelRange: [5, 8] as [number, number],
+      biome: 'Frontier',
+      combatIdentity: 'Rage / Axes',
+      uniqueLootTheme: 'Axe weapons, rage gear, medium armor',
+      materials: ['MAT_001', 'MAT_003', 'MAT_005', 'MAT_007']
+    };
+
+    const pool: ItemDefinition[] = [
+      { id: 'MAT_001', name: 'Torn Cloth', category: 'material', rarity: 'common', tier: 1, description: '' },
+      { id: 'MAT_003', name: 'Bent Iron Scrap', category: 'material', rarity: 'common', tier: 1, description: '' },
+      { id: 'MAT_005', name: 'Raider Emblem', category: 'material', rarity: 'uncommon', tier: 1, description: '' },
+      { id: 'MAT_007', name: 'Iron Rivets', category: 'material', rarity: 'common', tier: 2, description: '' },
+    ];
+
+    const result = getRuntimeMaterialDropPool({
+      enemy: raiderEnemy,
+      location,
+      targetLevel: 6,
+      availableItems: pool
+    });
+
+    expect(result.poolType).toBe('explicit_source');
+    expect(result.materialIds).toContain('MAT_005');
+    expect(result.materialIds).toContain('MAT_007');
+  });
+
+  it('should use safe fallback only when explicit, location, and taxonomy pools are empty', () => {
+    const impossibleLocation = {
+      id: 'LOC_UNKNOWN',
+      name: 'Unknown Place',
+      levelRange: [1, 1] as [number, number],
+      biome: 'Unknown',
+      combatIdentity: 'Unknown',
+      uniqueLootTheme: 'Unknown',
+      materials: []
+    };
+
+    const pool: ItemDefinition[] = [
+      { id: 'MAT_021', name: 'Fine Leather Thread', category: 'material', rarity: 'common', tier: 2, description: '' },
+      { id: 'MAT_022', name: 'Polished Weapon Grip', category: 'material', rarity: 'common', tier: 3, description: '' }
+    ];
+
+    const result = getRuntimeMaterialDropPool({
+      enemy: mockEnemy,
+      location: impossibleLocation,
+      targetLevel: 15,
+      availableItems: pool
+    });
+
+    expect(result.poolType).toBe('safe_fallback');
+    expect(result.materialIds).toEqual(['MAT_021', 'MAT_022']);
+  });
+
+  it('should return thematic location pools for representative beast, mercenary, and quarry zones', () => {
+    const forestResult = getRuntimeMaterialDropPool({
+      enemy: {
+        ...mockEnemy,
+        name: 'Fang Stalker',
+        family: 'Blackfang Wolves',
+        archetype: 'Hunter',
+        level: 4,
+        rank: 'normal'
+      },
+      location: {
+        id: 'LOC_002',
+        name: 'Blackfang Forest',
+        levelRange: [3, 6],
+        biome: 'Blackfang Woods',
+        combatIdentity: 'Bleed / Agility',
+        uniqueLootTheme: 'Skirmisher gear, bleed affixes, axes',
+        materials: ['MAT_002', 'MAT_004', 'MAT_006']
+      },
+      targetLevel: 3,
+      availableItems: items
+    });
+
+    const mercenaryResult = getRuntimeMaterialDropPool({
+      enemy: {
+        ...mockEnemy,
+        name: 'Veteran Sellblade',
+        family: 'Mercenary',
+        archetype: 'Fighter',
+        level: 15,
+        rank: 'normal'
+      },
+      location: {
+        id: 'LOC_007',
+        name: 'Mercenary Crossroads',
+        levelRange: [13, 16],
+        biome: 'Trade Roads',
+        combatIdentity: 'Balanced / Swords',
+        uniqueLootTheme: 'Fighter gear, sword affixes, rings',
+        materials: ['MAT_008', 'MAT_012', 'MAT_013']
+      },
+      targetLevel: 15,
+      availableItems: items
+    });
+
+    const quarryResult = getRuntimeMaterialDropPool({
+      enemy: {
+        ...mockEnemy,
+        name: 'War Brute',
+        family: 'Executioners',
+        archetype: 'Brute',
+        level: 27,
+        rank: 'normal'
+      },
+      location: {
+        id: 'LOC_013',
+        name: 'Crimson Quarry',
+        levelRange: [25, 28],
+        biome: 'Quarry Depths',
+        combatIdentity: 'Stagger / Heavy Hits',
+        uniqueLootTheme: 'Warhammers, vanguard plate, anti-stagger items',
+        materials: ['MAT_014', 'MAT_019', 'MAT_024']
+      },
+      targetLevel: 27,
+      availableItems: items
+    });
+
+    expect(forestResult.materialIds).toEqual(expect.arrayContaining(['MAT_002', 'MAT_004']));
+    expect(mercenaryResult.materialIds).toEqual(expect.arrayContaining(['MAT_012', 'MAT_013']));
+    expect(quarryResult.materialIds).toContain('MAT_019');
   });
 
   it('should generate a full equipment instance when generated loot drop succeeds', () => {
