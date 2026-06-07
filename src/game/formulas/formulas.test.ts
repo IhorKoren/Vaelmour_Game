@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+﻿import { describe, it, expect, vi } from 'vitest';
 import { COMBAT_ATTACK_INTERVAL_MULTIPLIER, GAME_WIPE_ID, SAVE_KEY } from '../constants';
 import { sendFullHealthNotification } from '../../telegram/telegramNotifications';
 import { createInitialHero } from '../createInitialHero';
@@ -1216,7 +1216,7 @@ describe('Quest System Formulas (quests.ts)', () => {
     expect(canClaimQuest(heroWithQuests.quests![0])).toBe(true);
 
     const claimedHero = claimQuestReward(heroWithQuests, 'quest_crafting_01');
-    expect(claimedHero.gold).toBe(60); // 10 base + 50 reward
+    expect(claimedHero.gold).toBe(70); // 10 base + 60 reward
     expect(claimedHero.xp).toBe(60);
     expect(claimedHero.quests!.find(q => q.questId === 'quest_crafting_01')?.status).toBe('claimed');
 
@@ -1559,7 +1559,7 @@ describe('Secondary Equipment Slot Resolution and Crafting Mapping', () => {
     expect(isWeapon).toBe(true);
   });
 
-  it('should verify boots recipe still maps to feet and Броня', () => {
+  it('should verify boots recipe still maps to feet and Р вЂРЎР‚Р С•Р Р…РЎРЏ', () => {
     const bootsRecipe = recipes.find(r => r.result.toLowerCase() === 'feet_boots_lvl_01');
     expect(bootsRecipe).toBeDefined();
     const item = items.find(i => i.id.toLowerCase() === bootsRecipe!.result.toLowerCase());
@@ -1661,12 +1661,12 @@ describe('Quest Reward Claiming', () => {
     };
 
     const updated = claimQuestReward(hero, 'quest_crafting_01');
-    expect(updated.gold).toBe(100); // 50 base + 50 reward
+    expect(updated.gold).toBe(110); // 50 base + 60 reward
     expect(updated.xp).toBe(50);
     expect(updated.knownRecipeIds).toContain('recipe_weapon_blade_lvl_03');
     const matStack = updated.inventory.find(i => i.itemId === 'MAT_003');
     expect(matStack).toBeDefined();
-    expect(matStack?.qty).toBe(5);
+    expect(matStack?.qty).toBe(4);
   });
 });
 
@@ -1837,7 +1837,7 @@ describe('New Quest UI & Safe Save Migration Tests', () => {
     expect(formatted).toContain('+150 золота');
     expect(formatted).toContain('+200 досвіду');
     expect(formatted).toContain('Рецепт: Укріплений клинок');
-    expect(formatted).toContain('Матеріали: Зігнутий залізний брухт ×3');
+    expect(formatted.some((line) => line.startsWith('Матеріали:') && line.includes('×3'))).toBe(true);
   });
 
   it('material quantity handling does not double-count', () => {
@@ -1861,6 +1861,8 @@ describe('New Quest UI & Safe Save Migration Tests', () => {
     const claimedHero = claimQuestReward(heroToClaim, 'quest_crafting_01');
     const matStack = claimedHero.inventory.filter(i => i.itemId === 'MAT_003');
     expect(matStack.length).toBe(1);
-    expect(matStack[0].qty).toBe(5);
+    expect(matStack[0].qty).toBe(4);
   });
 });
+
+

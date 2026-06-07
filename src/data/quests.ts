@@ -152,7 +152,7 @@ export const curatedCraftingQuests: QuestDefinition[] = [
   {
     id: 'quest_crafting_01',
     title: 'Перші кроки коваля',
-    description: 'Виграйте 3 битви та зберіть 3 шматки потрісканої шкіри для вивчення початкового ремесла.',
+    description: 'Почніть на Околицях Розбитої дороги: виграйте 3 битви та зберіть 3 одиниці потрісканої шкіри. Після здачі квесту вам відкриється перше корисне креслення для кузні.',
     requiredLevel: 1,
     locationId: 'LOC_001',
     objectives: [
@@ -160,47 +160,50 @@ export const curatedCraftingQuests: QuestDefinition[] = [
       { type: 'collect_material', targetId: 'MAT_002', required: 3, current: 0 }
     ],
     rewards: {
-      gold: 50,
+      gold: 60,
       xp: 50,
       recipeIds: ['recipe_weapon_blade_lvl_03'],
-      materialIds: ['MAT_003'],
-      materialQuantities: { 'MAT_003': 5 }
+      materialIds: ['MAT_003', 'MAT_004'],
+      materialQuantities: { 'MAT_003': 4, 'MAT_004': 1 }
     }
   },
   {
     id: 'quest_crafting_02',
     title: 'Збір лісових матеріалів',
-    description: 'Виграйте 5 битв у Чорнолісі та зберіть 3 вовчі ікла.',
+    description: 'Перейдіть до Лісу Чорного Ікла, виграйте 4 битви та зберіть 3 вовчі ікла. Нагорода допоможе викувати перше покращення з самого лісу.',
     requiredLevel: 3,
     locationId: 'LOC_002',
     objectives: [
-      { type: 'win_battles', required: 5, current: 0 },
+      { type: 'travel_location', targetId: 'LOC_002', required: 1, current: 0 },
+      { type: 'win_battles', required: 4, current: 0 },
       { type: 'collect_material', targetId: 'MAT_004', required: 3, current: 0 }
     ],
     rewards: {
       gold: 100,
       xp: 100,
-      recipeIds: ['recipe_shield_guard_lvl_06'],
-      materialIds: ['MAT_007'],
-      materialQuantities: { 'MAT_007': 5 }
+      recipeIds: ['recipe_feet_boots_lvl_03'],
+      materialIds: ['MAT_001', 'MAT_004'],
+      materialQuantities: { 'MAT_001': 2, 'MAT_004': 2 }
     }
   },
   {
     id: 'quest_crafting_03',
     title: 'Перший викуваний предмет',
-    description: 'Виготуйте будь-який предмет та виграйте 5 битв у таборі рейдерів.',
+    description: 'Досягніть Табору рейдерів, зберіть 2 емблеми рейдерів і викуйте будь-який посилений предмет. Після кування одразу екіпіруйте нову річ, щоб відчути стрибок сили.',
     requiredLevel: 5,
     locationId: 'LOC_003',
     objectives: [
+      { type: 'travel_location', targetId: 'LOC_003', required: 1, current: 0 },
+      { type: 'collect_material', targetId: 'MAT_005', required: 2, current: 0 },
       { type: 'craft_item', required: 1, current: 0 },
-      { type: 'win_battles', required: 5, current: 0 }
+      { type: 'win_battles', required: 4, current: 0 }
     ],
     rewards: {
-      gold: 150,
-      xp: 150,
-      recipeIds: ['recipe_head_helmet_lvl_06', 'recipe_feet_boots_lvl_03'],
-      materialIds: ['MAT_005'],
-      materialQuantities: { 'MAT_005': 5 }
+      gold: 160,
+      xp: 160,
+      recipeIds: ['recipe_shield_guard_lvl_06', 'recipe_head_helmet_lvl_06'],
+      materialIds: ['MAT_003', 'MAT_005', 'MAT_007'],
+      materialQuantities: { 'MAT_003': 2, 'MAT_005': 2, 'MAT_007': 3 }
     }
   },
   {

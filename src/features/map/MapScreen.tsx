@@ -1,4 +1,4 @@
-import { useMemo, useState, type CSSProperties } from 'react';
+﻿import { useMemo, useState, type CSSProperties } from 'react';
 import { enemies } from '../../data/enemies';
 import { locations } from '../../data/locations';
 import { Panel } from '../../components/ui/Panel';
@@ -36,9 +36,9 @@ const NODE_COORDINATES: Record<string, { left: string; top: string }> = {
 };
 
 const RISK_LABELS: Record<string, string> = {
-  Safe: 'Безпечно',
-  Risky: 'Небезпечно',
-  Dangerous: 'Смертельно'
+  Safe: 'Р вЂР ВµР В·Р С—Р ВµРЎвЂЎР Р…Р С•',
+  Risky: 'Р СњР ВµР В±Р ВµР В·Р С—Р ВµРЎвЂЎР Р…Р С•',
+  Dangerous: 'Р РЋР СР ВµРЎР‚РЎвЂљР ВµР В»РЎРЉР Р…Р С•'
 };
 
 const RISK_COLORS: Record<string, { border: string; bg: string; text: string }> = {
@@ -46,6 +46,13 @@ const RISK_COLORS: Record<string, { border: string; bg: string; text: string }> 
   Risky: { border: '#d4a04f', bg: 'rgba(212, 160, 79, 0.14)', text: '#e4bd78' },
   Dangerous: { border: '#c63a42', bg: 'rgba(198, 58, 66, 0.16)', text: '#ff8c91' }
 };
+
+const EARLY_LOCATION_GUIDANCE: Record<string, string> = {
+  LOC_001: 'РўСѓС‚ РІР°СЂС‚Рѕ РїСЂРѕРІРµСЃС‚Рё РїРµСЂС€С– Р±РѕС—, РЅР°Р·Р±РёСЂР°С‚Рё РїРѕС‚СЂС–СЃРєР°РЅСѓ С€РєС–СЂСѓ С‚Р° РјРµС‚Р°Р»РѕР±СЂСѓС…С‚, Р° РїРѕС‚С–Рј Р·Р°РєСЂРёС‚Рё РїРµСЂС€РёР№ РєРІРµСЃС‚ РєРѕРІР°Р»СЏ.',
+  LOC_002: 'РЎСЋРґРё С‡Р°СЃ РїРµСЂРµС…РѕРґРёС‚Рё РїСЂРёР±Р»РёР·РЅРѕ РЅР° 3 СЂС–РІРЅС–. РџРѕР»СЋР№С‚Рµ РЅР° РІРѕРІРєС–РІ Р·Р° С–РєР»Р°РјРё С‚Р° РїСЂРёРґРёРІС–С‚СЊСЃСЏ РґРѕ РїРµСЂС€РёС… С‡РѕР±С–С‚ С–Р· Р»С–СЃРѕРІРёС… РјР°С‚РµСЂС–Р°Р»С–РІ.',
+  LOC_003: 'РўР°Р±С–СЂ СЂРµР№РґРµСЂС–РІ РїС–РґС…РѕРґРёС‚СЊ РґР»СЏ 5-6 СЂС–РІРЅСЏ, РєРѕР»Рё РІР¶Рµ С” РїРµСЂС€С– РєСЂР°С„С‚РѕРІС– Р°РїРіСЂРµР№РґРё. РўСѓС‚ Р·Р±РёСЂР°СЋС‚СЊСЃСЏ РµРјР±Р»РµРјРё С‚Р° Р·Р°РєР»Р°РґР°С”С‚СЊСЃСЏ РїРµСЂРµС…С–Рґ Сѓ РјС–С†РЅС–С€Рµ СЃРїРѕСЂСЏРґР¶РµРЅРЅСЏ.'
+};
+
 
 export function MapScreen({ hero, selectedLocationId, onSelectLocation }: Props) {
   const [selectedMapLocId, setSelectedMapLocId] = useState<string | null>(null);
@@ -69,7 +76,7 @@ export function MapScreen({ hero, selectedLocationId, onSelectLocation }: Props)
 
   return (
     <div className="screen">
-      <Panel title="Карта Vaelmour">
+      <Panel title="Р С™Р В°РЎР‚РЎвЂљР В° Vaelmour">
         <div
           className="parchment-world-map parchment-world-map--generated"
           style={{ '--world-map-art': `url(${worldMapArt})` } as CSSProperties}
@@ -107,7 +114,7 @@ export function MapScreen({ hero, selectedLocationId, onSelectLocation }: Props)
           {activeLoc && riskRaw && (
             <aside className="map-location-popover" style={{ borderColor: riskTheme.border }}>
               <div className="map-location-popover__eyebrow" style={{ color: riskTheme.text }}>
-                {RISK_LABELS[riskRaw] ?? riskRaw} · Рівні {activeLoc.levelRange[0]}-{activeLoc.levelRange[1]}
+                {RISK_LABELS[riskRaw] ?? riskRaw} - Рівні {activeLoc.levelRange[0]}-{activeLoc.levelRange[1]}
               </div>
               <h3>{getDisplayLocationName(activeLoc.id)}</h3>
               <p>{getDisplayLocationDescription(activeLoc.description)}</p>
@@ -123,18 +130,24 @@ export function MapScreen({ hero, selectedLocationId, onSelectLocation }: Props)
                 <div className="map-location-popover__section">
                   <div className="map-location-popover__section-title">Матеріали</div>
                   <div className="map-location-popover__chips">
-                    {activeLoc.materials.slice(0, 2).map((materialId) => (
+                    {activeLoc.materials.slice(0, 4).map((materialId) => (
                       <span key={materialId}>{getDisplayItemName(materialId)}</span>
                     ))}
                   </div>
                 </div>
               </div>
+              {EARLY_LOCATION_GUIDANCE[activeLoc.id] ? (
+                <div className="map-location-popover__section">
+                  <div className="map-location-popover__section-title">РџРѕСЂР°РґР°</div>
+                  <p>{EARLY_LOCATION_GUIDANCE[activeLoc.id]}</p>
+                </div>
+              ) : null}
               <button
                 type="button"
                 onClick={() => onSelectLocation(activeLoc.id)}
                 disabled={selectedLocationId === activeLoc.id}
               >
-                {selectedLocationId === activeLoc.id ? 'Активна локація' : 'Перейти'}
+                {selectedLocationId === activeLoc.id ? 'Р С’Р С”РЎвЂљР С‘Р Р†Р Р…Р В° Р В»Р С•Р С”Р В°РЎвЂ РЎвЂ“РЎРЏ' : 'Р СџР ВµРЎР‚Р ВµР в„–РЎвЂљР С‘'}
               </button>
             </aside>
           )}

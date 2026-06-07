@@ -9,7 +9,7 @@ import { getLiveRecipeUnlockRule, isStarterRecipeId } from '../../data/recipeDro
 import { getEquippableSlot } from '../../game/formulas/equipment';
 import { createGeneratedEquipmentItem } from '../../game/equipment/generatedEquipment';
 import { updateQuestProgressOnCraftCompleted } from '../../game/formulas/quests';
-import { getMaterialTaxonomy } from '../../data/materialTaxonomy';
+import { getMaterialDisplaySourceHint, getMaterialTaxonomy } from '../../data/materialTaxonomy';
 
 export function usesCatalystOrRareMaterial(recipe: Recipe): boolean {
   if (!recipe.materials) return false;
@@ -89,7 +89,7 @@ export function getCraftingBlockedReason(
   if (!recipe || !recipe.id || !recipe.result || !recipe.materials || !Array.isArray(recipe.materials)) {
     return {
       reason: 'INVALID_RECIPE',
-      text: 'Недійсні дані рецепта.'
+      text: 'РќРµРґС–Р№СЃРЅС– РґР°РЅС– СЂРµС†РµРїС‚Р°.'
     };
   }
 
@@ -97,14 +97,14 @@ export function getCraftingBlockedReason(
   if (!outputItem) {
     return {
       reason: 'UNRESOLVED_OUTPUT',
-      text: 'Помилка: не вдалося знайти предмет результату в каталозі.'
+      text: 'РџРѕРјРёР»РєР°: РЅРµ РІРґР°Р»РѕСЃСЏ Р·РЅР°Р№С‚Рё РїСЂРµРґРјРµС‚ СЂРµР·СѓР»СЊС‚Р°С‚Сѓ РІ РєР°С‚Р°Р»РѕР·С–.'
     };
   }
 
   if (isStarterRecipeId(recipe.id)) {
     return {
       reason: 'RECIPE_NOT_LEARNED',
-      text: 'Цей стартовий рецепт більше не використовується для крафту.'
+      text: 'Р¦РµР№ СЃС‚Р°СЂС‚РѕРІРёР№ СЂРµС†РµРїС‚ Р±С–Р»СЊС€Рµ РЅРµ РІРёРєРѕСЂРёСЃС‚РѕРІСѓС”С‚СЊСЃСЏ РґР»СЏ РєСЂР°С„С‚Сѓ.'
     };
   }
 
@@ -112,21 +112,21 @@ export function getCraftingBlockedReason(
     const sourceText = getDisplayRecipeUnlockSource(recipe.id);
     return {
       reason: 'RECIPE_NOT_LEARNED',
-      text: `Креслення не вивчено. Здобувається: ${sourceText}`
+      text: `Креслення ще не вивчено. Шукайте його тут: ${sourceText}.`
     };
   }
 
   if (hero.level < recipe.requiredLevel) {
     return {
       reason: 'LEVEL_TOO_LOW',
-      text: `Рівень героя занизький (потрібен рівень ${recipe.requiredLevel}).`
+      text: `Замалий рівень героя. Для цього рецепта потрібен ${recipe.requiredLevel} рівень.`
     };
   }
 
   if (hero.gold < recipe.goldCost) {
     return {
       reason: 'NOT_ENOUGH_GOLD',
-      text: `Недостатньо золота (потрібно ${recipe.goldCost} зол.).`
+      text: `РќРµРґРѕСЃС‚Р°С‚РЅСЊРѕ Р·РѕР»РѕС‚Р° (РїРѕС‚СЂС–Р±РЅРѕ ${recipe.goldCost} Р·РѕР».).`
     };
   }
 
@@ -136,9 +136,16 @@ export function getCraftingBlockedReason(
   });
 
   if (!hasMaterials) {
+    const missingMaterial = recipe.materials.find((material) => {
+      const stack = hero.inventory.find((item) => item.itemId.toLowerCase() === material.id.toLowerCase());
+      return (stack?.qty ?? 0) < material.qty;
+    });
+    const sourceHint = missingMaterial ? getMaterialDisplaySourceHint(missingMaterial.id) : null;
     return {
       reason: 'MISSING_MATERIALS',
-      text: 'Недостатньо матеріалів для виготовлення.'
+      text: sourceHint
+        ? `Недостатньо матеріалів для виготовлення. Спробуйте пошукати їх тут: ${sourceHint}.`
+        : 'Недостатньо матеріалів для виготовлення.',
     };
   }
 
@@ -148,33 +155,33 @@ export function getCraftingBlockedReason(
 export function getDisplayRecipeUnlockMethod(recipeId: string): string {
   const rule = getLiveRecipeUnlockRule(recipeId);
   if (!rule) {
-    return 'Невідомо';
+    return 'РќРµРІС–РґРѕРјРѕ';
   }
 
   switch (rule.unlockType as string) {
     case 'starter':
-      return 'Стартовий рецепт';
+      return 'РЎС‚Р°СЂС‚РѕРІРёР№ СЂРµС†РµРїС‚';
     case 'drop':
-      return 'Звичайний дроп';
+      return 'Р—РІРёС‡Р°Р№РЅРёР№ РґСЂРѕРї';
     case 'elite':
-      return 'Елітний дроп';
+      return 'Р•Р»С–С‚РЅРёР№ РґСЂРѕРї';
     case 'boss':
-      return 'Трофей боса';
+      return 'РўСЂРѕС„РµР№ Р±РѕСЃР°';
     case 'quest':
-      return 'Нагорода за квест';
+      return 'РќР°РіРѕСЂРѕРґР° Р·Р° РєРІРµСЃС‚';
     default:
-      return 'Невідомо';
+      return 'РќРµРІС–РґРѕРјРѕ';
   }
 }
 
 export function getDisplayRecipeUnlockSource(recipeId: string): string {
   const rule = getLiveRecipeUnlockRule(recipeId);
   if (!rule) {
-    return 'Невідоме джерело';
+    return 'РќРµРІС–РґРѕРјРµ РґР¶РµСЂРµР»Рѕ';
   }
 
   if (rule.unlockType === 'starter') {
-    return 'Доступний від початку';
+    return 'Р”РѕСЃС‚СѓРїРЅРёР№ РІС–Рґ РїРѕС‡Р°С‚РєСѓ';
   }
 
   const locationName = getDisplayLocationName(rule.locationId);
@@ -238,41 +245,41 @@ export function getRecipeStatChips(recipe: Recipe): RecipeStatChip[] {
 
   const stats = item as unknown as CatalogItemStats;
   const slot = getEquippableSlot(item);
-  let slotLabel = 'Предмет';
-  if (slot === 'weapon') slotLabel = 'Зброя';
-  else if (slot === 'shield') slotLabel = 'Щит';
-  else if (slot === 'head') slotLabel = 'Шолом';
-  else if (slot === 'chest') slotLabel = 'Обладунок';
-  else if (slot === 'hands') slotLabel = 'Рукавиці';
-  else if (slot === 'legs') slotLabel = 'Поножі';
-  else if (slot === 'feet') slotLabel = 'Чоботи';
-  else if (slot === 'ring1' || slot === 'ring2') slotLabel = 'Перстень';
-  else if (slot === 'amulet') slotLabel = 'Амулет';
+  let slotLabel = 'РџСЂРµРґРјРµС‚';
+  if (slot === 'weapon') slotLabel = 'Р—Р±СЂРѕСЏ';
+  else if (slot === 'shield') slotLabel = 'Р©РёС‚';
+  else if (slot === 'head') slotLabel = 'РЁРѕР»РѕРј';
+  else if (slot === 'chest') slotLabel = 'РћР±Р»Р°РґСѓРЅРѕРє';
+  else if (slot === 'hands') slotLabel = 'Р СѓРєР°РІРёС†С–';
+  else if (slot === 'legs') slotLabel = 'РџРѕРЅРѕР¶С–';
+  else if (slot === 'feet') slotLabel = 'Р§РѕР±РѕС‚Рё';
+  else if (slot === 'ring1' || slot === 'ring2') slotLabel = 'РџРµСЂСЃС‚РµРЅСЊ';
+  else if (slot === 'amulet') slotLabel = 'РђРјСѓР»РµС‚';
 
-  chips.push({ label: 'Слот', value: slotLabel });
+  chips.push({ label: 'РЎР»РѕС‚', value: slotLabel });
 
   // Damage / Speed: Weapon only
   if (slot === 'weapon') {
     const minDmg = stats.minDamage ?? 0;
     const maxDmg = stats.maxDamage ?? 0;
     const speed = stats.attackSpeed ?? 1.0;
-    chips.push({ label: 'Шкода', value: `${minDmg}-${maxDmg}` });
-    chips.push({ label: 'Швидкість', value: `${speed}` });
+    chips.push({ label: 'РЁРєРѕРґР°', value: `${minDmg}-${maxDmg}` });
+    chips.push({ label: 'РЁРІРёРґРєС–СЃС‚СЊ', value: `${speed}` });
   } else {
     // Defense: Non-weapon and non-accessory slots
     if (slot !== 'ring1' && slot !== 'ring2' && slot !== 'amulet') {
       const def = stats.armor ?? stats.defense ?? 0;
       if (def > 0) {
-        chips.push({ label: 'Захист', value: `+${def}` });
+        chips.push({ label: 'Р—Р°С…РёСЃС‚', value: `+${def}` });
       }
       if (slot === 'shield') {
         const blockChance = stats.blockChance ?? 0;
         const blockValue = stats.blockValue ?? stats.blockPower ?? 0;
         if (blockChance > 0) {
-          chips.push({ label: 'Блок', value: `${Math.round(blockChance * 100)}%` });
+          chips.push({ label: 'Р‘Р»РѕРє', value: `${Math.round(blockChance * 100)}%` });
         }
         if (blockValue > 0) {
-          chips.push({ label: 'Сила блоку', value: `+${blockValue}` });
+          chips.push({ label: 'РЎРёР»Р° Р±Р»РѕРєСѓ', value: `+${blockValue}` });
         }
       }
     }
@@ -281,27 +288,27 @@ export function getRecipeStatChips(recipe: Recipe): RecipeStatChip[] {
   // Bonuses: HP, regen, agility/strength percent boosts, dodge
   const maxHp = stats.maxHp ?? stats.maxHealth ?? 0;
   if (maxHp > 0) {
-    chips.push({ label: 'Бонус HP', value: `+${maxHp}` });
+    chips.push({ label: 'Р‘РѕРЅСѓСЃ HP', value: `+${maxHp}` });
   }
   const hpBonus = stats.hpBonus ?? 0;
   if (hpBonus > 0) {
-    chips.push({ label: 'Бонус HP %', value: `+${Math.round(hpBonus * 100)}%` });
+    chips.push({ label: 'Р‘РѕРЅСѓСЃ HP %', value: `+${Math.round(hpBonus * 100)}%` });
   }
   const dmgBonus = stats.damageBonus ?? 0;
   if (dmgBonus > 0) {
-    chips.push({ label: 'Бонус шкоди', value: `+${Math.round(dmgBonus * 100)}%` });
+    chips.push({ label: 'Р‘РѕРЅСѓСЃ С€РєРѕРґРё', value: `+${Math.round(dmgBonus * 100)}%` });
   }
   const dodgeBonus = stats.dodgeBonus ?? stats.dodgeChance ?? 0;
   if (dodgeBonus > 0) {
-    chips.push({ label: 'Ухилення', value: `+${Math.round(dodgeBonus * 100)}%` });
+    chips.push({ label: 'РЈС…РёР»РµРЅРЅСЏ', value: `+${Math.round(dodgeBonus * 100)}%` });
   }
   const accuracy = stats.accuracy ?? 0;
   if (accuracy > 0) {
-    chips.push({ label: 'Влучність', value: `+${Math.round(accuracy * 100)}%` });
+    chips.push({ label: 'Р’Р»СѓС‡РЅС–СЃС‚СЊ', value: `+${Math.round(accuracy * 100)}%` });
   }
   const healthRegen = stats.healthRegen ?? 0;
   if (healthRegen > 0) {
-    chips.push({ label: 'Регенерація', value: `+${healthRegen} HP/5с` });
+    chips.push({ label: 'Р РµРіРµРЅРµСЂР°С†С–СЏ', value: `+${healthRegen} HP/5СЃ` });
   }
 
   return chips;
