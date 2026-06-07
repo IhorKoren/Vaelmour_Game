@@ -7,8 +7,6 @@ import {
   getEquippedItemStats,
   equipInventoryItem,
   unequipInventoryItem,
-  getRepairCost,
-  repairEquippedItem,
   getEffectiveWeaponStats,
   getEquippableSlot
 } from '../../game/formulas/equipment';
@@ -97,10 +95,6 @@ export function CharacterScreen({ hero, onHeroChange }: Props) {
     onHeroChange(nextHero);
   }
 
-  function handleRepair(slot: EquipmentSlot) {
-    const nextHero = repairEquippedItem(hero, slot);
-    onHeroChange(nextHero);
-  }
 
   function handleEquip(itemId: string) {
     const nextHero = equipInventoryItem(hero, itemId);
@@ -437,13 +431,7 @@ export function CharacterScreen({ hero, onHeroChange }: Props) {
               const rarity = itemStats.rarity || 'common';
               const durability = hero.equipmentDurability?.[selectedSlot] ?? 100;
               const canUnequip = true;
-              let canRepair = false;
-              let repairCostVal = 0;
 
-              if (durability < 100 && selectedSlot !== 'ring1' && selectedSlot !== 'ring2' && selectedSlot !== 'amulet') {
-                canRepair = true;
-                repairCostVal = getRepairCost(itemStats, durability);
-              }
 
               const ukrSlotNames: Record<EquipmentSlot, string> = {
                 head: 'Голова (Шолом)',
@@ -591,26 +579,6 @@ export function CharacterScreen({ hero, onHeroChange }: Props) {
                   {statsList}
 
                   <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
-                    {canRepair && (
-                      <button
-                        className="small-button"
-                        type="button"
-                        onClick={() => handleRepair(selectedSlot)}
-                        disabled={hero.gold < repairCostVal}
-                        style={{
-                          flex: 1,
-                          minHeight: '30px',
-                          padding: '4px 8px',
-                          fontSize: '11px',
-                          background: hero.gold >= repairCostVal ? 'linear-gradient(180deg, var(--color-bronze), var(--color-bronze-dark))' : 'rgba(20,13,9,0.3)',
-                          color: hero.gold >= repairCostVal ? '#fff9eb' : 'rgba(253, 245, 234, 0.3)',
-                          border: hero.gold >= repairCostVal ? 'none' : '1px dashed rgba(212,163,115,0.15)',
-                          cursor: hero.gold >= repairCostVal ? 'pointer' : 'not-allowed'
-                        }}
-                      >
-                        🛠️ Полагодити ({repairCostVal}зол.)
-                      </button>
-                    )}
                     {canUnequip && (
                       <button
                         className="small-button secondary-button"

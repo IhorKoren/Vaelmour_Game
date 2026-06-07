@@ -45,11 +45,7 @@ function estimateRewards(quest: GeneratedQuest, category: string): QuestDefiniti
     category === 'zone' ? 80 :
     category === 'kill' ? 70 :
     55;
-  const baseGold =
-    category === 'bossUnlock' ? 140 :
-    category === 'zone' ? 60 :
-    category === 'kill' ? 50 :
-    35;
+
 
   const multiplier =
     difficulty.includes('high') ? 1.5 :
@@ -58,7 +54,7 @@ function estimateRewards(quest: GeneratedQuest, category: string): QuestDefiniti
 
   const rewards: QuestDefinition['rewards'] = {
     xp: Math.round(baseXp * multiplier),
-    gold: Math.round(baseGold * multiplier)
+    gold: 0
   };
 
   const materialId = findMaterialId(rewardText);
@@ -160,7 +156,7 @@ export const curatedCraftingQuests: QuestDefinition[] = [
       { type: 'collect_material', targetId: 'MAT_002', required: 3, current: 0 }
     ],
     rewards: {
-      gold: 60,
+      gold: 0,
       xp: 50,
       recipeIds: ['recipe_weapon_blade_lvl_03'],
       materialIds: ['MAT_003', 'MAT_004'],
@@ -179,7 +175,7 @@ export const curatedCraftingQuests: QuestDefinition[] = [
       { type: 'collect_material', targetId: 'MAT_004', required: 3, current: 0 }
     ],
     rewards: {
-      gold: 100,
+      gold: 0,
       xp: 100,
       recipeIds: ['recipe_feet_boots_lvl_03'],
       materialIds: ['MAT_001', 'MAT_004'],
@@ -199,7 +195,7 @@ export const curatedCraftingQuests: QuestDefinition[] = [
       { type: 'win_battles', required: 4, current: 0 }
     ],
     rewards: {
-      gold: 160,
+      gold: 0,
       xp: 160,
       recipeIds: ['recipe_shield_guard_lvl_06', 'recipe_head_helmet_lvl_06'],
       materialIds: ['MAT_003', 'MAT_005', 'MAT_007'],
@@ -217,7 +213,7 @@ export const curatedCraftingQuests: QuestDefinition[] = [
       { type: 'collect_material', targetId: 'MAT_008', required: 5, current: 0 }
     ],
     rewards: {
-      gold: 200,
+      gold: 0,
       xp: 200,
       recipeIds: ['recipe_chest_armor_lvl_09'],
       materialIds: ['MAT_009'],
@@ -235,7 +231,7 @@ export const curatedCraftingQuests: QuestDefinition[] = [
       { type: 'collect_material', targetId: 'MAT_016', required: 3, current: 0 }
     ],
     rewards: {
-      gold: 300,
+      gold: 0,
       xp: 300,
       recipeIds: ['recipe_hands_gloves_lvl_12'],
       materialIds: ['MAT_013'],
@@ -253,7 +249,7 @@ export const curatedCraftingQuests: QuestDefinition[] = [
       { type: 'collect_material', targetId: 'MAT_010', required: 5, current: 0 }
     ],
     rewards: {
-      gold: 400,
+      gold: 0,
       xp: 400,
       recipeIds: ['recipe_legs_pants_lvl_15'],
       materialIds: ['MAT_011'],
@@ -271,7 +267,7 @@ export const curatedCraftingQuests: QuestDefinition[] = [
       { type: 'collect_material', targetId: 'MAT_013', required: 5, current: 0 }
     ],
     rewards: {
-      gold: 500,
+      gold: 0,
       xp: 500,
       recipeIds: ['recipe_ring_band_lvl_18'],
       materialIds: ['MAT_014'],
@@ -289,7 +285,7 @@ export const curatedCraftingQuests: QuestDefinition[] = [
       { type: 'kill_elite', required: 3, current: 0 }
     ],
     rewards: {
-      gold: 600,
+      gold: 0,
       xp: 600,
       recipeIds: ['recipe_amulet_charm_lvl_21'],
       materialIds: ['MAT_015'],
@@ -307,7 +303,7 @@ export const curatedCraftingQuests: QuestDefinition[] = [
       { type: 'collect_material', targetId: 'MAT_018', required: 3, current: 0 }
     ],
     rewards: {
-      gold: 700,
+      gold: 0,
       xp: 700,
       recipeIds: ['recipe_weapon_blade_lvl_24'],
       materialIds: ['MAT_024'],
@@ -325,7 +321,7 @@ export const curatedCraftingQuests: QuestDefinition[] = [
       { type: 'collect_material', targetId: 'MAT_019', required: 5, current: 0 }
     ],
     rewards: {
-      gold: 800,
+      gold: 0,
       xp: 800,
       recipeIds: ['recipe_chest_armor_lvl_27'],
       materialIds: ['MAT_019'],
@@ -343,7 +339,7 @@ export const curatedCraftingQuests: QuestDefinition[] = [
       { type: 'kill_elite', required: 5, current: 0 }
     ],
     rewards: {
-      gold: 1000,
+      gold: 0,
       xp: 1000,
       recipeIds: ['recipe_weapon_blade_lvl_30'],
       materialIds: ['MAT_020'],

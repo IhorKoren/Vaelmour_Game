@@ -523,15 +523,7 @@ function recipeMaterialsFor(slot: EquipmentItemDefinition['slot'], level: number
   return profile.materialSets[levelIndex].map((material) => ({ ...material }));
 }
 
-function goldCostFor(slot: EquipmentItemDefinition['slot'], level: number): number {
-  const profile = getRecipeProfile(slot);
-  const levelIndex = EQUIPMENT_LEVELS.indexOf(level as (typeof EQUIPMENT_LEVELS)[number]);
-  if (levelIndex < 0) {
-    throw new Error(`Unsupported equipment level for recipe gold cost: ${level}`);
-  }
 
-  return profile.goldCosts[levelIndex];
-}
 
 export const equipmentCatalog: EquipmentItemDefinition[] = SLOT_CONFIGS.flatMap((config) =>
   EQUIPMENT_LEVELS.map((level, index) => {
@@ -627,7 +619,7 @@ export const equipmentRecipes: Recipe[] = equipmentCatalog.map((item) => ({
   recipeSource: getRecipeSourceDescriptor(`recipe_${item.codeName}`),
   station: 'forge',
   materials: recipeMaterialsFor(item.slot, item.level),
-  goldCost: goldCostFor(item.slot, item.level),
+  goldCost: 0,
   successChance: 1,
   outputEffect: `${item.name}: ${statSummary(item.slot, item.stats)}`
 }));

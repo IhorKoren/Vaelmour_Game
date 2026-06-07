@@ -123,12 +123,7 @@ export function getCraftingBlockedReason(
     };
   }
 
-  if (hero.gold < recipe.goldCost) {
-    return {
-      reason: 'NOT_ENOUGH_GOLD',
-      text: `РќРµРґРѕСЃС‚Р°С‚РЅСЊРѕ Р·РѕР»РѕС‚Р° (РїРѕС‚СЂС–Р±РЅРѕ ${recipe.goldCost} Р·РѕР».).`
-    };
-  }
+
 
   const hasMaterials = recipe.materials.every((material) => {
     const stack = hero.inventory.find((item) => item.itemId.toLowerCase() === material.id.toLowerCase());
@@ -372,7 +367,6 @@ export function executeCraftTransaction(
 
   const nextHero = {
     ...hero,
-    gold: hero.gold - recipe.goldCost,
     inventory: nextInventory
   };
 

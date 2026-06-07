@@ -29,10 +29,6 @@ export function TopStatusBar({ status }: Props) {
             <div className="top-status-bar__xp-fill" style={{ width: `${xpProgress}%` }} />
           </div>
         </div>
-        <div className="top-status-bar__currency" title="Золото">
-          <span>{status.gold}</span>
-          <strong>Золото</strong>
-        </div>
       </div>
     </header>
   );

@@ -508,7 +508,7 @@ export function AdminPanel() {
                 <tr>
                   <th>Гравець</th>
                   <th>Lvl</th>
-                  <th>Gold</th>
+                  <th>Gold (Legacy)</th>
                   <th>HP</th>
                   <th>Last seen</th>
                 </tr>
@@ -620,7 +620,7 @@ export function AdminPanel() {
                 </label>
 
                 <label>
-                  Gold
+                  Gold (Legacy/Deprecated)
                   <input
                     value={editor.gold}
                     onChange={(event) => updateEditorField('gold', event.target.value)}
@@ -697,11 +697,11 @@ export function AdminPanel() {
                 </button>
 
                 <button type="button" onClick={() => handleAddGold(100)}>
-                  +100 Gold
+                  +100 Gold (Legacy)
                 </button>
 
                 <button type="button" onClick={() => handleAddGold(1000)}>
-                  +1000 Gold
+                  +1000 Gold (Legacy)
                 </button>
 
                 <button type="button" onClick={handleJsonFormat}>

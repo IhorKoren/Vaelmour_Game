@@ -160,7 +160,7 @@ export function claimQuestReward(hero: HeroState, questId: string): HeroState {
     return q;
   });
 
-  const goldReward = def.rewards.gold ?? 0;
+  const goldReward = 0;
   const xpReward = def.rewards.xp ?? 0;
 
   // Grant Recipe rewards

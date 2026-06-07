@@ -3,7 +3,7 @@ import { items } from '../../../data/items';
 import { recipes } from '../../../data/recipes';
 import { STARTER_RECIPE_IDS, rollLiveRecipeUnlock } from '../../../data/recipeDropSources';
 import { calculateDerivedStats } from '../../../game/formulas/stats';
-import { getEnemyXpReward, getEnemyGoldReward } from '../../../game/formulas/rewards';
+import { getEnemyXpReward } from '../../../game/formulas/rewards';
 import { rollLootDrop, rollGeneratedEquipmentDrop } from '../../../game/formulas/loot';
 import { checkLevelUp } from '../../../game/formulas/progression';
 import {
@@ -46,7 +46,6 @@ export function calculateVictoryRewards(
   heroDamageLog: string
 ): VictoryCalculationResult {
   const xpReward = getEnemyXpReward(enemy);
-  const goldReward = getEnemyGoldReward(enemy, Math.random, hero);
   const lootResult = rollLootDrop(enemy, items, riskRaw, Math.random, currentLocation);
   const generatedEquipmentDrop = rollGeneratedEquipmentDrop(enemy, hero, currentLocation.id);
   const knownRecipeIds = getKnownRecipeIds(hero);
@@ -113,7 +112,7 @@ export function calculateVictoryRewards(
     level: nextHeroLevel,
     xp: nextHeroXp,
     unspentStatPoints: nextStatPoints,
-    gold: hero.gold + goldReward,
+    gold: hero.gold,
     knownRecipeIds: nextKnownRecipeIds,
     recipeDropPity: updatedPity,
     inventory: updatedInventory,
@@ -154,10 +153,10 @@ export function calculateVictoryRewards(
     .replace(/misses/i, 'промахується');
 
   const victoryMessage = enemy.rank === 'elite'
-    ? `Перемога над елітним ворогом ${enemy.name}! Отримано ${xpReward} XP, ${goldReward} золота.`
+    ? `Перемога над елітним ворогом ${enemy.name}! Отримано ${xpReward} XP.`
     : (enemy.rank === 'boss'
-        ? `Легендарна перемога над босом ${enemy.name}! Отримано ${xpReward} XP, ${goldReward} золота.`
-        : `Перемога! Отримано ${xpReward} XP, ${goldReward} золота.`);
+        ? `Легендарна перемога над босом ${enemy.name}! Отримано ${xpReward} XP.`
+        : `Перемога! Отримано ${xpReward} XP.`);
 
   const logLines = [
     victoryMessage,
@@ -180,7 +179,7 @@ export function calculateVictoryRewards(
   return {
     rewardedHero: questedHero,
     victoryRewards: {
-      gold: goldReward,
+      gold: 0,
       xp: xpReward,
       material: (lootResult.dropped && lootResult.itemId)
         ? { id: lootResult.itemId, name: lootResult.itemName ?? lootResult.itemId, rarity: lootResult.itemRarity ?? 'common' }

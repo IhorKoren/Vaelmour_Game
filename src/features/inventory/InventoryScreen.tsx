@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { resolveBaseItemDefinition, resolveInventoryItemDefinition } from '../../data/resolvedItems';
+import { resolveInventoryItemDefinition } from '../../data/resolvedItems';
 import {
   getMaterialCategoryLabel,
   getMaterialDisplaySourceHint,
@@ -17,8 +17,7 @@ import {
 import { getItemBaseStats } from '../../game/equipment/generatedEquipment';
 import type { HeroState, EquipmentSlot, Weapon, Armor } from '../../game/types';
 import { getDisplayItemDescription, getDisplayItemName, formatRarity, formatItemType, formatStatDisplay, formatStatName, ALLOWED_BONUS_STATS } from '../../utils/displayHelpers';
-import { calculateRerollCost, rerollItemAffix } from '../../game/formulas/reroll';
-import { calculateItemSellValue } from '../../game/formulas/sellValue';
+
 
 function getItemEmoji(itemId: string, category: string): string {
   const id = itemId.toLowerCase();
@@ -65,8 +64,7 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
   const [activeSubTab, setActiveSubTab] = useState<'backpack' | 'forge'>('backpack');
   const [activeTab, setActiveTab] = useState<InventoryTab>('all');
   const [selectedItemKey, setSelectedItemKey] = useState<string | null>(null);
-  const [rerollMessage, setRerollMessage] = useState<{ success: boolean; text: string } | null>(null);
-  const [sellMessage, setSellMessage] = useState<{ success: boolean; text: string } | null>(null);
+
 
   function getInventoryStackKey(stack: HeroState['inventory'][number], index: number): string {
     return `${stack.itemId}::${stack.durability ?? 'na'}::${stack.affixes?.map((affix) => affix.id).join('|') ?? 'noaffix'}::${stack.rerollCount ?? 0}::${index}`;
@@ -74,123 +72,9 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
 
   function handleSelectItemChange(itemKey: string | null) {
     setSelectedItemKey(itemKey);
-    setRerollMessage(null);
-    setSellMessage(null);
   }
 
-  function handleSellItem(stackIdx: number) {
-    if (stackIdx === -1) return;
-    const stack = hero.inventory[stackIdx];
-    const itemId = stack.itemId;
 
-    // Equipped items cannot be sold directly
-    const isEquipped = Object.values(hero.equipment).some((val) => val && val.toLowerCase() === itemId.toLowerCase());
-    if (isEquipped) {
-      setSellMessage({ success: false, text: 'Цей предмет не можна продати (екіпірований)' });
-      return;
-    }
-
-    const item = resolveInventoryItemDefinition(stack);
-    if (!item) {
-      setSellMessage({ success: false, text: 'Цей предмет не можна продати' });
-      return;
-    }
-
-    const value = calculateItemSellValue({
-      itemId: item.id,
-      category: item.category,
-      rarity: item.rarity,
-      level: stack.generatedItem?.level ?? item.level ?? item.tier,
-      tier: item.tier,
-      affixesCount: stack.affixes?.length || 0,
-      baseValueGold: item.sellValueGold,
-      stats: stack.generatedItem?.stats
-    });
-
-    const nextInventory = [...hero.inventory];
-    if (stack.qty > 1) {
-      nextInventory[stackIdx] = {
-        ...stack,
-        qty: stack.qty - 1
-      };
-    } else {
-      nextInventory.splice(stackIdx, 1);
-      setSelectedItemKey(null);
-    }
-
-    onHeroChange({
-      ...hero,
-      gold: hero.gold + value,
-      inventory: nextInventory
-    });
-
-    setSellMessage({ success: true, text: `Предмет продано: +${value} золота` });
-  }
-
-  function handleReroll(stackIdx: number, index: number) {
-    const stack = hero.inventory[stackIdx];
-    if (!stack || !stack.affixes) return;
-    const itemId = stack.itemId;
-
-    let item = resolveBaseItemDefinition(itemId);
-    let category = 'material';
-    if (!item && stack.generatedItem) {
-      item = {
-        id: stack.generatedItem.id,
-        name: stack.generatedItem.name,
-        category: stack.generatedItem.category,
-        rarity: stack.generatedItem.rarity,
-        tier: stack.generatedItem.tier,
-        level: stack.generatedItem.level,
-        description: 'Generated equipment drop.'
-      };
-      category = stack.generatedItem.slot === 'ring1' || stack.generatedItem.slot === 'ring2' ? 'ring' : stack.generatedItem.slot;
-    }
-    if (item?.category === 'weapon') {
-      category = 'weapon';
-    } else if (item?.category === 'armor') {
-      category = 'armor';
-    }
-    if (!item) return;
-
-    const cost = calculateRerollCost({
-      rarity: item.rarity || 'common',
-      itemLevel: stack.generatedItem?.level ?? item.level ?? item.tier,
-      rerollCount: stack.rerollCount ?? 0
-    });
-    if (hero.gold < cost) {
-      setRerollMessage({ success: false, text: 'Недостатньо золота!' });
-      return;
-    }
-
-    try {
-      const newAffixes = rerollItemAffix({
-        itemId,
-        category,
-        tier: item.tier || 1,
-        rarity: item.rarity || 'common',
-        affixes: stack.affixes,
-        affixIndex: index
-      });
-
-      const nextInventory = hero.inventory.map((s, currentIndex) => currentIndex === stackIdx ? {
-        ...s,
-        affixes: newAffixes,
-        rerollCount: (s.rerollCount ?? 0) + 1,
-        generatedItem: s.generatedItem ? { ...s.generatedItem, affixes: newAffixes } : s.generatedItem
-      } : s);
-
-      onHeroChange({
-        ...hero,
-        gold: hero.gold - cost,
-        inventory: nextInventory
-      });
-
-      setRerollMessage({ success: true, text: 'Афікс змінено!' });
-    } catch {
-      setRerollMessage({ success: false, text: 'Помилка перековки!' });
-    }
-  }
 
   function handleEquip(itemId: string, stackIdx: number) {
     const nextHero = equipInventoryItem(hero, itemId, stackIdx);
@@ -659,70 +543,32 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
 
               {compareDetails && compareDetails.compare}
 
-              {selectedStack.stack.affixes && selectedStack.stack.affixes.length > 0 && (() => {
-                const cost = calculateRerollCost({
-                  rarity: item.rarity || 'common',
-                  itemLevel: selectedStack.stack.generatedItem?.level ?? item.level ?? item.tier,
-                  rerollCount: selectedStack.stack.rerollCount ?? 0
-                });
-                const hasGold = hero.gold >= cost;
-
-                return (
-                  <div style={{ marginTop: '8px', padding: '6px 8px', borderRadius: '8px', background: 'rgba(212, 163, 115, 0.06)', border: '1px dashed rgba(212, 163, 115, 0.15)' }}>
-                    <span style={{ display: 'block', fontSize: '9px', fontWeight: 900, color: 'var(--color-gold-gilded)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>
-                      ✨ Додаткові ефекти & Перековка:
-                    </span>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                      {selectedStack.stack.affixes.map((affix, idx) => (
-                        <div 
-                          key={affix.id} 
-                          style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            justifyContent: 'space-between', 
-                            fontSize: '11.5px', 
-                            color: '#eed1b3', 
-                            fontWeight: 'bold',
-                            borderBottom: '1px dashed rgba(212,163,115,0.06)',
-                            paddingBottom: '3px'
-                          }}
-                        >
-                          <span>{formatStatDisplay(affix.type, affix.value)}</span>
-                          {!isEquipped && (
-                            <button
-                               type="button"
-                              onClick={() => handleReroll(selectedStack.inventoryIndex, idx)}
-                              disabled={!hasGold}
-                              style={{
-                                padding: '2px 6px',
-                                fontSize: '9px',
-                                borderRadius: '4px',
-                                border: 'none',
-                                cursor: hasGold ? 'pointer' : 'not-allowed',
-                                background: hasGold ? 'var(--color-bronze)' : 'rgba(255,255,255,0.08)',
-                                color: hasGold ? '#fff' : 'rgba(255,255,255,0.3)',
-                                fontWeight: 'bold'
-                              }}
-                            >
-                              🔄 {cost} зол.
-                            </button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                    {isEquipped && (
-                      <span style={{ display: 'block', fontSize: '9px', color: '#ff4d4d', marginTop: '6px', fontStyle: 'italic' }}>
-                        ℹ️ Зніміть спорядження, щоб перекувати його афікси.
-                      </span>
-                    )}
-                    {rerollMessage && (
-                      <div style={{ fontSize: '10px', color: rerollMessage.success ? '#2d8249' : '#ff4d4d', marginTop: '6px', fontWeight: 'bold', textAlign: 'center' }}>
-                        {rerollMessage.text}
+              {selectedStack.stack.affixes && selectedStack.stack.affixes.length > 0 && (
+                <div style={{ marginTop: '8px', padding: '6px 8px', borderRadius: '8px', background: 'rgba(212, 163, 115, 0.06)', border: '1px dashed rgba(212, 163, 115, 0.15)' }}>
+                  <span style={{ display: 'block', fontSize: '9px', fontWeight: 900, color: 'var(--color-gold-gilded)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>
+                    ✨ Додаткові ефекти:
+                  </span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    {selectedStack.stack.affixes.map((affix) => (
+                      <div 
+                        key={affix.id} 
+                        style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'space-between', 
+                          fontSize: '11.5px', 
+                          color: '#eed1b3', 
+                          fontWeight: 'bold',
+                          borderBottom: '1px dashed rgba(212,163,115,0.06)',
+                          paddingBottom: '3px'
+                        }}
+                      >
+                        <span>{formatStatDisplay(affix.type, affix.value)}</span>
                       </div>
-                    )}
+                    ))}
                   </div>
-                );
-              })()}
+                </div>
+              )}
 
               {item.description && !item.description.startsWith('Generated equipment') && (
                 <p style={{ margin: '8px 0 0', fontSize: '11.5px', fontStyle: 'italic', color: 'var(--color-text-muted)', lineHeight: '1.4' }}>
@@ -759,11 +605,7 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
                 </div>
               )}
 
-              {sellMessage && (
-                <div style={{ fontSize: '10.5px', color: sellMessage.success ? '#2d8249' : '#ff4d4d', marginTop: '8px', fontWeight: 'bold', textAlign: 'center' }}>
-                  {sellMessage.text}
-                </div>
-              )}
+
 
               <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
                 {isEquippable && (
@@ -795,34 +637,7 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
                   </button>
                 )}
 
-                {!isEquipped && (
-                  <button
-                    className="small-button"
-                    type="button"
-                    onClick={() => handleSellItem(selectedStack.inventoryIndex)}
-                    style={{
-                      flex: 1,
-                      minHeight: '34px',
-                      fontSize: '11.5px',
-                      fontWeight: 'bold',
-                      background: 'rgba(212, 163, 115, 0.08)',
-                      color: 'var(--color-gold-gilded)',
-                      border: '1px solid rgba(212, 163, 115, 0.25)',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    💰 Продати за {calculateItemSellValue({
-                      itemId: item.id,
-                      category: item.category,
-                      rarity: item.rarity,
-                      level: selectedStack.stack.generatedItem?.level ?? item.level ?? item.tier,
-                      tier: item.tier,
-                      affixesCount: selectedStack.stack.affixes?.length || 0,
-                      baseValueGold: item.sellValueGold,
-                      stats: selectedStack.stack.generatedItem?.stats
-                    })} зол.
-                  </button>
-                )}
+
                 
                 <button
                   className="small-button secondary-button"

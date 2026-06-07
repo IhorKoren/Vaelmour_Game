@@ -5,8 +5,7 @@ import { shields } from '../../data/shields';
 import type { HeroState, EquipmentSlot, Weapon, Armor, Shield, GeneratedEquipmentItem, GeneratedEquipmentStats } from '../types';
 import { calculateDerivedStats } from './stats';
 import { getGeneratedItemFromHero } from '../equipment/generatedEquipment';
-import { calculateItemSellValue } from './sellValue';
-import { calculateSecondaryStats } from './secondaryStats';
+
 
 const RING_SLOTS: EquipmentSlot[] = ['ring1', 'ring2'];
 
@@ -340,16 +339,7 @@ export function getEquippedArmorStats(hero: HeroState): Armor {
 }
 
 export function getEffectiveWeaponStats(hero: HeroState): Weapon {
-  const weapon = getEquippedWeaponStats(hero);
-  const durability = hero.equipmentDurability?.weapon ?? 100;
-  if (durability <= 0 && !weapon.id.startsWith('fallback_')) {
-    return {
-      ...weapon,
-      minDamage: 0,
-      maxDamage: 0
-    };
-  }
-  return weapon;
+  return getEquippedWeaponStats(hero);
 }
 
 export function getEffectiveArmorStats(hero: HeroState): Armor {
@@ -359,39 +349,6 @@ export function getEffectiveArmorStats(hero: HeroState): Armor {
 export function getEffectiveItemStats(hero: HeroState, slot: EquipmentSlot): Weapon | Armor | Shield | null {
   const item = getEquippedItemStats(hero, slot);
   if (!item) return null;
-
-  const durability = hero.equipmentDurability?.[slot] ?? 100;
-  if (durability <= 0 && !item.id.startsWith('fallback_')) {
-    if (slot === 'weapon') {
-      const w = item as Weapon;
-      return {
-        ...w,
-        minDamage: 0,
-        maxDamage: 0
-      };
-    } else if (slot === 'shield') {
-      const s = item as Shield;
-      return {
-        ...s,
-        armor: 0,
-        defense: 0,
-        blockChance: 0,
-        blockValue: 0,
-        maxHealth: 0,
-        staggerResist: 0
-      };
-    } else {
-      const a = item as Armor;
-      return {
-        ...a,
-        defense: 0,
-        armor: 0,
-        damageBonus: 0,
-        dodgeBonus: 0,
-        hpBonus: 0
-      };
-    }
-  }
   return item;
 }
 
@@ -577,98 +534,23 @@ export function unequipInventoryItem(hero: HeroState, slot: EquipmentSlot): Hero
 }
 
 export function applyWeaponDurabilityLoss(hero: HeroState, amount: number = 1): HeroState {
-  const weapon = getEquippedWeaponStats(hero);
-  if (!weapon.id || weapon.id.startsWith('fallback_')) {
-    return hero;
-  }
-  // Only 20% chance to lose durability, reducing wear-and-tear by 80%
-  if (Math.random() > 0.20) {
-    return hero;
-  }
-  const reductionMultiplier = 1 - calculateSecondaryStats(hero).durabilityLossReduction;
-  const currentDurability = hero.equipmentDurability?.weapon ?? 100;
-  const effectiveAmount = Math.max(1, Math.round(amount * Math.max(0.25, reductionMultiplier)));
-  const nextDurability = Math.max(0, currentDurability - effectiveAmount);
-  return {
-    ...hero,
-    equipmentDurability: {
-      ...hero.equipmentDurability,
-      weapon: nextDurability
-    }
-  };
+  void amount;
+  return hero;
 }
 
 export function applyArmorDurabilityLoss(hero: HeroState, amount: number = 1): HeroState {
-  const armorSlots: Array<'head' | 'chest' | 'legs' | 'hands' | 'feet'> = ['head', 'chest', 'legs', 'hands', 'feet'];
-  
-  const equippedArmorSlots = armorSlots.filter((slot) => {
-    const itemId = hero.equipment?.[slot];
-    return itemId && !itemId.startsWith('fallback_');
-  });
-
-  if (equippedArmorSlots.length === 0) {
-    return hero;
-  }
-
-  // Only 20% chance to lose durability, reducing wear-and-tear by 80%
-  if (Math.random() > 0.20) {
-    return hero;
-  }
-
-  const rolledSlot = equippedArmorSlots[Math.floor(Math.random() * equippedArmorSlots.length)];
-  const reductionMultiplier = 1 - calculateSecondaryStats(hero).durabilityLossReduction;
-  const currentDurability = hero.equipmentDurability?.[rolledSlot] ?? 100;
-  const effectiveAmount = Math.max(1, Math.round(amount * Math.max(0.25, reductionMultiplier)));
-  const nextDurability = Math.max(0, currentDurability - effectiveAmount);
-
-  return {
-    ...hero,
-    equipmentDurability: {
-      ...hero.equipmentDurability,
-      [rolledSlot]: nextDurability
-    }
-  };
+  void amount;
+  return hero;
 }
 
 export function getRepairCost(item: Weapon | Armor | Shield, durability: number, maxDurability: number = 100): number {
-  const missingRatio = Math.max(0, (maxDurability - durability) / Math.max(1, maxDurability));
-  const rarityRepairMultiplier = item.rarity === 'epic' ? 1.25 : item.rarity === 'legendary' ? 1.5 : 1;
-  const itemGoldValue = calculateItemSellValue({
-    itemId: item.id,
-    category: item.type ?? 'armor',
-    rarity: item.rarity,
-    level: ('level' in item ? item.level : undefined) ?? item.tier ?? 1,
-    tier: item.tier ?? 1,
-    stats: item as unknown as Record<string, number | undefined>
-  }) * 4;
-  return Math.max(1, Math.ceil(itemGoldValue * missingRatio * 0.35 * rarityRepairMultiplier));
+  void item;
+  void durability;
+  void maxDurability;
+  return 0;
 }
 
 export function repairEquippedItem(hero: HeroState, slot: EquipmentSlot): HeroState {
-  const itemId = hero.equipment[slot];
-  if (!itemId || itemId.startsWith('fallback_')) {
-    return hero;
-  }
-
-  const currentDurability = hero.equipmentDurability?.[slot] ?? 100;
-  const maxDurability = 100;
-
-  const item = getEquippedItemStats(hero, slot);
-  if (!item) {
-    return hero;
-  }
-
-  const cost = getRepairCost(item, currentDurability, maxDurability);
-  if (hero.gold < cost) {
-    return hero;
-  }
-
-  return {
-    ...hero,
-    gold: hero.gold - cost,
-    equipmentDurability: {
-      ...hero.equipmentDurability,
-      [slot]: maxDurability
-    }
-  };
+  void slot;
+  return hero;
 }

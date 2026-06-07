@@ -7,9 +7,7 @@ import type { QuestReward } from '../../game/types';
 export function formatQuestRewards(rewards: QuestReward): string[] {
   const lines: string[] = [];
 
-  if (rewards.gold && rewards.gold > 0) {
-    lines.push(`+${rewards.gold} золота`);
-  }
+
   if (rewards.xp && rewards.xp > 0) {
     lines.push(`+${rewards.xp} досвіду`);
   }

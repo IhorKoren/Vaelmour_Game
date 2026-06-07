@@ -1,4 +1,4 @@
-﻿import { describe, expect, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
 import {
   getCraftingBlockedReason,
   getDisplayRecipeUnlockMethod,
@@ -103,17 +103,20 @@ describe('craftingHelpers tests', () => {
     expect(blocked?.text).toContain('10');
   });
 
-  test('should return NOT_ENOUGH_GOLD if gold is insufficient', () => {
+  test('should not block crafting or return NOT_ENOUGH_GOLD even if gold is insufficient', () => {
     const expensiveRecipe: Recipe = {
       ...starterRecipe,
       id: 'recipe_ring_band_lvl_01',
       result: 'ring_band_lvl_01',
       goldCost: 100
     };
+    const poorHero: HeroState = {
+      ...dummyHero,
+      gold: 0
+    };
     const known = new Set(['recipe_ring_band_lvl_01']);
-    const blocked = getCraftingBlockedReason(expensiveRecipe, dummyHero, known);
-    expect(blocked?.reason).toBe('NOT_ENOUGH_GOLD');
-    expect(blocked?.text).toContain('100');
+    const blocked = getCraftingBlockedReason(expensiveRecipe, poorHero, known);
+    expect(blocked).toBeNull();
   });
 
   test('should return MISSING_MATERIALS if materials are insufficient', () => {
@@ -188,7 +191,7 @@ describe('craftingHelpers tests', () => {
     expect(ringChips.some(c => c.value === 'weapon')).toBe(false);
   });
 
-  test('executeCraftTransaction successfully crafts an item and rolls generated stats', () => {
+  test('executeCraftTransaction successfully crafts an item and rolls generated stats without gold deduction', () => {
     const recipe: Recipe = {
       id: 'recipe_ring_band_lvl_01',
       result: 'ring_band_lvl_01',
@@ -215,7 +218,7 @@ describe('craftingHelpers tests', () => {
 
     const result = executeCraftTransaction(recipe, hero, () => true, () => 0.9);
     expect(result.success).toBe(true);
-    expect(result.hero.gold).toBe(40);
+    expect(result.hero.gold).toBe(50); // Gold must remain unchanged
     
     // Mat MAT_001 should be reduced to 8
     const matStack = result.hero.inventory.find(s => s.itemId === 'MAT_001');
@@ -231,7 +234,7 @@ describe('craftingHelpers tests', () => {
     expect(itemStack?.generatedItem?.slot).toBe('ring1');
   });
 
-  test('executeCraftTransaction consumes materials and gold on failure without creating item', () => {
+  test('executeCraftTransaction consumes materials on failure without creating item and without gold deduction', () => {
     const recipe: Recipe = {
       id: 'recipe_ring_band_lvl_01',
       result: 'ring_band_lvl_01',
@@ -258,7 +261,7 @@ describe('craftingHelpers tests', () => {
 
     const result = executeCraftTransaction(recipe, hero, () => false);
     expect(result.success).toBe(false);
-    expect(result.hero.gold).toBe(40);
+    expect(result.hero.gold).toBe(50); // Gold must remain unchanged
     
     // Mat MAT_001 should be reduced to 8
     const matStack = result.hero.inventory.find(s => s.itemId === 'MAT_001');

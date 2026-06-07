@@ -24,11 +24,8 @@ export function CombatRewardPanel({ victoryRewards }: CombatRewardPanelProps) {
   return (
     <Panel title="🏆 Нагорода за перемогу">
       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', padding: '4px 0' }}>
-        {/* Gold & XP row */}
+        {/* XP row */}
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '13px', color: '#dfa84c', fontWeight: 'bold' }}>
-            💰 {victoryRewards.gold} золота
-          </span>
           <span style={{ fontSize: '13px', color: '#6ec1e4', fontWeight: 'bold' }}>
             ✨ {victoryRewards.xp} XP
           </span>

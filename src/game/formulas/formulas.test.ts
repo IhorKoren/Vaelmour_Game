@@ -1,4 +1,4 @@
-﻿import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { COMBAT_ATTACK_INTERVAL_MULTIPLIER, GAME_WIPE_ID, SAVE_KEY } from '../constants';
 import { sendFullHealthNotification } from '../../telegram/telegramNotifications';
 import { createInitialHero } from '../createInitialHero';
@@ -1216,7 +1216,7 @@ describe('Quest System Formulas (quests.ts)', () => {
     expect(canClaimQuest(heroWithQuests.quests![0])).toBe(true);
 
     const claimedHero = claimQuestReward(heroWithQuests, 'quest_crafting_01');
-    expect(claimedHero.gold).toBe(70); // 10 base + 60 reward
+    expect(claimedHero.gold).toBe(10); // 10 base + 0 reward
     expect(claimedHero.xp).toBe(60);
     expect(claimedHero.quests!.find(q => q.questId === 'quest_crafting_01')?.status).toBe('claimed');
 
@@ -1661,7 +1661,7 @@ describe('Quest Reward Claiming', () => {
     };
 
     const updated = claimQuestReward(hero, 'quest_crafting_01');
-    expect(updated.gold).toBe(110); // 50 base + 60 reward
+    expect(updated.gold).toBe(50); // 50 base + 0 reward
     expect(updated.xp).toBe(50);
     expect(updated.knownRecipeIds).toContain('recipe_weapon_blade_lvl_03');
     const matStack = updated.inventory.find(i => i.itemId === 'MAT_003');
@@ -1834,7 +1834,7 @@ describe('New Quest UI & Safe Save Migration Tests', () => {
     };
 
     const formatted = formatQuestRewards(rewards);
-    expect(formatted).toContain('+150 золота');
+    expect(formatted).not.toContain('+150 золота');
     expect(formatted).toContain('+200 досвіду');
     expect(formatted).toContain('Рецепт: Укріплений клинок');
     expect(formatted.some((line) => line.startsWith('Матеріали:') && line.includes('×3'))).toBe(true);

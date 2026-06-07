@@ -55,7 +55,7 @@ export function createInitialHero(): HeroState {
     wipeId: GAME_WIPE_ID,
     level: 1,
     xp: 0,
-    gold: 40,
+    gold: 0,
     knownRecipeIds: [...STARTER_RECIPE_IDS],
     baseHp: 100,
     stats: {

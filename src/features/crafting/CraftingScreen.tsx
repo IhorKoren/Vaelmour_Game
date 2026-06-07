@@ -174,7 +174,6 @@ export function CraftingScreen({ hero, onHeroChange }: Props) {
   }
 
   const hasLevelFor = (requiredLevel: number) => hero.level >= requiredLevel;
-  const hasGoldFor = (goldCost: number) => hero.gold >= goldCost;
 
   // Filter recipes based on tab
   const filteredRecipes = useMemo(() => {
@@ -306,7 +305,6 @@ export function CraftingScreen({ hero, onHeroChange }: Props) {
         const statChips = getRecipeStatChips(recipe);
         const recipeMetadata = getCraftingRecipeMetadata(recipe);
         const levelOk = hasLevelFor(recipe.requiredLevel);
-        const goldOk = hasGoldFor(recipe.goldCost);
 
         const typeIcon = getRecipeTypeIcon(recipe);
         const resultItem = resolveCraftResult(recipe.result);
@@ -402,19 +400,7 @@ export function CraftingScreen({ hero, onHeroChange }: Props) {
                     ⚔️ Рівень {recipe.requiredLevel}+ {levelOk ? '✅' : '❌'}
                   </span>
 
-                  <span style={{
-                    fontSize: '9.5px',
-                    fontWeight: 800,
-                    padding: '3px 8px',
-                    borderRadius: '8px',
-                    border: `1.5px solid ${goldOk ? 'rgba(223, 168, 76, 0.4)' : 'rgba(255, 77, 77, 0.4)'}`,
-                    background: goldOk ? 'rgba(223, 168, 76, 0.12)' : 'rgba(255, 77, 77, 0.12)',
-                    color: goldOk ? 'var(--color-gold-gilded)' : '#ff4d4d',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.02em'
-                  }}>
-                    🪙 Вартість: {recipe.goldCost} зол. {goldOk ? '✅' : '❌'}
-                  </span>
+
                 </div>
 
                 {/* Materials List */}
