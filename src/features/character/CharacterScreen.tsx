@@ -429,7 +429,6 @@ export function CharacterScreen({ hero, onHeroChange }: Props) {
               const itemId = itemStats.id;
               const itemName = getDisplayItemName(itemId);
               const rarity = itemStats.rarity || 'common';
-              const durability = hero.equipmentDurability?.[selectedSlot] ?? 100;
               const canUnequip = true;
 
 
@@ -538,14 +537,7 @@ export function CharacterScreen({ hero, onHeroChange }: Props) {
                 }
               });
 
-              const hasDurability = selectedSlot !== 'ring1' && selectedSlot !== 'ring2' && selectedSlot !== 'amulet';
-              if (hasDurability) {
-                displayStats.push(
-                  <div key="durability">
-                    🛠️ Міцність: <strong style={{ color: durability <= 25 ? 'var(--color-hp)' : 'var(--color-uncommon)' }}>{durability}/100</strong>
-                  </div>
-                );
-              }
+
 
               const statsList = (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', fontSize: '11.5px', color: 'var(--color-text-muted)', marginTop: '4px' }}>

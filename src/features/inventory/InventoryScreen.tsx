@@ -524,11 +524,7 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
                 </span>
               </div>
 
-              {isEquippable && (
-                <div style={{ fontSize: '11.5px', color: 'var(--color-text-muted)', marginBottom: '8px' }}>
-                  🛡️ Міцність: <strong>{selectedStack.stack.durability ?? selectedStack.stack.generatedItem?.durability ?? 100}/100</strong>
-                </div>
-              )}
+
 
               {baseLines.length > 0 && (
                 <div style={{ marginBottom: '8px', padding: '6px 8px', borderRadius: '8px', background: 'rgba(0,0,0,0.18)', border: '1px solid rgba(212,163,115,0.04)' }}>

@@ -917,8 +917,6 @@ export const ALLOWED_BONUS_STATS = [
   'blockValue',
   'armorPenetration',
   'accuracy',
-  'goldFindBonus',
-  'goldBonus',
   'xpBonus',
   'lootChanceBonus',
   'itemFind',

@@ -149,4 +149,82 @@ describe('displayHelpers formatting and localization', () => {
     expect(getDisplayItemDescription('generated_ring_3_uncommon_12345', 'Bleeds trigger bonus Rage')).not.toMatch(/rage|лють/i);
     expect(getDisplayQuestDescription('Spend 300 total Rage')).not.toMatch(/rage|лють/i);
   });
+
+  it('should not contain durability or gold keywords in player-facing display outputs', () => {
+    const mockItem = {
+      id: 'generated_chest_3_common_12345',
+      stats: {
+        defense: 10,
+        maxHp: 20
+      },
+      durability: 80,
+      maxDurability: 100
+    };
+    const summary = formatEquipmentSummary(mockItem);
+    expect(summary).not.toContain('міцність');
+    expect(summary).not.toContain('Міцність');
+    expect(summary).not.toContain('durability');
+    expect(summary).not.toContain('зол');
+    expect(summary).not.toContain('золота');
+
+    const questDesc = getDisplayQuestDescription('Defeat 10 enemies and earn gold');
+    expect(questDesc).not.toContain('золота');
+    expect(questDesc).not.toContain('зол.');
+  });
+
+  it('should pass active UI static scan audit to prevent regressions', () => {
+    const _require = (globalThis as any).require;
+    if (typeof _require !== 'function') {
+      return;
+    }
+    const fs = _require('fs');
+    const path = _require('path');
+
+    function walkDir(dir: string, callback: (filePath: string) => void) {
+      const files = fs.readdirSync(dir);
+      for (const file of files) {
+        const fullPath = path.join(dir, file);
+        const stat = fs.statSync(fullPath);
+        if (stat.isDirectory()) {
+          walkDir(fullPath, callback);
+        } else if (file.endsWith('.tsx') || (file.endsWith('.ts') && !file.endsWith('.test.ts') && !file.endsWith('.test.js'))) {
+          callback(fullPath);
+        }
+      }
+    }
+
+    const forbiddenSubstrings = [
+      'Ваше золото',
+      'Міцність:',
+      'зол.'
+    ];
+
+    const violations: string[] = [];
+
+    const projectRoot = path.resolve('.');
+    const dirsToScan = [
+      path.join(projectRoot, 'src/features'),
+      path.join(projectRoot, 'src/app')
+    ];
+
+    for (const dir of dirsToScan) {
+      if (!fs.existsSync(dir)) continue;
+      walkDir(dir, (filePath) => {
+        const content = fs.readFileSync(filePath, 'utf8');
+        for (const substring of forbiddenSubstrings) {
+          if (content.includes(substring)) {
+            const lines = content.split('\n');
+            lines.forEach((line: string, index: number) => {
+              const trimmed = line.trim();
+              if (trimmed.includes(substring) && !trimmed.startsWith('//') && !trimmed.startsWith('*') && !trimmed.startsWith('/*')) {
+                violations.push(`${path.basename(filePath)}:${index + 1} -> Found forbidden string "${substring}" in: "${trimmed}"`);
+              }
+            });
+          }
+        }
+      });
+    }
+
+    expect(violations).toEqual([]);
+  });
 });

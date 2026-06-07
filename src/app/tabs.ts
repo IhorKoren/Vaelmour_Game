@@ -6,5 +6,5 @@ export const APP_TABS: Array<{ id: AppTab; label: string }> = [
   { id: 'inventory', label: 'Інвентар' },
   { id: 'quests', label: 'Завдання' },
   { id: 'map', label: 'Мапа' },
-  { id: 'shop', label: 'Ринок' }
+  { id: 'shop', label: 'Ринок (Зачинено)' }
 ];
