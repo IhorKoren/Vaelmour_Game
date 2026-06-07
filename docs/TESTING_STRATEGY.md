@@ -30,8 +30,12 @@ Current tests focus on:
 
 - formulas
 - save sanitization
+- controlled wipe normalization
+- curated quest initialization and migration cleanup
+- live recipe unlock progression
 - regen rules
 - small combat/inventory support utilities
+- Telegram/cloud-save support rules
 
 ### Build Validation
 
@@ -66,5 +70,6 @@ For normal feature work:
 3. `npm run lint`
 4. `npm run test`
 5. `npm run build`
+6. `npm run balance:audit`
 
 For larger gameplay architecture changes, keep the same order and run the full suite after each major batch rather than waiting until the end.

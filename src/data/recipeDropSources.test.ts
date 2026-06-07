@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { recipes } from './recipes';
 import {
+  getLiveRecipesForEnemy,
   getCompatibleKnownRecipeIds,
   getLiveRecipeUnlockRule,
   LIVE_RECIPE_LEVEL_STEPS,
@@ -102,6 +103,18 @@ describe('recipe unlock sources', () => {
   it('guarantees no live recipe progression has unlockType boss', () => {
     for (const rule of LIVE_RECIPE_UNLOCK_RULES) {
       expect(rule.unlockType).not.toBe('boss');
+    }
+  });
+
+  it('guarantees every drop/elite live recipe can unlock without defeated boss progress', () => {
+    for (const rule of LIVE_RECIPE_UNLOCK_RULES) {
+      if (rule.unlockType === 'starter' || rule.unlockType === 'quest') {
+        continue;
+      }
+
+      const eligibleRecipes = getLiveRecipesForEnemy(rule.locationId, rule.enemyNames[0]);
+
+      expect(eligibleRecipes.map((candidate) => candidate.recipeId)).toContain(rule.recipeId);
     }
   });
 });

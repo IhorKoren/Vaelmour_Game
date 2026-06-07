@@ -1,62 +1,62 @@
-# Vaelmour - Telegram WebApp RPG
+# Vaelmour - Post-Wipe Baseline
 
-Vaelmour is a premium fantasy-themed role-playing game built as a Telegram WebApp and browser client.
+Vaelmour is a Telegram WebApp/browser RPG built around auto-combat, equipment progression, curated crafting quests, and cloud-backed save recovery.
+
+## Current Game State
+
+- Auto-combat is the active combat loop. The hero hunts, fights, retreats, wins, or loses through the runtime combat session flow.
+- Inventory and equipment progression are active across nine equipment slots: weapon, shield, head, chest, hands, legs, feet, ring, and amulet.
+- Durability and repair are active for applicable equipment slots.
+- Crafting is active with live recipe unlock progression and starter recipe support.
+- Quests are active through the curated crafting quest chain. Legacy generated quest clutter is no longer part of the runtime quest board.
+- Material drops are active and aligned to runtime enemy/location sources.
+- Local save plus cloud save are active, with wipe-aware normalization and recovery.
+- Telegram full-HP notification is active for supported Telegram players outside combat.
+- The admin panel is active at `/admin` for player save inspection and maintenance.
+- Controlled progression wipe `progression_wipe_2026_06_07_v1` is the current baseline.
+
+## Not In Active Runtime Gameplay
+
+- Rage systems are no longer active runtime gameplay.
+- Active skill buttons/skill-resource gameplay are no longer active runtime gameplay.
+- Detailed combat log UI is no longer active runtime gameplay.
+- Legacy save fields related to removed systems may still be tolerated for compatibility, but they are not part of the active loop.
+
+## Shop And Market Status
+
+- The current runtime still includes limited gold chest purchases and item selling.
+- Broader shop/market expansion is postponed and should stay out of scope unless the owner re-approves it.
 
 ## Technology Stack
 
-- **Frontend**: React (v19) + TypeScript + Vite
-- **Styling**: Pure CSS design system with custom HSL palettes
-- **Database/Backend**: Supabase save states with full migration support
-- **Hosting/API**: Netlify deployment and Serverless Netlify Functions
+- Frontend: React 19 + TypeScript + Vite
+- Styling: CSS
+- Backend/storage: Netlify Functions + Supabase
+- Delivery: Telegram WebApp + browser client
 
----
+## Environment Variables
 
-## Core Game Systems
+Deployment/runtime configuration may require:
 
-1. **Combat**: Live battle screen with abilities, dynamic scaling, combat logs, and elite/boss encounters.
-2. **Inventory & Equipment**: Nine supported gear slots (weapon, shield, head, chest, hands, legs, feet, ring, amulet) with item affixes and durability wear/repair formulas.
-3. **Blacksmith Crafting**: Custom recipes based on tiers and materials with progression manuals.
-4. **Quest System**: Active quest board tracking kills, travel objectives, collection tasks, and rewards.
-5. **Shop & Market**: Reroll systems, lockbox store, and selling items mechanics.
-6. **Admin Panel**: Backend player save manager routed at `/admin`.
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `TELEGRAM_BOT_TOKEN`
+- `ADMIN_SECRET`
 
----
+## Validation Commands
 
-## Environment Variables Needed
-
-The following variables must be defined in your deployment configuration (e.g. Netlify App Settings):
-
-- `SUPABASE_URL`: The URL of your Supabase project instance.
-- `SUPABASE_SERVICE_ROLE_KEY`: The service role API key for server-side read/write privileges.
-- `TELEGRAM_BOT_TOKEN`: The bot API token utilized to dispatch full-health offline alerts.
-- `ADMIN_SECRET`: The authorization key securing the admin backend operations.
-
----
-
-## Getting Started
-
-### 1. Install Dependencies
 ```bash
-npm install
-```
-
-### 2. Run Development Server
-```bash
-npm run dev
-```
-
-### 3. Verify Types & Lints
-```bash
+npm run validate:data
 npm run typecheck
 npm run lint
-```
-
-### 4. Run Unit Tests
-```bash
 npm run test
+npm run build
+npm run balance:audit
 ```
 
-### 5. Compile Production Bundle
+## Local Development
+
 ```bash
-npm run build
+npm install
+npm run dev
 ```

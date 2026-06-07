@@ -18,6 +18,7 @@ import { rollCraftSuccess } from './crafting';
 import { generateItemAffixes } from './affixes';
 import { calculateRerollCost, rerollItemAffix } from './reroll';
 import { applyOfflineHealthRegen, loadGame, normalizeHeroState } from '../save/saveSystem';
+import { calculateVictoryRewards } from '../../features/combat/services/combatRewards';
 import { curatedCraftingQuests } from '../../data/quests';
 import { formatQuestRewards } from '../../features/quests/questDisplayHelpers';
 import { applyRankScaling, rollEliteOrNormal, getBossForLocation } from './enemyScaling';
@@ -1754,6 +1755,73 @@ describe('New Quest UI & Safe Save Migration Tests', () => {
     expect(normalized.name).toBe('Tester');
     expect(normalized.nameSource).toBe('telegram');
     expect(normalized.level).toBe(1);
+  });
+
+  it('new heroes always start on the current wipe baseline', () => {
+    const hero = createInitialHero();
+
+    expect(hero.wipeId).toBe(GAME_WIPE_ID);
+    expect(hero.level).toBe(1);
+    expect(hero.quests).toBeDefined();
+    expect(hero.quests?.every((quest) => quest.questId.startsWith('quest_crafting_'))).toBe(true);
+  });
+
+  it('quest initialization never restores legacy generated quest clutter for higher-level new heroes', () => {
+    const normalized = normalizeHeroState({
+      ...createInitialHero(),
+      level: 18,
+      wipeId: GAME_WIPE_ID,
+      migrationFlags: {},
+      quests: [
+        { questId: 'QST_LEGACY_DAILY', status: 'active', objectives: [] },
+        { questId: 'quest_crafting_03', status: 'claimed', objectives: [] }
+      ]
+    });
+
+    expect(normalized.quests).toBeDefined();
+    expect(normalized.quests?.some((quest) => quest.questId.startsWith('QST_'))).toBe(false);
+    expect(normalized.quests?.some((quest) => quest.questId === 'quest_crafting_03' && quest.status === 'claimed')).toBe(true);
+  });
+
+  it('active combat rewards do not require legacy rage or skill fields', () => {
+    const heroWithoutLegacyCombatFields: HeroState = {
+      ...createInitialHero(),
+      currentHp: createInitialHero().currentHp - 5,
+      knownRecipeIds: []
+    };
+
+    const enemy: Enemy = {
+      ...mockEnemy,
+      id: 'forest_wolf_guardrail',
+      name: 'Young Wolf',
+      family: 'Blackfang Wolves',
+      archetype: 'Hunter',
+      location: 'LOC_002',
+      lootTable: 'loot_loc_002',
+      rank: 'normal'
+    };
+
+    const currentLocation = {
+      id: 'LOC_002',
+      name: 'Blackfang Forest',
+      levelRange: [3, 6] as [number, number],
+      biome: 'Blackfang Woods',
+      description: 'Guardrail location for active combat reward flow.',
+      enemies: [],
+      materials: ['MAT_002', 'MAT_004']
+    };
+
+    const result = calculateVictoryRewards(
+      enemy,
+      heroWithoutLegacyCombatFields,
+      'Safe',
+      currentLocation,
+      'Wanderer attacks Young Wolf and deals 10 damage.'
+    );
+
+    expect(result.rewardedHero.wipeId).toBe(GAME_WIPE_ID);
+    expect(Array.isArray(result.logLines)).toBe(true);
+    expect(result.rewardedHero.knownRecipeIds).toBeDefined();
   });
 
   it('quest reward formatter displays gold, XP, recipes, and materials', () => {
