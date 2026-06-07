@@ -10,6 +10,7 @@ import {
   rollLiveRecipeUnlock,
   STARTER_RECIPE_IDS,
 } from './recipeDropSources';
+import { curatedCraftingQuests } from './quests';
 
 describe('recipe unlock sources', () => {
   it('covers every live recipe with exactly one unlock rule', () => {
@@ -58,9 +59,9 @@ describe('recipe unlock sources', () => {
   });
 
   it('rolls a live recipe unlock only when the source and chance match', () => {
-    const result = rollLiveRecipeUnlock('Young Wolf', 'LOC_002', [], {}, 0.01);
-    const blockedByChance = rollLiveRecipeUnlock('Young Wolf', 'LOC_002', [], {}, 0.99);
-    const blockedByKnown = rollLiveRecipeUnlock('Young Wolf', 'LOC_002', ['recipe_shield_guard_lvl_03'], {}, 0.01);
+    const result = rollLiveRecipeUnlock('Thorn Rot Hound', 'LOC_001', ['recipe_weapon_blade_lvl_03'], {}, 0.01);
+    const blockedByChance = rollLiveRecipeUnlock('Thorn Rot Hound', 'LOC_001', ['recipe_weapon_blade_lvl_03'], {}, 0.99);
+    const blockedByKnown = rollLiveRecipeUnlock('Thorn Rot Hound', 'LOC_001', ['recipe_weapon_blade_lvl_03', 'recipe_shield_guard_lvl_03'], {}, 0.01);
 
     expect(result.learnedRecipe?.id).toBe('recipe_shield_guard_lvl_03');
     expect(blockedByChance.learnedRecipe).toBeNull();
@@ -70,16 +71,16 @@ describe('recipe unlock sources', () => {
   it('increases recipe pity on failure and resets pity on unlock', () => {
     // Let's check pity increment on fail
     const pityBefore: Record<string, number> = {};
-    const resultFail = rollLiveRecipeUnlock('Young Wolf', 'LOC_002', [], pityBefore, 0.99);
+    const resultFail = rollLiveRecipeUnlock('Thorn Rot Hound', 'LOC_001', ['recipe_weapon_blade_lvl_03'], pityBefore, 0.99);
     expect(resultFail.learnedRecipe).toBeNull();
     expect(resultFail.updatedPity['recipe_shield_guard_lvl_03']).toBe(1);
 
     // Let's check pity increases the chance
     // With 20 failed attempts, pity bonus is 20 * 0.5 = 10, which is maxBonus.
-    // effectiveChance = 4.5 (base) + 10 = 14.5%
+    // effectiveChance = 10.0 (base) + 10 = 20.0%
     const pityHigh = { recipe_shield_guard_lvl_03: 20 };
-    // randomValue 0.12 (12%) is > base 4.5% but <= effective 14.5%
-    const resultSuccess = rollLiveRecipeUnlock('Young Wolf', 'LOC_002', [], pityHigh, 0.12);
+    // randomValue 0.15 (15%) is > base 10.0% but <= effective 20.0%
+    const resultSuccess = rollLiveRecipeUnlock('Thorn Rot Hound', 'LOC_001', ['recipe_weapon_blade_lvl_03'], pityHigh, 0.15);
     expect(resultSuccess.learnedRecipe?.id).toBe('recipe_shield_guard_lvl_03');
     expect(resultSuccess.updatedPity['recipe_shield_guard_lvl_03']).toBe(0);
   });
@@ -116,5 +117,39 @@ describe('recipe unlock sources', () => {
 
       expect(eligibleRecipes.map((candidate) => candidate.recipeId)).toContain(rule.recipeId);
     }
+  });
+
+  it('guarantees every active level 3 live equipment recipe has a LOC_001 non-boss unlock path', () => {
+    const lvl3Rules = LIVE_RECIPE_UNLOCK_RULES.filter((rule) => rule.level === 3);
+    expect(lvl3Rules.length).toBe(9); // weapon, shield, head, chest, hands, legs, feet, ring, amulet
+    for (const rule of lvl3Rules) {
+      expect(rule.locationId).toBe('LOC_001');
+      expect(rule.unlockType).toBe('drop');
+      expect(rule.enemyNames).toContain('Thorn Rot Hound');
+      expect(rule.enemyNames).toContain('Blackfang Brigand');
+    }
+  });
+
+  it('guarantees level 3 feet recipe is included in LOC_001 drops', () => {
+    const feetRule = LIVE_RECIPE_UNLOCK_RULES.find((rule) => rule.recipeId === 'recipe_feet_boots_lvl_03');
+    expect(feetRule).toBeDefined();
+    expect(feetRule?.locationId).toBe('LOC_001');
+    expect(feetRule?.unlockType).toBe('drop');
+  });
+
+  it('guarantees no level 6+ recipes are moved into LOC_001', () => {
+    const loc1Rules = LIVE_RECIPE_UNLOCK_RULES.filter((rule) => rule.locationId === 'LOC_001');
+    for (const rule of loc1Rules) {
+      expect(rule.level).toBeLessThan(6);
+    }
+  });
+
+  it('guarantees early quests reward correct recipes', () => {
+    const quest1 = curatedCraftingQuests.find((q) => q.id === 'quest_crafting_01');
+    const quest2 = curatedCraftingQuests.find((q) => q.id === 'quest_crafting_02');
+    expect(quest1).toBeDefined();
+    expect(quest2).toBeDefined();
+    expect(quest1!.rewards.recipeIds).toContain('recipe_weapon_blade_lvl_03');
+    expect(quest2!.rewards.recipeIds).toContain('recipe_feet_boots_lvl_03');
   });
 });

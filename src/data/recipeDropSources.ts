@@ -32,7 +32,7 @@ export const LIVE_RECIPE_UNLOCK_TEMPLATES = [
     slot: 'weapon',
     unlocks: [
       { level: 1, unlockType: 'starter', locationId: 'LOC_001', enemyNames: [], chancePercent: 0, notes: 'Starter blacksmith pattern.' },
-      { level: 3, unlockType: 'quest', locationId: 'LOC_002', enemyNames: [], chancePercent: 0, notes: 'Quest reward: Early forest weapon.' },
+      { level: 3, unlockType: 'drop', locationId: 'LOC_001', enemyNames: ['Thorn Rot Hound', 'Blackfang Brigand'], chancePercent: 10.0, notes: 'Early starter weapon pattern.' },
       { level: 6, unlockType: 'quest', locationId: 'LOC_003', enemyNames: [], chancePercent: 0, notes: 'Quest reward: Aggressive frontier weapon.' },
       { level: 9, unlockType: 'drop', locationId: 'LOC_004', enemyNames: ['Iron Guard', 'Tower Shield Veteran'], chancePercent: 4, notes: 'Watchtower-forged blade pattern.' },
       { level: 12, unlockType: 'drop', locationId: 'LOC_005', enemyNames: ['Iron Gate Warden', 'Elite Spawn'], chancePercent: 3.5, notes: 'Fortress progression manual.' },
@@ -48,7 +48,7 @@ export const LIVE_RECIPE_UNLOCK_TEMPLATES = [
     slot: 'shield',
     unlocks: [
       { level: 1, unlockType: 'starter', locationId: 'LOC_001', enemyNames: [], chancePercent: 0, notes: 'Starter guard shield pattern.' },
-      { level: 3, unlockType: 'drop', locationId: 'LOC_002', enemyNames: ['Young Wolf', 'Fang Stalker'], chancePercent: 4.5, notes: 'Early hide shield pattern.' },
+      { level: 3, unlockType: 'drop', locationId: 'LOC_001', enemyNames: ['Thorn Rot Hound', 'Blackfang Brigand'], chancePercent: 10.0, notes: 'Early starter shield pattern.' },
       { level: 6, unlockType: 'quest', locationId: 'LOC_003', enemyNames: [], chancePercent: 0, notes: 'Quest reward: First proper defensive shield.' },
       { level: 9, unlockType: 'drop', locationId: 'LOC_005', enemyNames: ['Iron Guard', 'Iron Gate Warden'], chancePercent: 4.5, notes: 'Bastion approach shield pattern.' },
       { level: 12, unlockType: 'drop', locationId: 'LOC_006', enemyNames: ['Ash Disciple', 'Ash Blood Priest'], chancePercent: 2.6, notes: 'Ash-marsh warding shield pattern.' },
@@ -64,7 +64,7 @@ export const LIVE_RECIPE_UNLOCK_TEMPLATES = [
     slot: 'head',
     unlocks: [
       { level: 1, unlockType: 'starter', locationId: 'LOC_001', enemyNames: [], chancePercent: 0, notes: 'Starter helm pattern.' },
-      { level: 3, unlockType: 'drop', locationId: 'LOC_002', enemyNames: ['Young Wolf', 'Fang Stalker'], chancePercent: 4.5, notes: 'Early frontier helm unlock.' },
+      { level: 3, unlockType: 'drop', locationId: 'LOC_001', enemyNames: ['Thorn Rot Hound', 'Blackfang Brigand'], chancePercent: 10.0, notes: 'Early starter helm unlock.' },
       { level: 6, unlockType: 'quest', locationId: 'LOC_003', enemyNames: [], chancePercent: 0, notes: 'Quest reward: Watchtower helm.' },
       { level: 9, unlockType: 'drop', locationId: 'LOC_005', enemyNames: ['Iron Gate Warden'], chancePercent: 4.5, notes: 'Iron Bastion visor pattern.' },
       { level: 12, unlockType: 'drop', locationId: 'LOC_006', enemyNames: ['Ash Disciple', 'Ash Blood Priest'], chancePercent: 2.6, notes: 'Ashen hood pattern.' },
@@ -80,7 +80,7 @@ export const LIVE_RECIPE_UNLOCK_TEMPLATES = [
     slot: 'chest',
     unlocks: [
       { level: 1, unlockType: 'starter', locationId: 'LOC_001', enemyNames: [], chancePercent: 0, notes: 'Starter chest pattern.' },
-      { level: 3, unlockType: 'drop', locationId: 'LOC_002', enemyNames: ['Fang Stalker'], chancePercent: 5, notes: 'Early Blackfang chest pattern.' },
+      { level: 3, unlockType: 'drop', locationId: 'LOC_001', enemyNames: ['Thorn Rot Hound', 'Blackfang Brigand'], chancePercent: 10.0, notes: 'Early starter chest pattern.' },
       { level: 6, unlockType: 'drop', locationId: 'LOC_003', enemyNames: ['Blood Raider'], chancePercent: 4.5, notes: 'Raider chest pattern.' },
       { level: 9, unlockType: 'quest', locationId: 'LOC_004', enemyNames: [], chancePercent: 0, notes: 'Quest reward: Watchtower mail.' },
       { level: 12, unlockType: 'drop', locationId: 'LOC_005', enemyNames: ['Iron Gate Warden'], chancePercent: 3.2, notes: 'Fortress chest pattern.' },
@@ -96,7 +96,7 @@ export const LIVE_RECIPE_UNLOCK_TEMPLATES = [
     slot: 'hands',
     unlocks: [
       { level: 1, unlockType: 'starter', locationId: 'LOC_001', enemyNames: [], chancePercent: 0, notes: 'Starter handguard pattern.' },
-      { level: 3, unlockType: 'drop', locationId: 'LOC_002', enemyNames: ['Young Wolf', 'Fang Stalker'], chancePercent: 4.5, notes: 'Early clawed glove pattern.' },
+      { level: 3, unlockType: 'drop', locationId: 'LOC_001', enemyNames: ['Thorn Rot Hound', 'Blackfang Brigand'], chancePercent: 10.0, notes: 'Early starter glove pattern.' },
       { level: 6, unlockType: 'drop', locationId: 'LOC_003', enemyNames: ['Wild Raider', 'Blood Raider'], chancePercent: 4.5, notes: 'Watchtower bracer pattern.' },
       { level: 9, unlockType: 'drop', locationId: 'LOC_005', enemyNames: ['Iron Gate Warden'], chancePercent: 4.5, notes: 'Ironbound gauntlet pattern.' },
       { level: 12, unlockType: 'quest', locationId: 'LOC_006', enemyNames: [], chancePercent: 0, notes: 'Quest reward: Ash handwrap.' },
@@ -112,7 +112,7 @@ export const LIVE_RECIPE_UNLOCK_TEMPLATES = [
     slot: 'legs',
     unlocks: [
       { level: 1, unlockType: 'starter', locationId: 'LOC_001', enemyNames: [], chancePercent: 0, notes: 'Starter legguard pattern.' },
-      { level: 3, unlockType: 'drop', locationId: 'LOC_002', enemyNames: ['Young Wolf', 'Fang Stalker'], chancePercent: 4.5, notes: 'Early forest greave pattern.' },
+      { level: 3, unlockType: 'drop', locationId: 'LOC_001', enemyNames: ['Thorn Rot Hound', 'Blackfang Brigand'], chancePercent: 10.0, notes: 'Early starter pants pattern.' },
       { level: 6, unlockType: 'drop', locationId: 'LOC_003', enemyNames: ['Wild Raider', 'Blood Raider'], chancePercent: 4.5, notes: 'Gatewarden greave pattern.' },
       { level: 9, unlockType: 'drop', locationId: 'LOC_005', enemyNames: ['Iron Gate Warden'], chancePercent: 4.5, notes: 'Ironmarch legguard pattern.' },
       { level: 12, unlockType: 'drop', locationId: 'LOC_006', enemyNames: ['Ash Disciple', 'Ash Blood Priest'], chancePercent: 2.6, notes: 'Ashbound legwrap pattern.' },
@@ -128,7 +128,7 @@ export const LIVE_RECIPE_UNLOCK_TEMPLATES = [
     slot: 'feet',
     unlocks: [
       { level: 1, unlockType: 'starter', locationId: 'LOC_001', enemyNames: [], chancePercent: 0, notes: 'Starter boot pattern.' },
-      { level: 3, unlockType: 'quest', locationId: 'LOC_002', enemyNames: [], chancePercent: 0, notes: 'Quest reward: Trail boot.' },
+      { level: 3, unlockType: 'drop', locationId: 'LOC_001', enemyNames: ['Thorn Rot Hound', 'Blackfang Brigand'], chancePercent: 10.0, notes: 'Early starter boot pattern.' },
       { level: 6, unlockType: 'drop', locationId: 'LOC_003', enemyNames: ['Wild Raider', 'Blood Raider'], chancePercent: 4.5, notes: 'Watchtower boot pattern.' },
       { level: 9, unlockType: 'drop', locationId: 'LOC_005', enemyNames: ['Iron Gate Warden'], chancePercent: 4.5, notes: 'Ironmarch boot pattern.' },
       { level: 12, unlockType: 'drop', locationId: 'LOC_006', enemyNames: ['Ash Disciple', 'Ash Blood Priest'], chancePercent: 2.6, notes: 'Ashwalk boot pattern.' },
@@ -144,7 +144,7 @@ export const LIVE_RECIPE_UNLOCK_TEMPLATES = [
     slot: 'ring',
     unlocks: [
       { level: 1, unlockType: 'drop', locationId: 'LOC_001', enemyNames: ['Starved Stalker', 'Broken Shield Guard'], chancePercent: 4.5, notes: 'Very early accessory unlock.' },
-      { level: 3, unlockType: 'drop', locationId: 'LOC_002', enemyNames: ['Young Wolf', 'Fang Stalker'], chancePercent: 4.5, notes: 'First ring recipe unlock.' },
+      { level: 3, unlockType: 'drop', locationId: 'LOC_001', enemyNames: ['Thorn Rot Hound', 'Blackfang Brigand'], chancePercent: 10.0, notes: 'Early starter ring pattern.' },
       { level: 6, unlockType: 'drop', locationId: 'LOC_003', enemyNames: ['Wild Raider', 'Blood Raider'], chancePercent: 4.5, notes: 'Counter-oriented ring pattern.' },
       { level: 9, unlockType: 'drop', locationId: 'LOC_005', enemyNames: ['Iron Gate Warden'], chancePercent: 4.5, notes: 'Fortress ring pattern.' },
       { level: 12, unlockType: 'drop', locationId: 'LOC_006', enemyNames: ['Ash Disciple', 'Ash Blood Priest'], chancePercent: 2.6, notes: 'Ash signet pattern.' },
@@ -160,7 +160,7 @@ export const LIVE_RECIPE_UNLOCK_TEMPLATES = [
     slot: 'amulet',
     unlocks: [
       { level: 1, unlockType: 'drop', locationId: 'LOC_001', enemyNames: ['Road Thug', 'Starved Stalker'], chancePercent: 4.5, notes: 'Very early talisman unlock.' },
-      { level: 3, unlockType: 'drop', locationId: 'LOC_002', enemyNames: ['Young Wolf', 'Fang Stalker'], chancePercent: 4.5, notes: 'First support-amulet pattern.' },
+      { level: 3, unlockType: 'drop', locationId: 'LOC_001', enemyNames: ['Thorn Rot Hound', 'Blackfang Brigand'], chancePercent: 10.0, notes: 'Early starter amulet pattern.' },
       { level: 6, unlockType: 'drop', locationId: 'LOC_003', enemyNames: ['Wild Raider', 'Blood Raider'], chancePercent: 4.5, notes: 'Ash charm pattern.' },
       { level: 9, unlockType: 'drop', locationId: 'LOC_005', enemyNames: ['Iron Guard', 'Iron Gate Warden'], chancePercent: 4.5, notes: 'Blood charm pattern.' },
       { level: 12, unlockType: 'drop', locationId: 'LOC_006', enemyNames: ['Ash Disciple', 'Ash Blood Priest'], chancePercent: 2.6, notes: 'Mercenary talisman pattern.' },

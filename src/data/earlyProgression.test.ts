@@ -97,7 +97,7 @@ describe('early progression guardrails', () => {
     const earlyRules = LIVE_RECIPE_UNLOCK_RULES.filter((rule) => rule.level <= 6);
 
     expect(earlyRules.every((rule) => rule.unlockType === 'starter' || rule.unlockType === 'drop' || rule.unlockType === 'quest')).toBe(true);
-    expect(earlyRules.some((rule) => rule.unlockType === 'quest' && rule.level === 3)).toBe(true);
+    expect(earlyRules.some((rule) => rule.unlockType === 'quest' && rule.level === 6)).toBe(true);
     expect(earlyRules.some((rule) => rule.unlockType === 'drop' && EARLY_LOCATION_IDS.includes(rule.locationId as (typeof EARLY_LOCATION_IDS)[number]))).toBe(true);
   });
 });

@@ -1,6 +1,26 @@
 [
   {
     "location_id": "LOC_001",
+    "enemy_name": "Thorn Rot Hound",
+    "enemy_family": "Blackfang Corrupted Beasts",
+    "archetype": "Hunter",
+    "enemy_level_band": "1–3",
+    "spawn_chance": 50,
+    "rarity": "Common",
+    "combat_notes": "Fast attacks, bleed chance"
+  },
+  {
+    "location_id": "LOC_001",
+    "enemy_name": "Blackfang Brigand",
+    "enemy_family": "Frontier Raiders",
+    "archetype": "Berserker",
+    "enemy_level_band": "1–3",
+    "spawn_chance": 50,
+    "rarity": "Common",
+    "combat_notes": "Rage gain, shield bash"
+  },
+  {
+    "location_id": "LOC_001",
     "enemy_name": "Young Wolf",
     "enemy_family": "Blackfang Wolves",
     "archetype": "Hunter",
