@@ -80,6 +80,16 @@ function stripCoinFields(heroValue: Record<string, unknown>): Record<string, unk
   return sanitizedHero;
 }
 
+function normalizeServerCoins(value: unknown): number {
+  const parsed = Number(value);
+
+  if (!Number.isFinite(parsed)) {
+    return 0;
+  }
+
+  return Math.max(0, Math.min(1_000_000_000, Math.trunc(parsed)));
+}
+
 function areDifferent(previousValue: unknown, nextValue: unknown): boolean {
   return stableStringify(previousValue) !== stableStringify(nextValue);
 }
@@ -406,6 +416,7 @@ export async function handler(event: NetlifyEvent) {
   );
   const normalizedHero = {
     ...stripCoinFields(sanitizedPayload.hero),
+    coins: normalizeServerCoins(existingHero.coins),
     saveVersion: 2,
     updatedAt: now,
   };

@@ -6,6 +6,7 @@ type NetlifyEvent = {
 };
 
 type HeroJson = Record<string, unknown>;
+const MAX_ADMIN_TEST_COINS = 1_000_000_000;
 
 function json(statusCode: number, body: unknown) {
   return {
@@ -51,6 +52,16 @@ function stripCoinFields(hero: HeroJson): HeroJson {
   delete sanitizedHero.premiumCoins;
 
   return sanitizedHero;
+}
+
+function clampCoins(value: unknown): number {
+  const parsed = Number(value);
+
+  if (!Number.isFinite(parsed)) {
+    return 0;
+  }
+
+  return Math.max(0, Math.min(MAX_ADMIN_TEST_COINS, Math.trunc(parsed)));
 }
 
 export async function handler(event: NetlifyEvent) {
@@ -163,6 +174,15 @@ export async function handler(event: NetlifyEvent) {
     updates.hero && typeof updates.hero === 'object' ? (updates.hero as HeroJson) : null;
 
   const nextHero: HeroJson = heroFromUpdate ? stripCoinFields(heroFromUpdate) : stripCoinFields(currentHero);
+  const coinsUpdateProvided =
+    Object.prototype.hasOwnProperty.call(updates, 'coins') ||
+    Object.prototype.hasOwnProperty.call(updates, 'coinBalance') ||
+    Object.prototype.hasOwnProperty.call(updates, 'balanceCoins') ||
+    Object.prototype.hasOwnProperty.call(updates, 'premiumCoins');
+
+  const canonicalCoins = Object.prototype.hasOwnProperty.call(currentHero, 'coins')
+    ? clampCoins(currentHero.coins)
+    : 0;
 
   const level = optionalNumber(updates.level);
   const xp = optionalNumber(updates.xp);
@@ -176,6 +196,7 @@ export async function handler(event: NetlifyEvent) {
   if (gold !== undefined) nextHero.gold = gold;
   if (currentHp !== undefined) nextHero.currentHp = currentHp;
   if (maxHp !== undefined) nextHero.maxHp = maxHp;
+  nextHero.coins = coinsUpdateProvided ? clampCoins(updates.coins) : canonicalCoins;
 
   const savePatch: Record<string, unknown> = {
     hero_json: nextHero,

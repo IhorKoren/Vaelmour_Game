@@ -56,6 +56,7 @@ export function createInitialHero(): HeroState {
     level: 1,
     xp: 0,
     gold: 0,
+    coins: 0,
     knownRecipeIds: [...STARTER_RECIPE_IDS],
     baseHp: 100,
     stats: {

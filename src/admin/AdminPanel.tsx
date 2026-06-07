@@ -1,19 +1,21 @@
-import { useEffect, useMemo, useState } from 'react';
-import type { FormEvent } from 'react';
+import { useEffect, useMemo, useState } from "react";
+import type { FormEvent } from "react";
+import { applyCoinsDelta, resetCoinsValue } from "./adminCoinsEditor";
 
-import './AdminPanel.css';
+import "./AdminPanel.css";
 
-const ADMIN_SECRET_STORAGE_KEY = 'vaelmour_admin_secret';
+const ADMIN_SECRET_STORAGE_KEY = "vaelmour_admin_secret";
 
-const ADMIN_LIST_PLAYERS_ENDPOINT = '/.netlify/functions/adminListPlayers';
-const ADMIN_GET_PLAYER_ENDPOINT = '/.netlify/functions/adminGetPlayer';
-const ADMIN_UPDATE_PLAYER_ENDPOINT = '/.netlify/functions/adminUpdatePlayer';
+const ADMIN_LIST_PLAYERS_ENDPOINT = "/.netlify/functions/adminListPlayers";
+const ADMIN_GET_PLAYER_ENDPOINT = "/.netlify/functions/adminGetPlayer";
+const ADMIN_UPDATE_PLAYER_ENDPOINT = "/.netlify/functions/adminUpdatePlayer";
 
 type AdminListSave = {
   player_id: string;
   level: number;
   xp: number;
   gold: number;
+  coins?: number;
   current_hp: number;
   max_hp: number;
   selected_location_id: string | null;
@@ -93,6 +95,7 @@ type PlayerEditorState = {
   level: string;
   xp: string;
   gold: string;
+  coins: string;
   currentHp: string;
   maxHp: string;
   selectedLocationId: string;
@@ -103,20 +106,21 @@ type PlayerEditorState = {
 
 function createEmptyEditorState(): PlayerEditorState {
   return {
-    level: '',
-    xp: '',
-    gold: '',
-    currentHp: '',
-    maxHp: '',
-    selectedLocationId: '',
+    level: "",
+    xp: "",
+    gold: "",
+    coins: "0",
+    currentHp: "",
+    maxHp: "",
+    selectedLocationId: "",
     isBanned: false,
-    adminNotes: '',
-    heroJson: '{}',
+    adminNotes: "",
+    heroJson: "{}",
   };
 }
 
 function formatDate(value: string | null | undefined): string {
-  if (!value) return '—';
+  if (!value) return "—";
 
   const date = new Date(value);
 
@@ -124,38 +128,41 @@ function formatDate(value: string | null | undefined): string {
     return value;
   }
 
-  return date.toLocaleString('uk-UA', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
+  return date.toLocaleString("uk-UA", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
 function formatPlayerName(player: AdminPlayerListItem | null): string {
-  if (!player) return '—';
+  if (!player) return "—";
 
-  const fullName = [player.firstName, player.lastName].filter(Boolean).join(' ').trim();
+  const fullName = [player.firstName, player.lastName]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
 
   if (fullName) return fullName;
   if (player.username) return `@${player.username}`;
 
-  return `Telegram ID ${player.telegramUserId ?? '—'}`;
+  return `Telegram ID ${player.telegramUserId ?? "—"}`;
 }
 
 function formatDetailedPlayerName(player: AdminPlayerDb | null): string {
-  if (!player) return '—';
+  if (!player) return "—";
 
   const fullName = [player.telegram_first_name, player.telegram_last_name]
     .filter(Boolean)
-    .join(' ')
+    .join(" ")
     .trim();
 
   if (fullName) return fullName;
   if (player.telegram_username) return `@${player.telegram_username}`;
 
-  return `Telegram ID ${player.telegram_user_id ?? '—'}`;
+  return `Telegram ID ${player.telegram_user_id ?? "—"}`;
 }
 
 function normalizeUnknownError(error: unknown): string {
@@ -167,7 +174,7 @@ function normalizeUnknownError(error: unknown): string {
 }
 
 function numberOrEmpty(value: number | null | undefined): string {
-  if (value === null || value === undefined) return '';
+  if (value === null || value === undefined) return "";
 
   return String(value);
 }
@@ -191,9 +198,9 @@ async function postJson<TResponse>(
   body: Record<string, unknown>,
 ): Promise<TResponse> {
   const response = await fetch(endpoint, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(body),
   });
@@ -204,44 +211,58 @@ async function postJson<TResponse>(
   };
 
   if (!response.ok) {
-    throw new Error(payload.details || payload.error || `HTTP ${response.status}`);
+    throw new Error(
+      payload.details || payload.error || `HTTP ${response.status}`,
+    );
   }
 
   return payload;
 }
 
-function buildEditorState(player: AdminPlayerDb, save: AdminDetailedSave | null): PlayerEditorState {
+function buildEditorState(
+  player: AdminPlayerDb,
+  save: AdminDetailedSave | null,
+): PlayerEditorState {
   return {
     level: numberOrEmpty(save?.level),
     xp: numberOrEmpty(save?.xp),
     gold: numberOrEmpty(save?.gold),
+    coins: numberOrEmpty(
+      Number((save?.hero_json?.coins as number | undefined) ?? 0) || 0,
+    ),
     currentHp: numberOrEmpty(save?.current_hp),
     maxHp: numberOrEmpty(save?.max_hp),
-    selectedLocationId: save?.selected_location_id ?? '',
+    selectedLocationId: save?.selected_location_id ?? "",
     isBanned: player.is_banned,
-    adminNotes: player.admin_notes ?? '',
+    adminNotes: player.admin_notes ?? "",
     heroJson: JSON.stringify(save?.hero_json ?? {}, null, 2),
   };
 }
 
 export function AdminPanel() {
   const [adminSecret, setAdminSecret] = useState(() => {
-    return localStorage.getItem(ADMIN_SECRET_STORAGE_KEY) ?? '';
+    return localStorage.getItem(ADMIN_SECRET_STORAGE_KEY) ?? "";
   });
 
   const [secretInput, setSecretInput] = useState(adminSecret);
   const [players, setPlayers] = useState<AdminPlayerListItem[]>([]);
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
-  const [selectedPlayer, setSelectedPlayer] = useState<AdminPlayerDb | null>(null);
-  const [selectedSave, setSelectedSave] = useState<AdminDetailedSave | null>(null);
-  const [editor, setEditor] = useState<PlayerEditorState>(() => createEmptyEditorState());
+  const [selectedPlayer, setSelectedPlayer] = useState<AdminPlayerDb | null>(
+    null,
+  );
+  const [selectedSave, setSelectedSave] = useState<AdminDetailedSave | null>(
+    null,
+  );
+  const [editor, setEditor] = useState<PlayerEditorState>(() =>
+    createEmptyEditorState(),
+  );
 
   const [isLoadingPlayers, setIsLoadingPlayers] = useState(false);
   const [isLoadingPlayer, setIsLoadingPlayer] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
   const selectedPlayerFromList = useMemo(() => {
     return players.find((player) => player.id === selectedPlayerId) ?? null;
@@ -253,16 +274,19 @@ export function AdminPanel() {
     if (!secret.trim()) return;
 
     setIsLoadingPlayers(true);
-    setError('');
-    setMessage('');
+    setError("");
+    setMessage("");
 
     try {
-      const payload = await postJson<AdminListPlayersResponse>(ADMIN_LIST_PLAYERS_ENDPOINT, {
-        adminSecret: secret,
-      });
+      const payload = await postJson<AdminListPlayersResponse>(
+        ADMIN_LIST_PLAYERS_ENDPOINT,
+        {
+          adminSecret: secret,
+        },
+      );
 
       if (!payload.success) {
-        throw new Error(payload.error || 'Не вдалося завантажити гравців');
+        throw new Error(payload.error || "Не вдалося завантажити гравців");
       }
 
       setPlayers(payload.players ?? []);
@@ -283,17 +307,20 @@ export function AdminPanel() {
     if (!adminSecret.trim() || !playerId) return;
 
     setIsLoadingPlayer(true);
-    setError('');
-    setMessage('');
+    setError("");
+    setMessage("");
 
     try {
-      const payload = await postJson<AdminGetPlayerResponse>(ADMIN_GET_PLAYER_ENDPOINT, {
-        adminSecret,
-        playerId,
-      });
+      const payload = await postJson<AdminGetPlayerResponse>(
+        ADMIN_GET_PLAYER_ENDPOINT,
+        {
+          adminSecret,
+          playerId,
+        },
+      );
 
       if (!payload.success) {
-        throw new Error(payload.error || 'Не вдалося завантажити гравця');
+        throw new Error(payload.error || "Не вдалося завантажити гравця");
       }
 
       setSelectedPlayer(payload.player);
@@ -333,14 +360,14 @@ export function AdminPanel() {
     const nextSecret = secretInput.trim();
 
     if (!nextSecret) {
-      setError('Введи ADMIN_SECRET');
+      setError("Введи ADMIN_SECRET");
       return;
     }
 
     localStorage.setItem(ADMIN_SECRET_STORAGE_KEY, nextSecret);
     setAdminSecret(nextSecret);
-    setMessage('');
-    setError('');
+    setMessage("");
+    setError("");
 
     void loadPlayers(nextSecret);
   }
@@ -348,15 +375,15 @@ export function AdminPanel() {
   function handleLogout() {
     localStorage.removeItem(ADMIN_SECRET_STORAGE_KEY);
 
-    setAdminSecret('');
-    setSecretInput('');
+    setAdminSecret("");
+    setSecretInput("");
     setPlayers([]);
     setSelectedPlayerId(null);
     setSelectedPlayer(null);
     setSelectedSave(null);
     setEditor(createEmptyEditorState());
-    setMessage('');
-    setError('');
+    setMessage("");
+    setError("");
   }
 
   function updateEditorField<TKey extends keyof PlayerEditorState>(
@@ -371,13 +398,13 @@ export function AdminPanel() {
 
   async function handleSavePlayer() {
     if (!selectedPlayerId) {
-      setError('Спочатку вибери гравця');
+      setError("Спочатку вибери гравця");
       return;
     }
 
     setIsSaving(true);
-    setError('');
-    setMessage('');
+    setError("");
+    setMessage("");
 
     try {
       const hero = JSON.parse(editor.heroJson) as Record<string, unknown>;
@@ -385,30 +412,35 @@ export function AdminPanel() {
       const level = parseOptionalNumber(editor.level);
       const xp = parseOptionalNumber(editor.xp);
       const gold = parseOptionalNumber(editor.gold);
+      const coins = parseOptionalNumber(editor.coins);
       const currentHp = parseOptionalNumber(editor.currentHp);
       const maxHp = parseOptionalNumber(editor.maxHp);
 
-      const payload = await postJson<AdminUpdatePlayerResponse>(ADMIN_UPDATE_PLAYER_ENDPOINT, {
-        adminSecret,
-        playerId: selectedPlayerId,
-        updates: {
-          hero,
-          level,
-          xp,
-          gold,
-          currentHp,
-          maxHp,
-          selectedLocationId: editor.selectedLocationId.trim() || undefined,
-          isBanned: editor.isBanned,
-          adminNotes: editor.adminNotes,
+      const payload = await postJson<AdminUpdatePlayerResponse>(
+        ADMIN_UPDATE_PLAYER_ENDPOINT,
+        {
+          adminSecret,
+          playerId: selectedPlayerId,
+          updates: {
+            hero,
+            level,
+            xp,
+            gold,
+            coins,
+            currentHp,
+            maxHp,
+            selectedLocationId: editor.selectedLocationId.trim() || undefined,
+            isBanned: editor.isBanned,
+            adminNotes: editor.adminNotes,
+          },
         },
-      });
+      );
 
       if (!payload.success) {
-        throw new Error(payload.error || 'Не вдалося зберегти гравця');
+        throw new Error(payload.error || "Не вдалося зберегти гравця");
       }
 
-      setMessage(payload.message || 'Гравця збережено');
+      setMessage(payload.message || "Гравця збережено");
 
       await loadPlayers(adminSecret);
       await loadPlayer(selectedPlayerId);
@@ -433,7 +465,9 @@ export function AdminPanel() {
   function handleAddGold(amount: number) {
     setEditor((currentEditor) => {
       const currentGold = Number(currentEditor.gold || 0);
-      const nextGold = Number.isFinite(currentGold) ? currentGold + amount : amount;
+      const nextGold = Number.isFinite(currentGold)
+        ? currentGold + amount
+        : amount;
 
       return {
         ...currentEditor,
@@ -442,12 +476,26 @@ export function AdminPanel() {
     });
   }
 
+  function handleAddCoins(amount: number) {
+    setEditor((currentEditor) => ({
+      ...currentEditor,
+      coins: applyCoinsDelta(currentEditor.coins, amount),
+    }));
+  }
+
+  function handleResetCoins() {
+    setEditor((currentEditor) => ({
+      ...currentEditor,
+      coins: resetCoinsValue(),
+    }));
+  }
+
   function handleJsonFormat() {
     try {
       const parsed = JSON.parse(editor.heroJson) as Record<string, unknown>;
 
-      updateEditorField('heroJson', JSON.stringify(parsed, null, 2));
-      setError('');
+      updateEditorField("heroJson", JSON.stringify(parsed, null, 2));
+      setError("");
     } catch (caughtError) {
       setError(`JSON помилка: ${normalizeUnknownError(caughtError)}`);
     }
@@ -458,7 +506,9 @@ export function AdminPanel() {
       <div className="admin-page">
         <form className="admin-login" onSubmit={handleLogin}>
           <h1>Vaelmour Admin</h1>
-          <p>Введи ADMIN_SECRET, який ти додав у Netlify Environment Variables.</p>
+          <p>
+            Введи ADMIN_SECRET, який ти додав у Netlify Environment Variables.
+          </p>
 
           {error ? <div className="admin-error">{error}</div> : null}
 
@@ -485,8 +535,12 @@ export function AdminPanel() {
         </div>
 
         <div className="admin-header__actions">
-          <button type="button" onClick={() => void loadPlayers(adminSecret)} disabled={isLoadingPlayers}>
-            {isLoadingPlayers ? 'Оновлення...' : 'Оновити список'}
+          <button
+            type="button"
+            onClick={() => void loadPlayers(adminSecret)}
+            disabled={isLoadingPlayers}
+          >
+            {isLoadingPlayers ? "Оновлення..." : "Оновити список"}
           </button>
 
           <button type="button" onClick={handleLogout}>
@@ -508,6 +562,7 @@ export function AdminPanel() {
                 <tr>
                   <th>Гравець</th>
                   <th>Lvl</th>
+                  <th>Coins</th>
                   <th>Gold (Legacy)</th>
                   <th>HP</th>
                   <th>Last seen</th>
@@ -518,22 +573,29 @@ export function AdminPanel() {
                 {players.map((player) => (
                   <tr
                     key={player.id}
-                    className={player.id === selectedPlayerId ? 'is-selected' : undefined}
+                    className={
+                      player.id === selectedPlayerId ? "is-selected" : undefined
+                    }
                     onClick={() => setSelectedPlayerId(player.id)}
                   >
                     <td>
                       <strong>{formatPlayerName(player)}</strong>
                       <span>
-                        {player.username ? `@${player.username}` : 'без username'} · TG:{' '}
-                        {player.telegramUserId ?? '—'}
+                        {player.username
+                          ? `@${player.username}`
+                          : "без username"}{" "}
+                        · TG: {player.telegramUserId ?? "—"}
                       </span>
                       {player.isBanned ? <span>Забанений</span> : null}
                     </td>
 
-                    <td>{player.save?.level ?? '—'}</td>
-                    <td>{player.save?.gold ?? '—'}</td>
+                    <td>{player.save?.level ?? "—"}</td>
+                    <td>{player.save?.coins ?? 0}</td>
+                    <td>{player.save?.gold ?? "—"}</td>
                     <td>
-                      {player.save ? `${player.save.current_hp}/${player.save.max_hp}` : '—'}
+                      {player.save
+                        ? `${player.save.current_hp}/${player.save.max_hp}`
+                        : "—"}
                     </td>
                     <td>{formatDate(player.lastSeenAt)}</td>
                   </tr>
@@ -541,7 +603,7 @@ export function AdminPanel() {
 
                 {!players.length && !isLoadingPlayers ? (
                   <tr>
-                    <td colSpan={5}>Гравців поки не знайдено.</td>
+                    <td colSpan={6}>Гравців поки не знайдено.</td>
                   </tr>
                 ) : null}
               </tbody>
@@ -552,7 +614,9 @@ export function AdminPanel() {
         <section className="admin-card">
           <h2>Обраний гравець</h2>
 
-          {isLoadingPlayer ? <div className="admin-message">Завантаження гравця...</div> : null}
+          {isLoadingPlayer ? (
+            <div className="admin-message">Завантаження гравця...</div>
+          ) : null}
 
           {!selectedPlayer && !isLoadingPlayer ? (
             <p>Вибери гравця зі списку зліва.</p>
@@ -568,7 +632,7 @@ export function AdminPanel() {
 
                 <div>
                   <span>Telegram ID</span>
-                  <strong>{selectedPlayer.telegram_user_id ?? '—'}</strong>
+                  <strong>{selectedPlayer.telegram_user_id ?? "—"}</strong>
                 </div>
 
                 <div>
@@ -576,7 +640,7 @@ export function AdminPanel() {
                   <strong>
                     {selectedPlayer.telegram_username
                       ? `@${selectedPlayer.telegram_username}`
-                      : '—'}
+                      : "—"}
                   </strong>
                 </div>
 
@@ -590,7 +654,7 @@ export function AdminPanel() {
                   <strong>
                     {selectedSave?.selected_location_id ??
                       selectedPlayerFromList?.save?.selected_location_id ??
-                      '—'}
+                      "—"}
                   </strong>
                 </div>
 
@@ -605,7 +669,9 @@ export function AdminPanel() {
                   Рівень
                   <input
                     value={editor.level}
-                    onChange={(event) => updateEditorField('level', event.target.value)}
+                    onChange={(event) =>
+                      updateEditorField("level", event.target.value)
+                    }
                     inputMode="numeric"
                   />
                 </label>
@@ -614,7 +680,9 @@ export function AdminPanel() {
                   XP
                   <input
                     value={editor.xp}
-                    onChange={(event) => updateEditorField('xp', event.target.value)}
+                    onChange={(event) =>
+                      updateEditorField("xp", event.target.value)
+                    }
                     inputMode="numeric"
                   />
                 </label>
@@ -623,7 +691,20 @@ export function AdminPanel() {
                   Gold (Legacy/Deprecated)
                   <input
                     value={editor.gold}
-                    onChange={(event) => updateEditorField('gold', event.target.value)}
+                    onChange={(event) =>
+                      updateEditorField("gold", event.target.value)
+                    }
+                    inputMode="numeric"
+                  />
+                </label>
+
+                <label>
+                  Coins (Test)
+                  <input
+                    value={editor.coins}
+                    onChange={(event) =>
+                      updateEditorField("coins", event.target.value)
+                    }
                     inputMode="numeric"
                   />
                 </label>
@@ -632,7 +713,9 @@ export function AdminPanel() {
                   Current HP
                   <input
                     value={editor.currentHp}
-                    onChange={(event) => updateEditorField('currentHp', event.target.value)}
+                    onChange={(event) =>
+                      updateEditorField("currentHp", event.target.value)
+                    }
                     inputMode="numeric"
                   />
                 </label>
@@ -641,7 +724,9 @@ export function AdminPanel() {
                   Max HP
                   <input
                     value={editor.maxHp}
-                    onChange={(event) => updateEditorField('maxHp', event.target.value)}
+                    onChange={(event) =>
+                      updateEditorField("maxHp", event.target.value)
+                    }
                     inputMode="numeric"
                   />
                 </label>
@@ -651,7 +736,10 @@ export function AdminPanel() {
                   <input
                     value={editor.selectedLocationId}
                     onChange={(event) =>
-                      updateEditorField('selectedLocationId', event.target.value)
+                      updateEditorField(
+                        "selectedLocationId",
+                        event.target.value,
+                      )
                     }
                     placeholder="LOC_001"
                   />
@@ -662,7 +750,9 @@ export function AdminPanel() {
                 <input
                   type="checkbox"
                   checked={editor.isBanned}
-                  onChange={(event) => updateEditorField('isBanned', event.target.checked)}
+                  onChange={(event) =>
+                    updateEditorField("isBanned", event.target.checked)
+                  }
                 />
                 Забанити гравця
               </label>
@@ -671,7 +761,9 @@ export function AdminPanel() {
                 Admin notes
                 <textarea
                   value={editor.adminNotes}
-                  onChange={(event) => updateEditorField('adminNotes', event.target.value)}
+                  onChange={(event) =>
+                    updateEditorField("adminNotes", event.target.value)
+                  }
                   rows={3}
                   placeholder="Нотатки адміністратора"
                 />
@@ -682,14 +774,20 @@ export function AdminPanel() {
                 <textarea
                   className="admin-json-editor"
                   value={editor.heroJson}
-                  onChange={(event) => updateEditorField('heroJson', event.target.value)}
+                  onChange={(event) =>
+                    updateEditorField("heroJson", event.target.value)
+                  }
                   spellCheck={false}
                 />
               </label>
 
               <div className="admin-actions">
-                <button type="button" onClick={handleSavePlayer} disabled={isSaving}>
-                  {isSaving ? 'Збереження...' : 'Зберегти гравця'}
+                <button
+                  type="button"
+                  onClick={handleSavePlayer}
+                  disabled={isSaving}
+                >
+                  {isSaving ? "Збереження..." : "Зберегти гравця"}
                 </button>
 
                 <button type="button" onClick={handleHealToFull}>
@@ -704,13 +802,35 @@ export function AdminPanel() {
                   +1000 Gold (Legacy)
                 </button>
 
+                <button type="button" onClick={() => handleAddCoins(10)}>
+                  +10 Coins
+                </button>
+
+                <button type="button" onClick={() => handleAddCoins(100)}>
+                  +100 Coins
+                </button>
+
+                <button type="button" onClick={() => handleAddCoins(1000)}>
+                  +1000 Coins
+                </button>
+
+                <button type="button" onClick={() => handleAddCoins(10000)}>
+                  +10000 Coins
+                </button>
+
+                <button type="button" onClick={handleResetCoins}>
+                  Reset Coins to 0
+                </button>
+
                 <button type="button" onClick={handleJsonFormat}>
                   Форматувати JSON
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => selectedPlayerId && void loadPlayer(selectedPlayerId)}
+                  onClick={() =>
+                    selectedPlayerId && void loadPlayer(selectedPlayerId)
+                  }
                 >
                   Скасувати зміни
                 </button>

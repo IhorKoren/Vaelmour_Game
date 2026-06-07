@@ -346,6 +346,7 @@ export type HeroState = {
   level: number;
   xp: number;
   gold: number;
+  coins?: number;
   knownRecipeIds?: string[];
   baseHp: number;
   currentHp: number;
