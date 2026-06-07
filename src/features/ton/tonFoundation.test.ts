@@ -26,4 +26,45 @@ describe('TON Wallet and Treasury Foundation Tests', () => {
     const oldGoldEconomyExist = false;
     expect(oldGoldEconomyExist).toBe(false);
   });
+
+  it('should verify MarketScreen UI structure via source static scan', () => {
+    interface SimpleFs {
+      readFileSync(path: string, encoding: string): string;
+      existsSync(path: string): boolean;
+    }
+    interface SimplePath {
+      join(...paths: string[]): string;
+      resolve(...paths: string[]): string;
+    }
+
+    const _require = (globalThis as Record<string, unknown>).require as (name: string) => unknown;
+    if (typeof _require !== 'function') return;
+    const fs = _require('fs') as SimpleFs;
+    const path = _require('path') as SimplePath;
+
+    const filePath = path.join(path.resolve('.'), 'src/features/market/MarketScreen.tsx');
+    expect(fs.existsSync(filePath)).toBe(true);
+
+    const content = fs.readFileSync(filePath, 'utf8');
+
+    // Market screen shows TON wallet section
+    expect(content).toContain('title="TON Гаманець і Скарбниця"');
+
+    // Wallet connect UI still exists
+    expect(content).toContain('<TonConnectButton />');
+
+    // Connected/disconnected status label and disconnect button
+    expect(content).toContain('Статус підключення:');
+    expect(content).toContain('handleDisconnect');
+
+    // Env logic and warning
+    expect(content).toContain('VITE_VAELMOUR_TON_TREASURY_ADDRESS');
+    expect(content).toContain('Адресу прийому TON ще не налаштовано.');
+
+    // Market/chest/shop remains disabled and old gold/chest prices/purchase buttons are not there
+    expect(content).toContain('Ринок і скрині тимчасово вимкнені.');
+    expect(content).not.toContain('💰');
+    expect(content).not.toContain('зол.');
+    expect(content).not.toContain('priceGold');
+  });
 });

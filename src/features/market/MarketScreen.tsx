@@ -44,7 +44,7 @@ export function MarketScreen({ hero, onHeroChange }: Props) {
       </Panel>
 
       {/* TON Wallet Connection Panel */}
-      <Panel title="💎 TON Гаманець і Скарбниця">
+      <Panel title="TON Гаманець і Скарбниця">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '4px' }}>
           
           {/* Connection Status Section */}
