@@ -69,6 +69,7 @@ function createStartupHero(): HeroState {
   return applyAutoEquipPreset(loadGame()?.hero ?? createInitialHero());
 }
 
+
 function getCriticalHeroSnapshot(hero: HeroState): string {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { currentHp, maxHp, ...criticalHeroState } = hero;
