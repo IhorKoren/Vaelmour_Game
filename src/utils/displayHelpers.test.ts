@@ -4,7 +4,9 @@ import {
   formatStatValueOnly,
   formatStatDisplay,
   formatEquipmentSummary,
-  getDisplayItemName
+  getDisplayItemDescription,
+  getDisplayItemName,
+  getDisplayQuestDescription
 } from './displayHelpers';
 
 describe('displayHelpers formatting and localization', () => {
@@ -137,8 +139,14 @@ describe('displayHelpers formatting and localization', () => {
     expect(summary).not.toContain('speed');
     expect(summary).not.toContain('Швидкість');
   });
-  it('should not expose removed rage stat labels in display helpers', () => {
+  it('should not expose removed rage or skill wording in display helpers', () => {
     expect(formatStatName('rageFromAttacks')).toBe('Rage From Attacks');
-    expect(formatStatDisplay('rageFromAttacks', 0.15)).toContain('Rage From Attacks');
+    expect(formatStatValueOnly('rageFromAttacks', 0.15)).toBe('');
+    expect(formatStatDisplay('rageFromAttacks', 0.15)).toBe('');
+
+    expect(getDisplayItemDescription('generated_hands_3_uncommon_12345', 'Rage-themed early gloves.')).not.toMatch(/rage|лють/i);
+    expect(getDisplayItemDescription('generated_ring_3_uncommon_12345', 'Rage/offense ring from raiders.')).not.toMatch(/rage|лють/i);
+    expect(getDisplayItemDescription('generated_ring_3_uncommon_12345', 'Bleeds trigger bonus Rage')).not.toMatch(/rage|лють/i);
+    expect(getDisplayQuestDescription('Spend 300 total Rage')).not.toMatch(/rage|лють/i);
   });
 });

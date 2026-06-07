@@ -30,10 +30,6 @@
   --color-hp-bg: rgba(255, 77, 77, 0.15);
   --color-hp-glow: rgba(255, 77, 77, 0.45);
 
-  --color-rage: #e65c00;
-  --color-rage-bg: rgba(230, 92, 0, 0.15);
-  --color-rage-glow: rgba(230, 92, 0, 0.4);
-
   --color-xp: #2b7cb7;
   --color-xp-bg: rgba(43, 124, 183, 0.15);
 
@@ -454,23 +450,6 @@ h1, h2, h3, h4, h5, h6 {
   transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.status-plate__rage-bar {
-  height: 6px;
-  background: rgba(0, 0, 0, 0.65);
-  border-radius: 99px;
-  overflow: hidden;
-  position: relative;
-  border: 0.5px solid rgba(212, 163, 115, 0.25);
-  margin-top: 2px;
-}
-
-.status-plate__rage-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #c2410c, #f97316);
-  box-shadow: 0 0 8px var(--color-rage-glow);
-  transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
 /* --- RPG Cinematic Perspective Placement --- */
 .combat-actor {
   position: absolute;
@@ -554,113 +533,6 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: var(--shadow-premium);
 }
 
-/* --- Pure RPG Ability Slots --- */
-.skill-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-}
-
-.ability-slot {
-  border: var(--border-medieval);
-  border-radius: 16px;
-  padding: 8px 10px;
-  background: linear-gradient(135deg, #fffcf7 0%, var(--color-parchment-base) 100%);
-  box-shadow: var(--shadow-premium), inset 0 0 8px rgba(92, 59, 33, 0.04);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  min-height: 54px;
-  text-align: left;
-}
-
-.ability-slot:hover:not(:disabled) {
-  border-color: var(--color-gold-gilded);
-  box-shadow: var(--shadow-active-glow), var(--shadow-premium);
-  transform: translateY(-1.5px);
-}
-
-.ability-slot:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.ability-slot:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-/* Rounded Gem Slot Icon Area */
-.ability-slot__icon-container {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, var(--color-bronze-light) 0%, var(--color-bronze) 100%);
-  border: 1px solid var(--color-bronze-dark);
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.25);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff9eb;
-  font-weight: 800;
-  font-size: 15px;
-  flex-shrink: 0;
-}
-
-.ability-slot__meta {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.ability-slot__name {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 12.5px;
-  color: var(--color-leather);
-}
-
-.ability-slot__cost {
-  font-size: 10px;
-  color: var(--color-rage);
-  font-weight: 700;
-  text-transform: uppercase;
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
-
-.ability-slot__cost.low-rage {
-  color: var(--color-hp);
-}
-
-/* Premium Lock slots overlay */
-.ability-slot.locked {
-  background: rgba(92, 59, 33, 0.04);
-  border: 1px dashed rgba(92, 59, 33, 0.2);
-  box-shadow: none;
-  cursor: not-allowed;
-}
-
-.ability-slot.locked .ability-slot__icon-container {
-  background: rgba(92, 59, 33, 0.12);
-  border: 1px solid rgba(92, 59, 33, 0.2);
-  color: rgba(92, 59, 33, 0.4);
-  box-shadow: none;
-}
-
-.ability-slot.locked .ability-slot__name {
-  color: var(--color-text-muted);
-}
-
-.ability-slot.locked .ability-slot__cost {
-  color: var(--color-bronze-light);
-  font-size: 9.5px;
-}
-
 /* --- Encounter Controls Collapse & Secondary Row --- */
 .secondary-controls-accordion {
   border: var(--border-medieval);
@@ -693,25 +565,6 @@ h1, h2, h3, h4, h5, h6 {
   flex-direction: column;
   gap: 8px;
   border-top: 1px dashed rgba(92, 59, 33, 0.1);
-}
-
-/* --- Compact Medieval Ledger Combat Log --- */
-.combat-log-container {
-  max-height: 105px;
-  overflow-y: auto;
-  padding: 6px 10px;
-  background: rgba(92, 59, 33, 0.03);
-  border-radius: 12px;
-  border: 1px solid rgba(92, 59, 33, 0.08);
-}
-
-.combat-log-container::-webkit-scrollbar {
-  width: 4px;
-}
-
-.combat-log-container::-webkit-scrollbar-thumb {
-  background: var(--color-parchment-deep);
-  border-radius: 99px;
 }
 
 /* --- Polished RPG Tab Bottom Navigation --- */
@@ -831,11 +684,6 @@ h1, h2, h3, h4, h5, h6 {
 @keyframes barShimmer {
   0% { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
-}
-
-.stat-bar__fill.rage {
-  background: linear-gradient(90deg, var(--color-rage), #f39c12);
-  box-shadow: 0 0 8px var(--color-rage-glow);
 }
 
 .stat-bar__fill.xp {
@@ -1009,13 +857,6 @@ h1, h2, h3, h4, h5, h6 {
   animation: rpgFloatUpFadeCrit 1.45s ease-out forwards;
 }
 
-.damage-flash.rage-gain {
-  color: #e67e22;
-  font-size: 17px;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.45);
-  animation: rpgFloatUpFadeRage 1.35s ease-out forwards;
-}
-
 @keyframes rpgFloatUpFade {
   0% { opacity: 0; transform: translateY(10px) scale(0.85); }
   18% { opacity: 1; transform: translateY(0) scale(1); }
@@ -1028,13 +869,6 @@ h1, h2, h3, h4, h5, h6 {
   18% { opacity: 1; transform: translateY(-2px) scale(1.04); }
   78% { opacity: 1; transform: translateY(-28px) scale(1.02); }
   100% { opacity: 0; transform: translateY(-42px) scale(0.98); }
-}
-
-@keyframes rpgFloatUpFadeRage {
-  0% { opacity: 0; transform: translateY(10px) scale(0.82); }
-  20% { opacity: 1; transform: translateY(0) scale(1); }
-  80% { opacity: 1; transform: translateY(-22px); }
-  100% { opacity: 0; transform: translateY(-32px) scale(0.98); }
 }
 
 /* --- Support for Card List Grid --- */
@@ -1307,13 +1141,8 @@ h1, h2, h3, h4, h5, h6 {
   --color-hp-bg: rgba(159, 31, 36, 0.18);
   --color-hp-glow: rgba(174, 26, 32, 0.46);
 
-  --color-rage: #d86f2c;
-  --color-rage-bg: rgba(216, 111, 44, 0.15);
-  --color-rage-glow: rgba(216, 111, 44, 0.42);
-
   --vael-forest: url('../assets/generated/blackfang_gate_background_mobile.jpg');
   --vael-combat: url('../assets/generated/blackfang_gate_background_mobile.jpg');
-  --vael-skills: url('../assets/generated/vaelmour_ui_kit_mobile.png');
   --vael-tabs: url('../assets/generated/vaelmour_ui_kit_mobile.png');
   --vael-panels: url('../assets/generated/vaelmour_ui_kit_mobile.png');
   --vael-bars: url('../assets/generated/vaelmour_ui_kit_mobile.png');
@@ -1326,12 +1155,7 @@ h1, h2, h3, h4, h5, h6 {
   --vael-nav-market: url('../assets/generated/ui/nav_market_icon.png');
   --vael-nav-quests: url('../assets/generated/ui/nav_quests_icon_mobile.png');
   --vael-hp-bar: url('../assets/generated/ui/hp_bar_red_mobile.png');
-  --vael-rage-bar: url('../assets/generated/ui/rage_bar_orange_mobile.png');
   --vael-empty-bar: url('../assets/generated/ui/bar_empty_mobile.png');
-  --vael-skill-frame-a: url('../assets/generated/ui/skill_frame_a_mobile.png');
-  --vael-skill-frame-b: url('../assets/generated/ui/skill_frame_b_mobile.png');
-  --vael-skill-frame-c: url('../assets/generated/ui/skill_frame_c_mobile.png');
-  --vael-skill-frame-d: url('../assets/generated/ui/skill_frame_d_mobile.png');
 
   --border-medieval: 1px solid rgba(160, 150, 138, 0.3);
   --border-medieval-thick: 2px solid rgba(122, 112, 102, 0.6);
@@ -1573,14 +1397,14 @@ body {
 .primary-button,
 .secondary-button,
 .small-button,
-.app-shell button:not(.bottom-navigation__button):not(.top-status-bar__icon-button):not(.inventory-slot):not(.ability-slot) {
+.app-shell button:not(.bottom-navigation__button):not(.top-status-bar__icon-button):not(.inventory-slot) {
   border-radius: 4px !important;
   font-family: var(--font-display);
   text-transform: uppercase;
 }
 
 .primary-button,
-.app-shell button:not(.bottom-navigation__button):not(.top-status-bar__icon-button):not(.inventory-slot):not(.ability-slot):not(:disabled) {
+.app-shell button:not(.bottom-navigation__button):not(.top-status-bar__icon-button):not(.inventory-slot):not(:disabled) {
   color: #eee8df !important;
   background:
     linear-gradient(180deg, rgba(86, 13, 18, 0.98), rgba(35, 6, 8, 0.98)) !important;
@@ -1723,18 +1547,6 @@ body {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.13), 0 0 9px rgba(164, 21, 28, 0.48);
 }
 
-.status-plate__rage-bar {
-  height: 10px;
-  border-radius: 1px !important;
-  border: 1px solid rgba(135, 126, 114, 0.35);
-}
-
-.status-plate__rage-fill,
-.stat-bar__fill.rage {
-  border-radius: 0 !important;
-  background: linear-gradient(180deg, #df7c2f, #8c3b13);
-}
-
 .combat-actor {
   z-index: 10;
 }
@@ -1769,113 +1581,6 @@ body {
 
 .combat-actor__shadow {
   background: radial-gradient(ellipse, rgba(0, 0, 0, 0.92) 0%, transparent 76%);
-}
-
-.combat-log-container {
-  max-height: 124px;
-  border-radius: 3px !important;
-  border: 1px solid rgba(137, 128, 116, 0.28);
-  background: rgba(2, 2, 2, 0.66);
-}
-
-/* Skill cards from the supplied sheet */
-.skill-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.ability-slot {
-  min-height: 136px;
-  padding: 7px;
-  align-items: stretch;
-  flex-direction: column;
-  justify-content: flex-end;
-  gap: 0;
-  border-radius: 3px !important;
-  border: 1px solid rgba(142, 132, 119, 0.46);
-  background-image:
-    linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.16) 48%, rgba(0, 0, 0, 0.9) 70%),
-    var(--vael-skills);
-  background-size: 100% 100%, 200% 200%;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.62), inset 0 0 16px rgba(0, 0, 0, 0.48);
-}
-
-.ability-slot--art-0 { background-position: center, 0 0; }
-.ability-slot--art-1 { background-position: center, 100% 0; }
-.ability-slot--art-2 { background-position: center, 0 100%; }
-.ability-slot--art-3 { background-position: center, 100% 100%; }
-
-.combat-skill-grid {
-  gap: 6px;
-}
-
-.combat-skill-grid .ability-slot {
-  min-height: 104px;
-  padding: 6px 5px;
-}
-
-.ability-slot::after {
-  content: '';
-  position: absolute;
-  top: -6px;
-  left: 50%;
-  width: 12px;
-  height: 12px;
-  transform: translateX(-50%) rotate(45deg);
-  background: #8e1820;
-  border: 1px solid rgba(190, 171, 139, 0.5);
-  box-shadow: 0 0 8px rgba(146, 24, 31, 0.42);
-}
-
-.ability-slot:hover:not(:disabled) {
-  border-color: rgba(212, 198, 171, 0.78);
-  box-shadow: 0 0 16px rgba(146, 24, 31, 0.5), 0 8px 18px rgba(0, 0, 0, 0.7);
-}
-
-.ability-slot__icon-container {
-  position: absolute;
-  top: 7px;
-  left: 7px;
-  width: 26px;
-  height: 26px;
-  border-radius: 50% !important;
-  background: rgba(8, 8, 8, 0.72);
-  border: 1px solid rgba(185, 164, 121, 0.38);
-  color: #e5ded2;
-  font-size: 9px;
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.86);
-}
-
-.ability-slot__meta {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  gap: 4px;
-  padding-top: 36px;
-}
-
-.ability-slot__name {
-  display: block;
-  min-height: 28px;
-  color: #e3ddd4;
-  font-size: 11px;
-  line-height: 1.12;
-  text-align: center;
-  text-transform: uppercase;
-  text-shadow: 0 2px 4px #000;
-}
-
-.ability-slot__cost {
-  justify-content: center;
-  color: #e07a43;
-  font-size: 10px;
-  line-height: 1.1;
-  text-align: center;
-}
-
-.ability-slot.locked {
-  filter: grayscale(0.78) brightness(0.55);
-  opacity: 0.68;
 }
 
 /* Bottom tabs */
@@ -2070,26 +1775,8 @@ body {
 }
 
 @media (max-width: 374px) {
-  .skill-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .ability-slot {
-    min-height: 128px;
-  }
-
   .bottom-navigation__button span {
     font-size: 8.5px;
-  }
-}
-
-@media (max-width: 640px) {
-  .combat-skill-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .combat-skill-grid .ability-slot {
-    min-height: 82px;
   }
 }
 
@@ -2153,41 +1840,6 @@ body {
     linear-gradient(180deg, #a61822, #52070c) !important;
   box-shadow: none;
 }
-
-.status-plate__rage-bar {
-  height: 15px;
-  border: 0 !important;
-  border-radius: 0 !important;
-  background:
-    var(--vael-empty-bar) center / 100% 100% no-repeat,
-    rgba(0, 0, 0, 0.72) !important;
-  box-shadow: none;
-}
-
-.status-plate__rage-fill,
-.stat-bar__fill.rage {
-  border-radius: 0 !important;
-  background:
-    var(--vael-rage-bar) left center / auto 100% no-repeat,
-    linear-gradient(180deg, #d8722c, #7b2d0f) !important;
-  box-shadow: none;
-}
-
-.ability-slot {
-  --skill-frame: var(--vael-skill-frame-a);
-  min-height: 146px;
-  border: 0;
-  background:
-    linear-gradient(180deg, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.64) 62%, rgba(0, 0, 0, 0.92)),
-    var(--skill-frame) !important;
-  background-size: 100% 100%, 100% 100% !important;
-  background-position: center !important;
-}
-
-.ability-slot--art-0 { --skill-frame: var(--vael-skill-frame-a); }
-.ability-slot--art-1 { --skill-frame: var(--vael-skill-frame-b); }
-.ability-slot--art-2 { --skill-frame: var(--vael-skill-frame-c); }
-.ability-slot--art-3 { --skill-frame: var(--vael-skill-frame-d); }
 
 .battle-arena {
   background-position: center top !important;
@@ -2280,7 +1932,6 @@ body {
 }
 
 .status-plate__hp-bar,
-.status-plate__rage-bar,
 .stat-bar__track {
   position: relative;
   overflow: hidden;
@@ -2297,12 +1948,7 @@ body {
   height: 17px;
 }
 
-.status-plate__rage-bar {
-  height: 13px;
-}
-
 .status-plate__hp-bar::after,
-.status-plate__rage-bar::after,
 .stat-bar__track::after {
   content: '';
   position: absolute;
@@ -2318,15 +1964,6 @@ body {
   background: linear-gradient(90deg, #4d0609 0%, #9c1820 48%, #d52d38 100%) !important;
   background-size: 100% 100% !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.13), 0 0 10px rgba(184, 22, 31, 0.36) !important;
-}
-
-.status-plate__rage-fill,
-.stat-bar__fill.rage {
-  height: 100%;
-  border-radius: 1px !important;
-  background: linear-gradient(90deg, #6f280d 0%, #c96123 58%, #f09a41 100%) !important;
-  background-size: 100% 100% !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.13), 0 0 9px rgba(216, 111, 44, 0.34) !important;
 }
 
 .enemy-sprite-front,
@@ -3230,7 +2867,6 @@ body {
   .enemy-sprite-front,
   .hero-sprite-back,
   .status-plate__hp-fill,
-  .status-plate__rage-fill,
   .parchment-world-map__route path,
   .bottom-navigation__button::after {
     filter: none !important;

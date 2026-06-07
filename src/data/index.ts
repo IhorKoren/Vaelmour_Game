@@ -5,6 +5,5 @@ export { locations } from './locations';
 export { lootTables } from './lootTables';
 export { materials } from './materials';
 export { recipes } from './recipes';
-export { skills } from './skills';
 export { weapons } from './weapons';
 export { masterDatabase } from './masterDatabase';

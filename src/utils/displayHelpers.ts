@@ -39,7 +39,7 @@ const NAME_TRANSLATIONS: Record<string, string> = {
   'Vaelor Ash Core': 'Попелясте ядро Велора',
   'Fine Leather Thread': 'Тонка шкіряна нитка',
   'Polished Weapon Grip': 'Поліроване руків’я зброї',
-  'Rage-Etched Shard': 'Осколок, витравлений люттю',
+  'Rage-Etched Shard': 'Гравійований бойовий осколок',
   'Staggered Bone Plate': 'Потовщена кістяна пластина',
   'Young Wolf': 'Молодий вовк',
   'Fang Stalker': 'Ікластий переслідувач',
@@ -215,7 +215,7 @@ const QUEST_TITLE_TRANSLATIONS: Record<string, string> = {
   'Hold the Line': 'Тримай стрій',
   'Duelist Practice': 'Практика дуеліста',
   'Crush Bones': 'Трощи кістки',
-  'Rage Discipline': 'Дисципліна люті',
+  'Rage Discipline': 'Бойова дисципліна',
   'Broken Road: First Hunt': 'Розбита дорога: Перше полювання',
   'Broken Road: Broken Shields': 'Розбита дорога: Розбиті щити',
   'Blackfang: Track the Pack': 'Чорне Ікло: Слід зграї',
@@ -275,7 +275,7 @@ const OUTPUT_EFFECT_TRANSLATIONS: Record<string, string> = {
   '+Starter damage': '+Початкова шкода',
   '+Basic armor': '+Базова броня',
   '+Bleed chance': '+Шанс кровотечі',
-  '+Rage from attacks': '+Лють від атак',
+  '+Rage from attacks': '+Бойовий темп від атак',
   '+Bleed resist': '+Опір кровотечі',
   '+Bleed chance / bleed damage': '+Шанс і шкода кровотечі',
   '+Block efficiency': '+Ефективність блоку',
@@ -292,26 +292,10 @@ const OUTPUT_EFFECT_TRANSLATIONS: Record<string, string> = {
   '+Counter damage': '+Шкода контрудару',
   'Bleeds tick faster': 'Кровотечі тікають швидше',
   '+Damage reduction above 70% HP': '+Зменшення шкоди вище 70% HP',
-  '+Crit and Rage': '+Крит і лють',
-  'Bleeds trigger bonus Rage': 'Кровотечі дають бонусну лють',
+  '+Crit and Rage': '+Крит і натиск',
+  'Bleeds trigger bonus Rage': 'Кровотечі посилюють натиск',
   'Fortified at low HP': 'Посилений захист при низькому HP',
   'Unlocks Ash Lord Vaelor encounter': 'Відкриває бій із Лордом Попелу Велором'
-};
-
-const SKILL_DESCRIPTION_TRANSLATIONS: Record<string, string> = {
-  'Deals damage and applies Bleed': 'Завдає шкоди та накладає кровотечу',
-  'Increases attack speed': 'Підвищує швидкість атаки',
-  'Bonus damage to bleeding targets': 'Додаткова шкода по цілях із кровотечею',
-  'Massive bleed ultimate': 'Потужна ультимативна кровотеча',
-  'Fast precision strike': 'Швидкий точний удар',
-  'Counter after taking damage': 'Контрудар після отримання шкоди',
-  'Ignores armor': 'Ігнорує броню',
-  'Multiple rapid attacks': 'Серія швидких атак',
-  'Heavy stagger attack': 'Важкий удар із приголомшенням',
-  'Area smash': 'Потужний удар по площі',
-  'Reduces enemy poise': 'Знижує стійкість ворога',
-  'Massive execute hit': 'Потужний добивальний удар',
-  'Basic unarmed physical strike.': 'Базовий беззбройний фізичний удар.'
 };
 
 function applyNamePatterns(value: string): string {
@@ -338,7 +322,6 @@ function translateName(rawValue: string): string {
 function replaceCommonCombatTerms(text: string): string {
   return text
     .replace(/\bVaelmour\b/g, 'Vaelmour')
-    .replace(/\brage\b/gi, 'лють')
     .replace(/\bexecute attacks\b/gi, 'добивальні атаки')
     .replace(/\bexecute\b/gi, 'добивання')
     .replace(/\bbleed stacking\b/gi, 'накопичення кровотечі')
@@ -574,7 +557,7 @@ export function getDisplayQuestDescription(description: string): string {
     'Win 5 fights while wearing Vanguard chest': 'Виграйте 5 боїв у латах авангарду',
     'Win 5 fights with Sword equipped': 'Виграйте 5 боїв із мечем',
     'Win 5 fights with Hammer equipped': 'Виграйте 5 боїв із молотом',
-    'Spend 300 total Rage': 'Витратьте загалом 300 люті',
+    'Spend 300 total Rage': 'Проведіть 300 бойових дій',
     'Defeat 5 enemies': 'Здолайте 5 ворогів',
     'Defeat 3 Broken Shield Guards': 'Здолайте 3 Вартових зі зламаним щитом',
     'Defeat 8 wolf enemies': 'Здолайте 8 вовчих ворогів',
@@ -657,7 +640,7 @@ export function getDisplayItemDescription(itemId: string, description: string): 
 
     // Gloves
     'Starter gloves with minor attack utility.': 'Початкові обмотки рук із невеликою атакуючою користю.',
-    'Rage-themed early gloves.': 'Грубі рукавиці рейдера для швидкого накопичення люті.',
+    'Rage-themed early gloves.': 'Грубі рукавиці рейдера для агресивного стилю бою.',
     'Bleed/crit style gloves.': 'Рукавиці Чорного Ікла для стилю бою через кровотечу та крити.',
     'Defensive bracers with stable offense.': 'Захисні наручі вартової вежі зі стабільними бойовими показниками.',
     'Heavy gauntlets for stagger builds.': 'Важкі залізнозаковані рукавиці для приголомшення ворогів.',
@@ -700,7 +683,7 @@ export function getDisplayItemDescription(itemId: string, description: string): 
     // Rings
     'Starter ring with HP and regen.': 'Початкове кільце мандрівника зі здоров\'ям та регенерацією.',
     'Early offensive beast ring.': 'Ранній перстень вовчого укусу для агресивних атак.',
-    'Rage/offense ring from raiders.': 'Залізне кільце мародера з бонусом люті та шкоди.',
+    'Rage/offense ring from raiders.': 'Залізне кільце мародера для натиску та шкоди.',
     'Duelist ring for counter identity.': 'Парирувальне кільце дуелянта для тактики контрударів.',
     'Balanced ring with damage and regen.': 'Збалансоване залізне кільце з поєднанням шкоди та регенерації.',
     'Ash-zone ring with recovery.': 'Печатка з попелястої смоли з ефектом відновлення здоров\'я.',
@@ -838,14 +821,6 @@ export function formatRarity(rarity: string): string {
   return mappings[rarity.toLowerCase()] ?? rarity;
 }
 
-export function getDisplaySkillName(name: string): string {
-  return translateName(name);
-}
-
-export function getDisplaySkillDescription(description: string): string {
-  return SKILL_DESCRIPTION_TRANSLATIONS[description] ?? replaceCommonCombatTerms(description);
-}
-
 export function getDisplayOutputEffect(effect: string, itemId: string = ''): string {
   if (!effect) return '';
   const trimmed = effect.trim();
@@ -865,8 +840,20 @@ const percentKeys = [
   'counterChance', 'xpBonus', 'evasion', 'bleedResistance', 'staggerResistance', 'hpBonus'
 ];
 
+const HIDDEN_LEGACY_STAT_KEYS = new Set([
+  'rageFromAttacks',
+  'currentRage',
+  'maxRage',
+  'rageCost',
+  'skillCooldown',
+  'skillCooldowns'
+]);
+
 export function formatStatValueOnly(key: string, value: number): string {
   if (value === 0 || value === null || value === undefined || Number.isNaN(value)) {
+    return '';
+  }
+  if (HIDDEN_LEGACY_STAT_KEYS.has(key)) {
     return '';
   }
   const prefix = value > 0 ? '+' : '';
@@ -889,6 +876,9 @@ export function formatStatValueOnly(key: string, value: number): string {
 
 export function formatStatDisplay(key: string, value: number): string {
   if (value === 0 || value === null || value === undefined || Number.isNaN(value)) {
+    return '';
+  }
+  if (HIDDEN_LEGACY_STAT_KEYS.has(key)) {
     return '';
   }
 

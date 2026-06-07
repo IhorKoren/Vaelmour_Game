@@ -141,23 +141,6 @@ export type Material = {
   notes?: string;
 };
 
-export type Skill = {
-  id: string;
-  sourceSheet?: string;
-  level?: number;
-  name: string;
-  weaponType?: WeaponType;
-  weaponTypes: Array<WeaponType | 'all'>;
-  rageCost?: number;
-  cooldownSeconds?: number;
-  cooldown: number;
-  cost: number;
-  effect?: string;
-  scaling: string;
-  tags: string[];
-  description: string;
-};
-
 export type Enemy = {
   id: string;
   sourceSheet?: string;
