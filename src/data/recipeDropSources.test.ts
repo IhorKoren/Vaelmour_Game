@@ -59,9 +59,9 @@ describe('recipe unlock sources', () => {
   });
 
   it('rolls a live recipe unlock only when the source and chance match', () => {
-    const result = rollLiveRecipeUnlock('Thorn Rot Hound', 'LOC_001', ['recipe_weapon_blade_lvl_03'], {}, 0.01);
-    const blockedByChance = rollLiveRecipeUnlock('Thorn Rot Hound', 'LOC_001', ['recipe_weapon_blade_lvl_03'], {}, 0.99);
-    const blockedByKnown = rollLiveRecipeUnlock('Thorn Rot Hound', 'LOC_001', ['recipe_weapon_blade_lvl_03', 'recipe_shield_guard_lvl_03'], {}, 0.01);
+    const result = rollLiveRecipeUnlock('Thorn Rot Hound', 'LOC_001', ['recipe_weapon_blade_lvl_03'], {}, 0.01, 0.0);
+    const blockedByChance = rollLiveRecipeUnlock('Thorn Rot Hound', 'LOC_001', ['recipe_weapon_blade_lvl_03'], {}, 0.99, 0.0);
+    const blockedByKnown = rollLiveRecipeUnlock('Thorn Rot Hound', 'LOC_001', ['recipe_weapon_blade_lvl_03', 'recipe_shield_guard_lvl_03'], {}, 0.01, 0.0);
 
     expect(result.learnedRecipe?.id).toBe('recipe_shield_guard_lvl_03');
     expect(blockedByChance.learnedRecipe).toBeNull();
@@ -73,16 +73,15 @@ describe('recipe unlock sources', () => {
     const pityBefore: Record<string, number> = {};
     const resultFail = rollLiveRecipeUnlock('Thorn Rot Hound', 'LOC_001', ['recipe_weapon_blade_lvl_03'], pityBefore, 0.99);
     expect(resultFail.learnedRecipe).toBeNull();
-    expect(resultFail.updatedPity['recipe_shield_guard_lvl_03']).toBe(1);
+    expect(resultFail.updatedPity['LOC_001_LEVEL_3_RECIPE_POOL']).toBe(1);
 
     // Let's check pity increases the chance
-    // With 20 failed attempts, pity bonus is 20 * 0.5 = 10, which is maxBonus.
-    // effectiveChance = 10.0 (base) + 10 = 20.0%
-    const pityHigh = { recipe_shield_guard_lvl_03: 20 };
-    // randomValue 0.15 (15%) is > base 10.0% but <= effective 20.0%
-    const resultSuccess = rollLiveRecipeUnlock('Thorn Rot Hound', 'LOC_001', ['recipe_weapon_blade_lvl_03'], pityHigh, 0.15);
+    // With 3 failed attempts, pool pity is 3. effectiveChance = 25.0 (base) + 3 * 5 = 40.0%
+    const pityHigh = { LOC_001_LEVEL_3_RECIPE_POOL: 3 };
+    // randomValue 0.35 (35%) is > base 25.0% but <= effective 40.0%
+    const resultSuccess = rollLiveRecipeUnlock('Thorn Rot Hound', 'LOC_001', ['recipe_weapon_blade_lvl_03'], pityHigh, 0.35, 0.0);
     expect(resultSuccess.learnedRecipe?.id).toBe('recipe_shield_guard_lvl_03');
-    expect(resultSuccess.updatedPity['recipe_shield_guard_lvl_03']).toBe(0);
+    expect(resultSuccess.updatedPity['LOC_001_LEVEL_3_RECIPE_POOL']).toBe(0);
   });
 
   it('excludes starter recipe IDs from compatible known recipe list', () => {
@@ -151,5 +150,48 @@ describe('recipe unlock sources', () => {
     expect(quest2).toBeDefined();
     expect(quest1!.rewards.recipeIds).toContain('recipe_weapon_blade_lvl_03');
     expect(quest2!.rewards.recipeIds).toContain('recipe_feet_boots_lvl_03');
+  });
+
+  it('proves LOC_001 level 3 pool selects a different recipe when poolSelectorRandom varies', () => {
+    // With known = ['recipe_weapon_blade_lvl_03']
+    // Index 0 -> recipe_shield_guard_lvl_03
+    // We can pick other indices by passing different selector values.
+    // Length is 8 (9 total level 3 recipes minus weapon)
+    const result0 = rollLiveRecipeUnlock('Thorn Rot Hound', 'LOC_001', ['recipe_weapon_blade_lvl_03'], {}, 0.01, 0.0);
+    const resultEnd = rollLiveRecipeUnlock('Thorn Rot Hound', 'LOC_001', ['recipe_weapon_blade_lvl_03'], {}, 0.01, 0.999);
+
+    expect(result0.learnedRecipe).toBeDefined();
+    expect(resultEnd.learnedRecipe).toBeDefined();
+    expect(result0.learnedRecipe?.id).not.toBe(resultEnd.learnedRecipe?.id);
+  });
+
+  it('guarantees LOC_001 level 3 pool unlock on the 6th attempt (after 5 failures)', () => {
+    const pity = { LOC_001_LEVEL_3_RECIPE_POOL: 5 };
+    // Even with randomValue = 0.99 (99%), it must unlock since effectiveChance is 100%
+    const result = rollLiveRecipeUnlock('Thorn Rot Hound', 'LOC_001', [], pity, 0.99);
+
+    expect(result.learnedRecipe).toBeDefined();
+    expect(result.updatedPity['LOC_001_LEVEL_3_RECIPE_POOL']).toBe(0);
+  });
+
+  it('excludes known recipes from the LOC_001 level 3 pool', () => {
+    // If all level 3 recipes are known, it shouldn't unlock any level 3 recipes
+    const allLvl3Ids = LIVE_RECIPE_UNLOCK_RULES.filter((rule) => rule.level === 3).map((rule) => rule.recipeId);
+    const result = rollLiveRecipeUnlock('Thorn Rot Hound', 'LOC_001', allLvl3Ids, {}, 0.01);
+
+    expect(result.learnedRecipe).toBeNull();
+  });
+
+  it('proves level 6+ recipes are not affected by LOC_001 level 3 pool pity key', () => {
+    // Roll level 6 recipe in LOC_003 (Raider Camp) from Blood Raider
+    const pityBefore = { LOC_001_LEVEL_3_RECIPE_POOL: 4 };
+    const result = rollLiveRecipeUnlock('Blood Raider', 'LOC_003', [], pityBefore, 0.99);
+
+    // It should not increment the pool pity key
+    expect(result.updatedPity['LOC_001_LEVEL_3_RECIPE_POOL']).toBe(4);
+    // It should increment individual pity keys for eligible level 6 rules
+    const lvl6Rule = LIVE_RECIPE_UNLOCK_RULES.find((rule) => rule.recipeId === 'recipe_chest_armor_lvl_06');
+    expect(lvl6Rule).toBeDefined();
+    expect(result.updatedPity['recipe_chest_armor_lvl_06']).toBe(1);
   });
 });

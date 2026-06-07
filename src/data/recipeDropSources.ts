@@ -312,7 +312,8 @@ export function rollLiveRecipeUnlock(
   locationId: string,
   knownRecipeIds: readonly string[],
   pityRecord: Record<string, number> = {},
-  randomValue = Math.random()
+  randomValue = Math.random(),
+  poolSelectorRandom = Math.random()
 ): { learnedRecipe: { id: string } | null; updatedPity: Record<string, number> } {
   const known = new Set(knownRecipeIds);
   const eligibleCandidates = getLiveRecipesForEnemy(locationId, enemyName).filter(
@@ -322,6 +323,29 @@ export function rollLiveRecipeUnlock(
   const updatedPity = { ...pityRecord };
   let learnedRecipe: { id: string } | null = null;
 
+  // Starter pool logic for LOC_001 level 3 active equipment recipes
+  const poolCandidates = eligibleCandidates.filter(
+    (rule) => rule.locationId === 'LOC_001' && rule.level === 3
+  );
+
+  if (poolCandidates.length > 0) {
+    const pityKey = 'LOC_001_LEVEL_3_RECIPE_POOL';
+    const failedAttempts = updatedPity[pityKey] ?? 0;
+    const effectiveChance = failedAttempts >= 5 ? 100.0 : 25.0 + failedAttempts * 5.0;
+
+    if (randomValue * 100 <= effectiveChance) {
+      const selectedIndex = Math.floor(poolSelectorRandom * poolCandidates.length);
+      const chosen = poolCandidates[selectedIndex];
+      learnedRecipe = { id: chosen.recipeId };
+      updatedPity[pityKey] = 0;
+    } else {
+      updatedPity[pityKey] = failedAttempts + 1;
+    }
+
+    return { learnedRecipe, updatedPity };
+  }
+
+  // Legacy fallback behavior
   for (const rule of eligibleCandidates) {
     const baseChance = rule.chancePercent;
     const failedAttempts = updatedPity[rule.recipeId] ?? 0;
