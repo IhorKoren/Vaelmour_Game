@@ -42,6 +42,7 @@ Deployment/runtime configuration may require:
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `TELEGRAM_BOT_TOKEN`
 - `ADMIN_SECRET`
+- `VITE_VAELMOUR_TON_TREASURY_ADDRESS` (Public receiving TON wallet address for project treasury. Never store seed/private keys in environment variables, client code, or git).
 
 ## Validation Commands
 

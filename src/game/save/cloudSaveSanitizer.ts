@@ -404,6 +404,12 @@ export function sanitizeCloudSavePayload(
     sanitizedHero.wipeId = existingHero.wipeId;
   }
 
+  if (typeof hero.tonWalletAddress === 'string') {
+    sanitizedHero.tonWalletAddress = hero.tonWalletAddress;
+  } else if (typeof existingHero.tonWalletAddress === 'string') {
+    sanitizedHero.tonWalletAddress = existingHero.tonWalletAddress;
+  }
+
   if (typeof sanitizedHero.equippedWeaponId === 'string') {
     const weaponId = sanitizedHero.equippedWeaponId;
     if (!isValidKnownItemId(weaponId) && !isGeneratedItemId(weaponId)) {

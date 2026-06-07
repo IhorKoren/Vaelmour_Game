@@ -363,6 +363,7 @@ export type HeroState = {
   defeatedBossIds?: string[];
   migrationFlags?: Record<string, boolean>;
   recipeDropPity?: Record<string, number>;
+  tonWalletAddress?: string;
 };
 
 export type QuestObjectiveType =

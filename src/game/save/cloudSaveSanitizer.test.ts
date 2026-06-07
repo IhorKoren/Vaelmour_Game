@@ -128,4 +128,18 @@ describe('sanitizeCloudSavePayload', () => {
 
     expect(result.hero.wipeId).toBe(GAME_WIPE_ID);
   });
+
+  it('preserves tonWalletAddress when present on cloud payloads', () => {
+    const result = sanitizeCloudSavePayload(
+      {
+        level: 3,
+        tonWalletAddress: 'UQBdqN55xdNOeFprhqpEJ251GfxNvcf3bDeRZV9-gCdxb95U',
+        inventory: [],
+      },
+      'LOC_001',
+      {},
+    );
+
+    expect(result.hero.tonWalletAddress).toBe('UQBdqN55xdNOeFprhqpEJ251GfxNvcf3bDeRZV9-gCdxb95U');
+  });
 });
