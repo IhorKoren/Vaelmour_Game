@@ -782,7 +782,6 @@ export function formatStatName(statKey: string): string {
     staggerPower: 'Сила приголомшення',
     staggerResistance: 'Опір приголомшенню',
     poise: 'Стійкість',
-    rageFromAttacks: 'Лють від атак',
     counterChance: 'Шанс контратаки',
     counterDamage: 'Шкода від контратаки',
     executeDamage: 'Шкода від добивання',

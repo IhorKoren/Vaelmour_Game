@@ -16,10 +16,7 @@ import { weapons } from '../../data/weapons';
 import { armors } from '../../data/armors';
 import { items } from '../../data/items';
 import type { EquipmentSlot, HeroState, CoreStats, Weapon } from '../../game/types';
-import { skills } from '../../data/skills';
-import { getSkillRageCost } from '../../game/formulas/combatMechanics';
-import { isSkillUnlocked } from '../../game/formulas/skills';
-import { getDisplayItemName, formatRarity, getDisplaySkillName, getDisplaySkillDescription, formatStatValueOnly, formatStatName, ALLOWED_BONUS_STATS } from '../../utils/displayHelpers';
+import { getDisplayItemName, formatRarity, formatStatValueOnly, formatStatName, ALLOWED_BONUS_STATS } from '../../utils/displayHelpers';
 import { getTelegramUser } from '../../telegram/telegramWebApp';
 import { calculateSecondaryStats, getEffectiveAttackSpeed } from '../../game/formulas/secondaryStats';
 
@@ -31,12 +28,11 @@ type Props = {
   onHeroChange: (hero: HeroState) => void;
 };
 
-type CharacterSubTab = 'equipment' | 'stats' | 'skills';
+type CharacterSubTab = 'equipment' | 'stats';
 
 export function CharacterScreen({ hero, onHeroChange }: Props) {
   const [subTab, setSubTab] = useState<CharacterSubTab>('equipment');
   const [selectedSlot, setSelectedSlot] = useState<EquipmentSlot | null>('weapon');
-  const [skillFilter, setSkillFilter] = useState<'equipped' | 'all'>('equipped');
   const [isEditingName, setIsEditingName] = useState(hero.nameSource !== 'manual');
   const [draftName, setDraftName] = useState(hero.name);
   const derived = useDerivedStats(hero);
@@ -250,7 +246,6 @@ export function CharacterScreen({ hero, onHeroChange }: Props) {
         {([
           { id: 'equipment', label: '🛡️ Спорядження' },
           { id: 'stats', label: '📊 Параметри' },
-          { id: 'skills', label: '⚔️ Вміння' }
         ] as const).map(({ id, label }) => {
           const isSelected = subTab === id;
           return (
@@ -870,108 +865,6 @@ export function CharacterScreen({ hero, onHeroChange }: Props) {
             );
           })()}
         </>
-      )}
-
-      {/* 3. SKILLS SUB-TAB */}
-      {subTab === 'skills' && (
-        <Panel title="Бойові вміння">
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-            <button
-              type="button"
-              className="small-button"
-              onClick={() => setSkillFilter('equipped')}
-              style={{
-                flex: 1,
-                background: skillFilter === 'equipped' ? 'linear-gradient(180deg, var(--color-bronze), var(--color-bronze-dark))' : 'rgba(20,13,9,0.3)',
-                color: skillFilter === 'equipped' ? '#fff9eb' : 'var(--color-text-muted)',
-                fontWeight: 'bold',
-                fontSize: '11px',
-                minHeight: '30px',
-                borderRadius: '10px',
-                border: skillFilter === 'equipped' ? 'none' : '1px dashed rgba(212, 163, 115, 0.15)',
-                cursor: 'pointer'
-              }}
-            >
-              Екіпіровано ({getEquippedItemStats(hero, 'weapon')?.type === 'axe' ? 'Сокира' : getEquippedItemStats(hero, 'weapon')?.type === 'sword' ? 'Меч' : getEquippedItemStats(hero, 'weapon')?.type === 'bow' ? 'Лук' : 'Усе'})
-            </button>
-            <button
-              type="button"
-              className="small-button"
-              onClick={() => setSkillFilter('all')}
-              style={{
-                flex: 1,
-                background: skillFilter === 'all' ? 'linear-gradient(180deg, var(--color-bronze), var(--color-bronze-dark))' : 'rgba(20,13,9,0.3)',
-                color: skillFilter === 'all' ? '#fff9eb' : 'var(--color-text-muted)',
-                fontWeight: 'bold',
-                fontSize: '11px',
-                minHeight: '30px',
-                borderRadius: '10px',
-                border: skillFilter === 'all' ? 'none' : '1px dashed rgba(212, 163, 115, 0.15)',
-                cursor: 'pointer'
-              }}
-            >
-              Усі вміння
-            </button>
-          </div>
-
-          <div style={{ display: 'grid', gap: '8px' }}>
-            {skills
-              .filter((skill) => {
-                if (skillFilter === 'equipped') {
-                  const weapon = getEquippedItemStats(hero, 'weapon') || { type: 'unarmed' };
-                  return skill.weaponTypes.includes('all') || skill.weaponTypes.includes(weapon.type);
-                }
-                return true;
-              })
-              .map((skill) => {
-                const unlocked = isSkillUnlocked(hero.level, skill);
-                const skillCost = getSkillRageCost(skill.name, skill.rageCost ?? skill.cost ?? 0);
-                const weaponLabel = skill.weaponTypes.map(t => t === 'all' ? 'Будь-яка' : t === 'sword' ? 'Меч' : t === 'axe' ? 'Сокира' : t === 'bow' ? 'Лук' : t).join(', ');
-                const weapon = getEquippedItemStats(hero, 'weapon') || { type: 'unarmed' };
-                const isCompatible = skill.weaponTypes.includes('all') || skill.weaponTypes.includes(weapon.type);
-                
-                return (
-                  <div
-                    key={skill.id}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '8px 12px',
-                      borderRadius: '14px',
-                      background: unlocked 
-                        ? (isCompatible ? 'rgba(20, 13, 9, 0.7)' : 'rgba(20, 13, 9, 0.35)')
-                        : 'rgba(20, 13, 9, 0.15)',
-                      border: unlocked 
-                        ? (isCompatible ? '1.5px solid rgba(212, 163, 115, 0.25)' : '1px dashed rgba(212, 163, 115, 0.15)')
-                        : '1px dashed rgba(212, 163, 115, 0.08)',
-                      fontSize: '13px',
-                      opacity: unlocked ? (isCompatible ? 1 : 0.65) : 0.45
-                    }}
-                  >
-                    <div>
-                      <span style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.05em', color: unlocked ? 'var(--color-bronze-light)' : 'var(--color-text-muted)', display: 'block', fontWeight: 'bold' }}>
-                        Зброя: {weaponLabel} · Рівень {skill.level ?? 1} {!isCompatible && '(Потрібна ' + weaponLabel + ')'}
-                      </span>
-                      <div>
-                        <strong style={{ color: unlocked ? 'var(--color-text-dark)' : 'rgba(253, 245, 234, 0.5)' }}>
-                          {unlocked ? '⚔️' : '🔒'} {getDisplaySkillName(skill.name)}
-                        </strong>
-                        <span style={{ fontSize: '11px', display: 'block', color: unlocked ? 'var(--color-text-muted)' : 'rgba(253, 245, 234, 0.4)' }}>
-                          {getDisplaySkillDescription(skill.description)} ({skillCost} Лють)
-                        </span>
-                      </div>
-                    </div>
-                    {!unlocked && (
-                      <span style={{ fontSize: '11px', color: '#b66b46', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
-                        Рів. {skill.level} req
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
-          </div>
-        </Panel>
       )}
 
       {/* Safety Spacing block at the bottom to prevent bottom nav overlay covering action buttons */}

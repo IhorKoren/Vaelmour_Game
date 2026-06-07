@@ -88,4 +88,29 @@ describe('sanitizeCloudSavePayload', () => {
     );
     expect(result.changes).toContain('inventory_sanitized');
   });
+
+  it('preserves legacy rage and skill save fields without rejecting the save', () => {
+    const result = sanitizeCloudSavePayload(
+      {
+        level: 7,
+        currentRage: 88,
+        maxRage: 100,
+        skillCooldowns: { skill_01: 12345 },
+        knownSkillIds: ['skill_01'],
+        inventory: [],
+      },
+      'LOC_001',
+      {
+        level: 6,
+        inventory: [],
+      },
+    );
+
+    expect(result.hero.level).toBe(7);
+    expect(result.hero.currentRage).toBe(88);
+    expect(result.hero.maxRage).toBe(100);
+    expect(result.hero.skillCooldowns).toEqual({ skill_01: 12345 });
+    expect(result.hero.knownSkillIds).toEqual(['skill_01']);
+    expect(result.changes).not.toContain('inventory_sanitized');
+  });
 });

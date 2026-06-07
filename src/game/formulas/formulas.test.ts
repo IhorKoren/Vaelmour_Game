@@ -34,7 +34,7 @@ import {
   canClaimQuest,
   claimQuestReward
 } from './quests';
-import type { HeroState, Enemy, Weapon, Armor, Skill, ItemAffix } from '../types';
+import type { HeroState, Enemy, Weapon, Armor, ItemAffix } from '../types';
 import { items, type ItemDefinition } from '../../data/items';
 import { recipes } from '../../data/recipes';
 import { getEquippableSlot } from './equipment';
@@ -122,16 +122,6 @@ const mockArmor: Armor = {
   description: ''
 };
 
-const mockSkill: Skill = {
-  id: 'quick_slash',
-  name: 'Quick Slash',
-  weaponTypes: ['sword'],
-  cooldown: 0,
-  cost: 10,
-  scaling: '0.5',
-  tags: ['active'],
-  description: ''
-};
 
 describe('Stats Formulas (stats.ts)', () => {
   it('should calculate derived stats correctly from core stats', () => {
@@ -187,7 +177,6 @@ describe('Combat Formulas (combat.ts)', () => {
       hero: mockHero,
       weapon: mockWeapon,
       armor: mockArmor,
-      skill: mockSkill,
       enemy: mockEnemy,
       random: mockRandom
     });
@@ -209,7 +198,6 @@ describe('Combat Formulas (combat.ts)', () => {
       hero: mockHero,
       weapon: mockWeapon,
       armor: mockArmor,
-      skill: mockSkill,
       enemy: mockEnemy,
       random: mockRandom
     });
@@ -225,7 +213,6 @@ describe('Combat Formulas (combat.ts)', () => {
       hero: mockHero,
       weapon: mockWeapon,
       armor: mockArmor,
-      skill: mockSkill,
       enemy: mockEnemy,
       random: () => 0.99
     });

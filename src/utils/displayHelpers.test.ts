@@ -137,4 +137,8 @@ describe('displayHelpers formatting and localization', () => {
     expect(summary).not.toContain('speed');
     expect(summary).not.toContain('Швидкість');
   });
+  it('should not expose removed rage stat labels in display helpers', () => {
+    expect(formatStatName('rageFromAttacks')).toBe('Rage From Attacks');
+    expect(formatStatDisplay('rageFromAttacks', 0.15)).toContain('Rage From Attacks');
+  });
 });

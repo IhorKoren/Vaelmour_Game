@@ -53,7 +53,6 @@ const EMPTY_SECONDARY_STATS: SecondaryStats = {
   staggerPower: 0,
   staggerResistance: 0,
   poise: 0,
-  rageFromAttacks: 0,
   blockChance: 0,
   blockValue: 0,
   goldFindBonus: 0,
@@ -65,8 +64,7 @@ const EMPTY_SECONDARY_STATS: SecondaryStats = {
   executeDamage: 0,
   damageReductionHighHp: 0,
   lowHpArmorBonus: 0,
-  bleedTickRate: 0,
-  bleedRageBonus: 0
+  bleedTickRate: 0
 };
 
 function resolveItem(itemId: string): NumericItemStats | null {

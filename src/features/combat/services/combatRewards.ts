@@ -1,5 +1,4 @@
 import type { Enemy, HeroState, Location } from '../../../game/types';
-import { skills } from '../../../data/skills';
 import { items } from '../../../data/items';
 import { recipes } from '../../../data/recipes';
 import { STARTER_RECIPE_IDS, rollLiveRecipeUnlock } from '../../../data/recipeDropSources';
@@ -12,11 +11,9 @@ import {
   updateQuestProgressOnBattleWon,
   updateQuestProgressOnMaterialGained
 } from '../../../game/formulas/quests';
-import { getNewlyUnlockedSkills } from '../../../game/formulas/skills';
 import {
   getDisplayEnemyName,
   getDisplayItemName,
-  getDisplaySkillName,
   formatRarity
 } from '../../../utils/displayHelpers';
 import type { GeneratedEquipmentItem } from '../../../game/types';
@@ -93,7 +90,6 @@ export function calculateVictoryRewards(
   const totalXp = hero.xp + xpReward;
   const levelUpResult = checkLevelUp(hero.level, totalXp);
   const didLevelUp = levelUpResult.newLevel > hero.level;
-  const newlyUnlocked = getNewlyUnlockedSkills(hero.level, levelUpResult.newLevel, skills);
 
   let nextHeroLevel = hero.level;
   let nextHeroXp = totalXp;
@@ -158,9 +154,9 @@ export function calculateVictoryRewards(
     .replace(/misses/i, 'промахується');
 
   const victoryMessage = enemy.rank === 'elite'
-    ? `⭐️ ПЕРЕМОГА НАД ЕЛІТНИМ ВОРОГОМ ${enemy.name}! Отримано ${xpReward} XP, ${goldReward} золота.`
+    ? `Перемога над елітним ворогом ${enemy.name}! Отримано ${xpReward} XP, ${goldReward} золота.`
     : (enemy.rank === 'boss'
-        ? `👑 ЛЕГЕНДАРНА ПЕРЕМОГА НАД БОСОМ ${enemy.name}! Отримано ${xpReward} XP, ${goldReward} золота.`
+        ? `Легендарна перемога над босом ${enemy.name}! Отримано ${xpReward} XP, ${goldReward} золота.`
         : `Перемога! Отримано ${xpReward} XP, ${goldReward} золота.`);
 
   const logLines = [
@@ -175,14 +171,11 @@ export function calculateVictoryRewards(
 
   if (didLevelUp) {
     logLines.unshift(`Новий рівень! Досягнуто ${levelUpResult.newLevel} рівня. Отримано ${levelUpResult.statPointsGained} очок характеристик.`);
-    if (newlyUnlocked.length > 0) {
-      newlyUnlocked.forEach((s) => {
-        logLines.unshift(`Розблоковано вміння: ${getDisplaySkillName(s.name)}.`);
-      });
-    }
   }
 
-  logLines.push(translatedDmgLog);
+  if (translatedDmgLog.trim()) {
+    logLines.push(translatedDmgLog);
+  }
 
   return {
     rewardedHero: questedHero,

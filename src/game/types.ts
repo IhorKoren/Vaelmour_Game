@@ -35,7 +35,6 @@ export type SecondaryStats = {
   staggerPower: number;
   staggerResistance: number;
   poise: number;
-  rageFromAttacks: number;
   blockChance: number;
   blockValue: number;
   goldFindBonus: number;
@@ -48,7 +47,6 @@ export type SecondaryStats = {
   damageReductionHighHp: number;
   lowHpArmorBonus: number;
   bleedTickRate: number;
-  bleedRageBonus: number;
 };
 
 export type Weapon = {

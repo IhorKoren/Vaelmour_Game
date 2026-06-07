@@ -8,12 +8,10 @@ interface CombatArenaProps {
   enemy: Enemy;
   enemyHp: number;
   hero: HeroState;
-  heroRage: number;
   enemyAttacking: boolean;
   heroAttacking: boolean;
   enemyFlash: { damage: number; isCrit: boolean; id: number } | null;
   heroFlash: { damage: number; isCrit: boolean; id: number } | null;
-  rageFlash: { amount: number; id: number } | null;
 }
 
 export function CombatArena({
@@ -21,17 +19,15 @@ export function CombatArena({
   enemy,
   enemyHp,
   hero,
-  heroRage,
   enemyAttacking,
   heroAttacking,
   enemyFlash,
-  heroFlash,
-  rageFlash
+  heroFlash
 }: CombatArenaProps) {
   return (
     <div className="battle-arena" style={{ backgroundImage: `url(${arenaBg})` }}>
       <div className="battle-arena__ground" />
-      
+
       <CombatEnemyPanel
         enemy={enemy}
         enemyHp={enemyHp}
@@ -40,7 +36,6 @@ export function CombatArena({
         showStatusPlate={huntState === 'fighting'}
       />
 
-      {/* Victory Floating tag overlay */}
       {huntState === 'victory' && (
         <div className="combat-result-banner combat-result-banner--victory">
           <span>Перемога</span>
@@ -48,7 +43,6 @@ export function CombatArena({
         </div>
       )}
 
-      {/* Defeat Floating tag overlay */}
       {huntState === 'defeat' && (
         <div className="combat-result-banner combat-result-banner--defeat">
           <span>Поразка</span>
@@ -58,10 +52,8 @@ export function CombatArena({
 
       <CombatHeroPanel
         hero={hero}
-        heroRage={heroRage}
         heroAttacking={heroAttacking}
         heroFlash={heroFlash}
-        rageFlash={rageFlash}
       />
     </div>
   );

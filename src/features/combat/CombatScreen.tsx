@@ -13,7 +13,6 @@ import { isHeroHpTooLow } from './combatDisplayHelpers';
 import {
   CombatArena,
   CombatControls,
-  CombatLogPanel,
   CombatIdlePanel,
   CombatSearchingPanel,
   AutoHuntToggle
@@ -61,23 +60,17 @@ export function CombatScreen({ hero, onHeroChange, selectedLocationId, onCombatS
     huntState,
     enemy,
     enemyHp,
-    log,
-    heroRage,
     heroAttacking,
     enemyAttacking,
     heroFlash,
     enemyFlash,
-    rageFlash,
     victoryRewards,
-    availableSkills,
-    skillCooldowns,
     isEnemyDefeated,
     heroDefeated,
     startHunting,
     startBossFight,
     handleRetreat,
     handleReturn,
-    handleUseSkill,
     isAutoHuntEnabled,
     setIsAutoHuntEnabled
   } = useCombatSession({
@@ -126,29 +119,20 @@ export function CombatScreen({ hero, onHeroChange, selectedLocationId, onCombatS
             enemy={enemy}
             enemyHp={enemyHp}
             hero={hero}
-            heroRage={heroRage}
             enemyAttacking={enemyAttacking}
             heroAttacking={heroAttacking}
             enemyFlash={enemyFlash}
             heroFlash={heroFlash}
-            rageFlash={rageFlash}
           />
 
           <CombatControls
             huntState={huntState}
             victoryRewards={victoryRewards}
-            hero={hero}
-            heroRage={heroRage}
-            availableSkills={availableSkills}
-            skillCooldowns={skillCooldowns}
             isEnemyDefeated={isEnemyDefeated}
             heroDefeated={heroDefeated}
-            onUseSkill={handleUseSkill}
             onRetreat={handleRetreat}
             onReturn={handleReturn}
           />
-
-          <CombatLogPanel log={log} />
         </>
       )}
 
