@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
-import { COMBAT_ATTACK_INTERVAL_MULTIPLIER } from '../constants';
+import { describe, it, expect, vi } from 'vitest';
+import { COMBAT_ATTACK_INTERVAL_MULTIPLIER, GAME_WIPE_ID, SAVE_KEY } from '../constants';
 import { sendFullHealthNotification } from '../../telegram/telegramNotifications';
+import { createInitialHero } from '../createInitialHero';
 import { calculateDerivedStats, xpToNextLevel, clamp } from './stats';
 import { calculateHeroDamage, calculateEnemyDamage } from './combat';
 import {
@@ -16,7 +17,7 @@ import { getRuntimeMaterialDropPool } from './materialDropResolver';
 import { rollCraftSuccess } from './crafting';
 import { generateItemAffixes } from './affixes';
 import { calculateRerollCost, rerollItemAffix } from './reroll';
-import { applyOfflineHealthRegen, normalizeHeroState } from '../save/saveSystem';
+import { applyOfflineHealthRegen, loadGame, normalizeHeroState } from '../save/saveSystem';
 import { curatedCraftingQuests } from '../../data/quests';
 import { formatQuestRewards } from '../../features/quests/questDisplayHelpers';
 import { applyRankScaling, rollEliteOrNormal, getBossForLocation } from './enemyScaling';
@@ -51,6 +52,7 @@ import {
 const mockHero: HeroState = {
   id: 'test_hero',
   name: 'Vaelmour Hero',
+  wipeId: GAME_WIPE_ID,
   level: 1,
   xp: 0,
   gold: 100,
@@ -842,6 +844,160 @@ describe('Reroll System Formulas (reroll.ts)', () => {
 });
 
 describe('Save/Load Compatibility & Normalization (saveSystem.ts)', () => {
+  it('should include the current wipe id on new heroes', () => {
+    const hero = createInitialHero();
+
+    expect(hero.wipeId).toBe(GAME_WIPE_ID);
+  });
+
+  it('should reset local progress when loading a hero without wipeId', () => {
+    const oldLocalHero = {
+      ...mockHero,
+      wipeId: undefined,
+      level: 12,
+      xp: 999,
+      gold: 777,
+      currentHp: 45,
+      maxHp: 180,
+      inventory: [{ itemId: 'MAT_024', qty: 9 }],
+      equipment: {
+        weapon: 'weapon_blade_lvl_30',
+        shield: null,
+        head: null,
+        chest: 'chest_armor_lvl_30',
+        legs: null,
+        hands: null,
+        feet: null,
+        ring1: 'ring_band_lvl_30',
+        ring2: null,
+        amulet: null
+      },
+      knownRecipeIds: ['recipe_weapon_blade_lvl_30'],
+      quests: [{ questId: 'quest_crafting_99', status: 'completed', objectives: [] }],
+      equippedGeneratedItems: {
+        weapon: {
+          id: 'generated_weapon_legacy',
+          templateId: 'generated_weapon_template',
+          name: 'Legacy Weapon',
+          category: 'weapon',
+          slot: 'weapon',
+          level: 12,
+          tier: 12,
+          tierIndex: 11,
+          rarity: 'epic',
+          stats: { minDamage: 22, maxDamage: 33 },
+          affixes: [],
+          durability: 85,
+          maxDurability: 100
+        }
+      }
+    };
+
+    const localStorageMock = {
+      store: {} as Record<string, string>,
+      getItem(key: string) {
+        return this.store[key] ?? null;
+      },
+      setItem(key: string, value: string) {
+        this.store[key] = value;
+      },
+      removeItem(key: string) {
+        delete this.store[key];
+      }
+    };
+
+    vi.stubGlobal('window', {
+      localStorage: localStorageMock,
+    });
+
+    localStorageMock.setItem(
+      SAVE_KEY,
+      JSON.stringify({
+        hero: oldLocalHero,
+        updatedAt: '2026-06-07T08:00:00.000Z'
+      })
+    );
+
+    const loaded = loadGame();
+    const freshHero = createInitialHero();
+
+    expect(loaded?.hero.wipeId).toBe(GAME_WIPE_ID);
+    expect(loaded?.hero.level).toBe(1);
+    expect(loaded?.hero.xp).toBe(0);
+    expect(loaded?.hero.inventory).toEqual(freshHero.inventory);
+    expect(loaded?.hero.equipment).toEqual(freshHero.equipment);
+    expect(loaded?.hero.knownRecipeIds).toEqual(freshHero.knownRecipeIds);
+    expect(loaded?.hero.quests).toEqual(freshHero.quests);
+
+    vi.unstubAllGlobals();
+  });
+
+  it('should reset cloud-loaded heroes without wipeId back to fresh progression', () => {
+    const rawCloudHero = {
+      ...mockHero,
+      wipeId: undefined,
+      level: 18,
+      xp: 4500,
+      gold: 3200,
+      inventory: [{ itemId: 'MAT_024', qty: 12 }],
+      equipment: {
+        weapon: 'weapon_blade_lvl_30',
+        shield: 'shield_guard_lvl_30',
+        head: 'head_helmet_lvl_30',
+        chest: 'chest_armor_lvl_30',
+        legs: 'legs_pants_lvl_30',
+        hands: 'hands_gloves_lvl_30',
+        feet: 'feet_boots_lvl_30',
+        ring1: 'ring_band_lvl_30',
+        ring2: 'ring_band_lvl_27',
+        amulet: 'amulet_charm_lvl_30'
+      },
+      knownRecipeIds: ['recipe_weapon_blade_lvl_30'],
+      quests: [{ questId: 'quest_crafting_99', status: 'claimed', objectives: [] }],
+    };
+
+    const normalized = normalizeHeroState(rawCloudHero);
+    const freshHero = createInitialHero();
+
+    expect(normalized.level).toBe(1);
+    expect(normalized.gold).toBe(freshHero.gold);
+    expect(normalized.inventory).toEqual(freshHero.inventory);
+    expect(normalized.equipment).toEqual(freshHero.equipment);
+    expect(normalized.knownRecipeIds).toEqual(freshHero.knownRecipeIds);
+    expect(normalized.quests).toEqual(freshHero.quests);
+    expect(normalized.wipeId).toBe(GAME_WIPE_ID);
+  });
+
+  it('should reset heroes with outdated wipeId', () => {
+    const normalized = normalizeHeroState({
+      ...mockHero,
+      wipeId: 'progression_wipe_2026_05_01_v0',
+      level: 20,
+      gold: 9999
+    });
+
+    expect(normalized.level).toBe(1);
+    expect(normalized.gold).toBe(createInitialHero().gold);
+    expect(normalized.wipeId).toBe(GAME_WIPE_ID);
+  });
+
+  it('should preserve current progression when wipeId already matches', () => {
+    const normalized = normalizeHeroState({
+      ...mockHero,
+      wipeId: GAME_WIPE_ID,
+      level: 9,
+      xp: 321,
+      gold: 654,
+      inventory: [{ itemId: 'MAT_001', qty: 11 }]
+    });
+
+    expect(normalized.level).toBe(9);
+    expect(normalized.xp).toBe(321);
+    expect(normalized.gold).toBe(654);
+    expect(normalized.inventory[0]).toEqual(expect.objectContaining({ itemId: 'MAT_001', qty: 11 }));
+    expect(normalized.wipeId).toBe(GAME_WIPE_ID);
+  });
+
   it('should safely normalize old saves missing equipmentAffixes and affixes properties', () => {
     const oldSavedHero = {
       id: 'old_hero',
@@ -870,7 +1026,8 @@ describe('Save/Load Compatibility & Normalization (saveSystem.ts)', () => {
       inventory: [
         { itemId: 'MAT_001', qty: 5 } // missing optional affixes!
       ],
-      migrationFlags: { starterEquipmentV2: true }
+      migrationFlags: { starterEquipmentV2: true },
+      wipeId: GAME_WIPE_ID
     };
 
     const normalized = normalizeHeroState(oldSavedHero);
@@ -1579,6 +1736,24 @@ describe('New Quest UI & Safe Save Migration Tests', () => {
     const questIds = normalized.quests!.map(q => q.questId);
     expect(questIds).not.toContain('QST_GENERATED');
     expect(normalized.migrationFlags?.craftingQuestChainV1).toBe(true);
+  });
+
+  it('should preserve player identity fields while resetting gameplay progression', () => {
+    const normalized = normalizeHeroState({
+      ...mockHero,
+      wipeId: 'progression_wipe_2026_05_01_v0',
+      id: 'player_identity_42',
+      name: 'Tester',
+      nameSource: 'telegram',
+      level: 15,
+      xp: 5000,
+      gold: 9000
+    });
+
+    expect(normalized.id).toBe('player_identity_42');
+    expect(normalized.name).toBe('Tester');
+    expect(normalized.nameSource).toBe('telegram');
+    expect(normalized.level).toBe(1);
   });
 
   it('quest reward formatter displays gold, XP, recipes, and materials', () => {

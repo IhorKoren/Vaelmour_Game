@@ -342,6 +342,7 @@ export type HeroState = {
   id: string;
   name: string;
   nameSource?: 'default' | 'telegram' | 'manual';
+  wipeId?: string;
   level: number;
   xp: number;
   gold: number;

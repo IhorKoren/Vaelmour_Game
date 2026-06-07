@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { sanitizeCloudSavePayload } from './cloudSaveSanitizer';
+import { GAME_WIPE_ID } from '../constants';
 
 describe('sanitizeCloudSavePayload', () => {
   it('clamps impossible numeric values and invalid selected locations', () => {
@@ -112,5 +113,19 @@ describe('sanitizeCloudSavePayload', () => {
     expect(result.hero.skillCooldowns).toEqual({ skill_01: 12345 });
     expect(result.hero.knownSkillIds).toEqual(['skill_01']);
     expect(result.changes).not.toContain('inventory_sanitized');
+  });
+
+  it('preserves wipeId when present on cloud payloads', () => {
+    const result = sanitizeCloudSavePayload(
+      {
+        level: 3,
+        wipeId: GAME_WIPE_ID,
+        inventory: [],
+      },
+      'LOC_001',
+      {},
+    );
+
+    expect(result.hero.wipeId).toBe(GAME_WIPE_ID);
   });
 });

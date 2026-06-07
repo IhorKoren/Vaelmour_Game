@@ -398,6 +398,12 @@ export function sanitizeCloudSavePayload(
     ),
   };
 
+  if (typeof hero.wipeId === 'string') {
+    sanitizedHero.wipeId = hero.wipeId;
+  } else if (typeof existingHero.wipeId === 'string') {
+    sanitizedHero.wipeId = existingHero.wipeId;
+  }
+
   if (typeof sanitizedHero.equippedWeaponId === 'string') {
     const weaponId = sanitizedHero.equippedWeaponId;
     if (!isValidKnownItemId(weaponId) && !isGeneratedItemId(weaponId)) {

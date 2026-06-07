@@ -1,4 +1,5 @@
-import { SAVE_KEY } from '../constants';
+import { GAME_WIPE_ID, SAVE_KEY } from '../constants';
+import { createInitialHero } from '../createInitialHero';
 import { calculateDerivedStats } from '../formulas/stats';
 import type {
   HeroState,
@@ -37,12 +38,45 @@ const STARTER_EQUIPMENT_SLOTS = Object.keys(
 let pendingSaveTimeout: ReturnType<typeof setTimeout> | null = null;
 let pendingSaveSnapshot: GameSave | null = null;
 
+function createWipedHeroState(savedHero: unknown): HeroState {
+  const freshHero = createInitialHero();
+
+  if (!savedHero || typeof savedHero !== 'object') {
+    return freshHero;
+  }
+
+  const heroObj = savedHero as Record<string, unknown>;
+
+  return {
+    ...freshHero,
+    id: typeof heroObj.id === 'string' && heroObj.id.trim() ? heroObj.id : freshHero.id,
+    name: typeof heroObj.name === 'string' && heroObj.name.trim() ? heroObj.name : freshHero.name,
+    nameSource:
+      heroObj.nameSource === 'telegram' || heroObj.nameSource === 'manual' || heroObj.nameSource === 'default'
+        ? heroObj.nameSource
+        : freshHero.nameSource,
+  };
+}
+
+export function isHeroOutdatedForCurrentWipe(savedHero: unknown): boolean {
+  if (!savedHero || typeof savedHero !== 'object') {
+    return false;
+  }
+
+  const heroObj = savedHero as Record<string, unknown>;
+
+  return heroObj.wipeId !== GAME_WIPE_ID;
+}
+
 /**
  * Normalizes any loaded HeroState to guarantee it adheres to current types,
  * preventing app crashes due to missing affix collections or nested arrays.
  */
 export function normalizeHeroState(savedHero: unknown): HeroState {
   if (!savedHero) return savedHero as HeroState;
+  if (isHeroOutdatedForCurrentWipe(savedHero)) {
+    return createWipedHeroState(savedHero);
+  }
 
   const heroObj = savedHero as Record<string, unknown>;
 
@@ -252,6 +286,7 @@ export function normalizeHeroState(savedHero: unknown): HeroState {
 
   return {
     ...normalizedHero,
+    wipeId: GAME_WIPE_ID,
     maxHp: derived.maxHp,
     currentHp: Math.min(
       Number(normalizedHero.currentHp ?? derived.maxHp),
@@ -269,9 +304,20 @@ export function loadGame(): GameSave | null {
     }
 
     const save = JSON.parse(raw) as GameSave;
+    const shouldResetForWipe = isHeroOutdatedForCurrentWipe(save?.hero);
 
     if (save && save.hero) {
       save.hero = normalizeHeroState(save.hero);
+    }
+
+    if (shouldResetForWipe && save?.hero) {
+      const resetSave = {
+        hero: save.hero,
+        updatedAt: new Date().toISOString(),
+      };
+
+      saveGame(resetSave);
+      return resetSave;
     }
 
     return applyOfflineHealthRegen(save);

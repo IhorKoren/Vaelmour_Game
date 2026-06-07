@@ -7,6 +7,7 @@ import { applyAutoEquipPreset } from '../game/autoEquipPreset';
 import {
   applyOfflineHealthRegen,
   flushPendingSaveGame,
+  isHeroOutdatedForCurrentWipe,
   loadGame,
   normalizeHeroState,
   scheduleSaveGame,
@@ -127,6 +128,7 @@ export default function AppShell() {
       }
 
       if (cloudSave?.hero) {
+        const shouldResetCloudProgress = isHeroOutdatedForCurrentWipe(cloudSave.hero);
         const normalizedCloudHero = normalizeHeroState(cloudSave.hero);
         const regeneratedCloudSave =
           applyOfflineHealthRegen({
@@ -139,7 +141,9 @@ export default function AppShell() {
 
         const restoredHero = applyAutoEquipPreset(regeneratedCloudSave.hero);
         const restoredUpdatedAt = regeneratedCloudSave.updatedAt;
-        const restoredLocationId = cloudSave.selectedLocationId ?? locations[0].id;
+        const restoredLocationId = shouldResetCloudProgress
+          ? locations[0].id
+          : cloudSave.selectedLocationId ?? locations[0].id;
 
         setHero(restoredHero);
         setSelectedLocationId(restoredLocationId);
@@ -159,6 +163,7 @@ export default function AppShell() {
         setFullHealthNotificationSent(restoredHero.currentHp >= derived.maxHp);
 
         const cloudSaveWasUpdatedByStartupProcessing =
+          shouldResetCloudProgress ||
           restoredHero.currentHp !== cloudSave.hero.currentHp ||
           restoredHero.maxHp !== cloudSave.hero.maxHp ||
           restoredUpdatedAt !== cloudSave.updatedAt ||

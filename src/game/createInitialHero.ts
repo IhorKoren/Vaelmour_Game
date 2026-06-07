@@ -2,6 +2,7 @@ import { armors } from '../data/armors';
 import { weapons } from '../data/weapons';
 import { shields } from '../data/shields';
 import { STARTER_RECIPE_IDS } from '../data/recipeDropSources';
+import { GAME_WIPE_ID } from './constants';
 import { calculateDerivedStats } from './formulas/stats';
 import { initializeQuests } from './formulas/quests';
 import type { EquipmentSlot, HeroState } from './types';
@@ -51,6 +52,7 @@ export function createInitialHero(): HeroState {
     id: 'player',
     name: 'Wanderer',
     nameSource: 'default' as const,
+    wipeId: GAME_WIPE_ID,
     level: 1,
     xp: 0,
     gold: 40,
