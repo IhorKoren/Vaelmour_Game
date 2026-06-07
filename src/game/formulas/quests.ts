@@ -175,23 +175,33 @@ export function claimQuestReward(hero: HeroState, questId: string): HeroState {
 
   // Grant Material rewards
   const nextInventory = [...hero.inventory];
+  const uniqueMaterialIds = new Set<string>();
   if (def.rewards.materialIds) {
-    for (const materialId of def.rewards.materialIds) {
-      const qty = (def.rewards.materialQuantities && def.rewards.materialQuantities[materialId]) ?? 1;
-      const existingStackIndex = nextInventory.findIndex(
-        (stack) => stack.itemId.toLowerCase() === materialId.toLowerCase() && !stack.generatedItem && (!stack.affixes || stack.affixes.length === 0)
-      );
-      if (existingStackIndex >= 0) {
-        nextInventory[existingStackIndex] = {
-          ...nextInventory[existingStackIndex],
-          qty: nextInventory[existingStackIndex].qty + qty
-        };
-      } else {
-        nextInventory.push({
-          itemId: materialId,
-          qty
-        });
-      }
+    for (const mId of def.rewards.materialIds) {
+      uniqueMaterialIds.add(mId);
+    }
+  }
+  if (def.rewards.materialQuantities) {
+    for (const mId of Object.keys(def.rewards.materialQuantities)) {
+      uniqueMaterialIds.add(mId);
+    }
+  }
+
+  for (const materialId of uniqueMaterialIds) {
+    const qty = (def.rewards.materialQuantities && def.rewards.materialQuantities[materialId]) ?? 1;
+    const existingStackIndex = nextInventory.findIndex(
+      (stack) => stack.itemId.toLowerCase() === materialId.toLowerCase() && !stack.generatedItem && (!stack.affixes || stack.affixes.length === 0)
+    );
+    if (existingStackIndex >= 0) {
+      nextInventory[existingStackIndex] = {
+        ...nextInventory[existingStackIndex],
+        qty: nextInventory[existingStackIndex].qty + qty
+      };
+    } else {
+      nextInventory.push({
+        itemId: materialId,
+        qty
+      });
     }
   }
 

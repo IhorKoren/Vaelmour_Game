@@ -7,7 +7,7 @@ import { getDisplayQuestDescription, getDisplayQuestTitle } from '../utils/displ
 type GeneratedQuest = Record<string, string>;
 type GeneratedQuestBook = Record<string, GeneratedQuest[]>;
 
-const questBook = rawQuestBook as GeneratedQuestBook;
+export const questBook = rawQuestBook as GeneratedQuestBook;
 
 function normalize(value: string | undefined): string {
   return (value ?? '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
@@ -136,7 +136,7 @@ function mapObjective(category: string, quest: GeneratedQuest): QuestObjective[]
   }];
 }
 
-function mapQuest(category: string, quest: GeneratedQuest): QuestDefinition {
+export function mapQuest(category: string, quest: GeneratedQuest): QuestDefinition {
   return {
     id: quest.quest_id,
     title: getDisplayQuestTitle(quest.quest_name),
@@ -148,7 +148,7 @@ function mapQuest(category: string, quest: GeneratedQuest): QuestDefinition {
   };
 }
 
-const curatedCraftingQuests: QuestDefinition[] = [
+export const curatedCraftingQuests: QuestDefinition[] = [
   {
     id: 'quest_crafting_01',
     title: 'Перші кроки коваля',
@@ -349,10 +349,4 @@ const curatedCraftingQuests: QuestDefinition[] = [
   }
 ];
 
-const generatedQuests = Object.entries(questBook)
-  .filter(([category]) => category !== 'bossUnlock')
-  .flatMap(([category, quests]) =>
-    quests.map((quest) => mapQuest(category, quest))
-  );
-
-export const questDefinitions: QuestDefinition[] = [...generatedQuests, ...curatedCraftingQuests];
+export const questDefinitions: QuestDefinition[] = curatedCraftingQuests;

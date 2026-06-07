@@ -16,6 +16,8 @@ import { rollCraftSuccess } from './crafting';
 import { generateItemAffixes } from './affixes';
 import { calculateRerollCost, rerollItemAffix } from './reroll';
 import { applyOfflineHealthRegen, normalizeHeroState } from '../save/saveSystem';
+import { curatedCraftingQuests } from '../../data/quests';
+import { formatQuestRewards } from '../../features/quests/questDisplayHelpers';
 import { applyRankScaling, rollEliteOrNormal, getBossForLocation } from './enemyScaling';
 import { canStartBossEncounter } from './bossUnlocks';
 import { openLootbox } from './lootboxes';
@@ -851,23 +853,38 @@ describe('Quest System Formulas (quests.ts)', () => {
   });
 
   it('should increment kill enemy progress correctly', () => {
-    const heroWithQuests = { ...mockHero, quests: initializeQuests(1) };
+    const heroWithQuests = {
+      ...mockHero,
+      quests: [
+        { questId: 'test_kill', status: 'active' as const, objectives: [{ type: 'kill_enemy' as const, required: 5, current: 0 }] }
+      ]
+    };
     const updated = updateQuestProgressOnEnemyKilled(heroWithQuests, 'enemy_01', 'Blackfang Wolves');
-    const firstQuest = updated.quests?.find((q) => q.questId === 'KQ_001');
+    const firstQuest = updated.quests?.find((q) => q.questId === 'test_kill');
     expect(firstQuest?.objectives[0].current).toBe(1);
   });
 
   it('should increment win battles progress correctly', () => {
-    const heroWithQuests = { ...mockHero, quests: initializeQuests(5) };
+    const heroWithQuests = {
+      ...mockHero,
+      quests: [
+        { questId: 'test_win', status: 'active' as const, objectives: [{ type: 'win_battles' as const, required: 5, current: 0 }] }
+      ]
+    };
     const updated = updateQuestProgressOnBattleWon(heroWithQuests);
-    const secondQuest = updated.quests?.find((q) => q.questId === 'DQ_008');
+    const secondQuest = updated.quests?.find((q) => q.questId === 'test_win');
     expect(secondQuest?.objectives[0].current).toBe(1);
   });
 
   it('should increment material collection progress correctly', () => {
-    const heroWithQuests = { ...mockHero, quests: initializeQuests(1) };
+    const heroWithQuests = {
+      ...mockHero,
+      quests: [
+        { questId: 'test_collect', status: 'active' as const, objectives: [{ type: 'collect_material' as const, targetId: 'MAT_001', required: 5, current: 0 }] }
+      ]
+    };
     const updated = updateQuestProgressOnMaterialGained(heroWithQuests, 'MAT_001', 2);
-    const thirdQuest = updated.quests?.find((q) => q.questId === 'DQ_006');
+    const thirdQuest = updated.quests?.find((q) => q.questId === 'test_collect');
     expect(thirdQuest?.objectives[0].current).toBe(2);
   });
 
@@ -888,38 +905,41 @@ describe('Quest System Formulas (quests.ts)', () => {
   });
 
   it('should mark quest as completed when objectives are met', () => {
-    const heroWithQuests = { ...mockHero, quests: initializeQuests(1) };
-    // DQ_001 requires 10 kills
+    const heroWithQuests = {
+      ...mockHero,
+      quests: [
+        { questId: 'test_kill', status: 'active' as const, objectives: [{ type: 'kill_enemy' as const, required: 10, current: 0 }] }
+      ]
+    };
     let updated: HeroState = heroWithQuests;
     for (let i = 0; i < 10; i++) {
       updated = updateQuestProgressOnEnemyKilled(updated, 'enemy_01', 'beast');
     }
-    const firstQuest = updated.quests?.find((q) => q.questId === 'DQ_001');
+    const firstQuest = updated.quests?.find((q) => q.questId === 'test_kill');
     expect(firstQuest?.status).toBe('completed');
   });
 
   it('should claim quest rewards exactly once', () => {
-    const heroWithQuests = { ...mockHero, quests: initializeQuests(1), gold: 10, xp: 10 };
-    // Pre-complete DQ_001
-    const completedQuests = heroWithQuests.quests?.map((q) => {
-      if (q.questId === 'DQ_001') {
-        return { ...q, status: 'completed' as const };
-      }
-      return q;
-    });
-    const completedHero = { ...heroWithQuests, quests: completedQuests };
+    const heroWithQuests = {
+      ...mockHero,
+      quests: [
+        { questId: 'quest_crafting_01', status: 'completed' as const, objectives: [] }
+      ],
+      gold: 10,
+      xp: 10
+    };
 
-    expect(canClaimQuest(completedHero.quests![0])).toBe(true);
+    expect(canClaimQuest(heroWithQuests.quests![0])).toBe(true);
 
-    const claimedHero = claimQuestReward(completedHero, 'DQ_001');
-    expect(claimedHero.gold).toBeGreaterThan(10);
-    expect(claimedHero.xp).toBeGreaterThan(10);
-    expect(claimedHero.quests!.find(q => q.questId === 'DQ_001')?.status).toBe('claimed');
+    const claimedHero = claimQuestReward(heroWithQuests, 'quest_crafting_01');
+    expect(claimedHero.gold).toBe(60); // 10 base + 50 reward
+    expect(claimedHero.xp).toBe(60);
+    expect(claimedHero.quests!.find(q => q.questId === 'quest_crafting_01')?.status).toBe('claimed');
 
     // Repeated claim should not change gold/xp
     const goldBefore = claimedHero.gold;
     const xpBefore = claimedHero.xp;
-    const claimedHeroAgain = claimQuestReward(claimedHero, 'DQ_001');
+    const claimedHeroAgain = claimQuestReward(claimedHero, 'quest_crafting_01');
     expect(claimedHeroAgain.gold).toBe(goldBefore);
     expect(claimedHeroAgain.xp).toBe(xpBefore);
   });
@@ -1363,5 +1383,115 @@ describe('Quest Reward Claiming', () => {
     const matStack = updated.inventory.find(i => i.itemId === 'MAT_003');
     expect(matStack).toBeDefined();
     expect(matStack?.qty).toBe(5);
+  });
+});
+
+describe('New Quest UI & Safe Save Migration Tests', () => {
+  it('initializeQuests uses only curated crafting quests', () => {
+    const activeQuests = initializeQuests(1);
+    expect(activeQuests.length).toBeGreaterThan(0);
+    const curatedIds = new Set(curatedCraftingQuests.map(q => q.id));
+    for (const aq of activeQuests) {
+      expect(curatedIds.has(aq.questId)).toBe(true);
+    }
+  });
+
+  it('migration removes legacy generated active quests', () => {
+    const rawHero: Partial<HeroState> = {
+      ...mockHero,
+      level: 1,
+      quests: [
+        { questId: 'QST_001', status: 'active', objectives: [] }, // legacy generated active quest
+        { questId: 'quest_crafting_01', status: 'completed', objectives: [] } // curated
+      ]
+    };
+
+    const normalized = normalizeHeroState(rawHero);
+    expect(normalized.quests).toBeDefined();
+    const activeIds = normalized.quests!.map(q => q.questId);
+    expect(activeIds).toContain('quest_crafting_01');
+    expect(activeIds).not.toContain('QST_001');
+    expect(normalized.migrationFlags?.craftingQuestChainV1).toBe(true);
+  });
+
+  it('migration preserves claimed/completed curated quests and level checks', () => {
+    const rawHero: Partial<HeroState> = {
+      ...mockHero,
+      level: 5,
+      quests: [
+        { questId: 'quest_crafting_01', status: 'claimed', objectives: [] }
+      ]
+    };
+
+    const normalized = normalizeHeroState(rawHero);
+    expect(normalized.quests).toBeDefined();
+    
+    // quest_crafting_01 is preserved as claimed
+    const q1 = normalized.quests!.find(q => q.questId === 'quest_crafting_01');
+    expect(q1?.status).toBe('claimed');
+
+    // quest_crafting_02 (req lvl 3) and quest_crafting_03 (req lvl 5) are initialized as active because lvl 5 meets the req
+    const q2 = normalized.quests!.find(q => q.questId === 'quest_crafting_02');
+    expect(q2).toBeDefined();
+    expect(q2?.status).toBe('active');
+
+    const q3 = normalized.quests!.find(q => q.questId === 'quest_crafting_03');
+    expect(q3).toBeDefined();
+    expect(q3?.status).toBe('active');
+  });
+
+  it('cloud-loaded hero normalization path applies the same migration', () => {
+    const rawCloudHero: Partial<HeroState> = {
+      ...mockHero,
+      level: 10,
+      quests: [
+        { questId: 'QST_GENERATED', status: 'active', objectives: [] }
+      ]
+    };
+
+    const normalized = normalizeHeroState(rawCloudHero);
+    const questIds = normalized.quests!.map(q => q.questId);
+    expect(questIds).not.toContain('QST_GENERATED');
+    expect(normalized.migrationFlags?.craftingQuestChainV1).toBe(true);
+  });
+
+  it('quest reward formatter displays gold, XP, recipes, and materials', () => {
+    const rewards = {
+      gold: 150,
+      xp: 200,
+      recipeIds: ['recipe_weapon_blade_lvl_03'],
+      materialIds: ['MAT_003'],
+      materialQuantities: { 'MAT_003': 3 }
+    };
+
+    const formatted = formatQuestRewards(rewards);
+    expect(formatted).toContain('+150 золота');
+    expect(formatted).toContain('+200 досвіду');
+    expect(formatted).toContain('Рецепт: Укріплений клинок');
+    expect(formatted).toContain('Матеріали: Зігнутий залізний брухт ×3');
+  });
+
+  it('material quantity handling does not double-count', () => {
+    const rewards = {
+      materialIds: ['MAT_003'],
+      materialQuantities: { 'MAT_003': 4 }
+    };
+
+    const formatted = formatQuestRewards(rewards);
+    // Should have only 1 line for MAT_003 with exact quantity 4
+    const matLines = formatted.filter(line => line.includes('Матеріали:'));
+    expect(matLines.length).toBe(1);
+    expect(matLines[0]).toBe('Матеріали: Зігнутий залізний брухт ×4');
+
+    // Verify claimQuestReward doesn't double count either
+    const heroToClaim: HeroState = {
+      ...mockHero,
+      quests: [{ questId: 'quest_crafting_01', status: 'completed', objectives: [] }],
+      inventory: []
+    };
+    const claimedHero = claimQuestReward(heroToClaim, 'quest_crafting_01');
+    const matStack = claimedHero.inventory.filter(i => i.itemId === 'MAT_003');
+    expect(matStack.length).toBe(1);
+    expect(matStack[0].qty).toBe(5);
   });
 });

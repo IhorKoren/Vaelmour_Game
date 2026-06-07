@@ -8,6 +8,7 @@ import {
   applyOfflineHealthRegen,
   flushPendingSaveGame,
   loadGame,
+  normalizeHeroState,
   scheduleSaveGame,
 } from '../game/save/saveSystem';
 import { locations } from '../data/locations';
@@ -126,12 +127,13 @@ export default function AppShell() {
       }
 
       if (cloudSave?.hero) {
+        const normalizedCloudHero = normalizeHeroState(cloudSave.hero);
         const regeneratedCloudSave =
           applyOfflineHealthRegen({
-            hero: cloudSave.hero,
+            hero: normalizedCloudHero,
             updatedAt: cloudSave.updatedAt,
           }) ?? {
-            hero: cloudSave.hero,
+            hero: normalizedCloudHero,
             updatedAt: cloudSave.updatedAt,
           };
 

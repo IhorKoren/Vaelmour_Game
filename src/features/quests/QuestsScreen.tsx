@@ -3,6 +3,7 @@ import type { HeroState } from '../../game/types';
 import { claimQuestReward } from '../../game/formulas/quests';
 import { questDefinitions } from '../../data/quests';
 import { getDisplayEnemyFamilyName, getDisplayItemName, getDisplayLocationName } from '../../utils/displayHelpers';
+import { formatQuestRewards } from './questDisplayHelpers';
 
 type Props = {
   hero: HeroState;
@@ -51,7 +52,7 @@ export function QuestsScreen({ hero, onHeroChange }: Props) {
             lineHeight: '1.4'
           }}
         >
-          Виконуйте завдання, щоб отримувати досвід, золото і просуватися далі по контенту з бази даних.
+          Виконуйте завдання, щоб відкривати рецепти, отримувати матеріали, досвід і золото.
         </p>
       </Panel>
 
@@ -199,14 +200,17 @@ export function QuestsScreen({ hero, onHeroChange }: Props) {
                     <div
                       style={{
                         display: 'flex',
-                        gap: '10px',
+                        flexDirection: 'column',
+                        gap: '3px',
                         fontSize: '11px',
-                        color: 'var(--color-gold-gilded)',
-                        fontWeight: 'bold'
+                        fontWeight: 'bold',
+                        color: 'var(--color-gold-gilded)'
                       }}
                     >
-                      {questDef.rewards.gold && <span>💰 +{questDef.rewards.gold} зол.</span>}
-                      {questDef.rewards.xp && <span>✨ +{questDef.rewards.xp} XP</span>}
+                      <div style={{ color: 'var(--color-text-muted)', fontSize: '10px' }}>Нагорода:</div>
+                      {formatQuestRewards(questDef.rewards).map((rewardLine, idx) => (
+                        <span key={idx}>{rewardLine}</span>
+                      ))}
                     </div>
 
                     {isCompleted && (

@@ -8,6 +8,7 @@ import type {
   GeneratedEquipmentItem
 } from '../types';
 import { initializeQuests } from '../formulas/quests';
+import { curatedCraftingQuests } from '../../data/quests';
 
 export type GameSave = {
   hero: HeroState;
@@ -129,39 +130,52 @@ export function normalizeHeroState(savedHero: unknown): HeroState {
   }
 
   const level = Number(heroObj.level ?? 1);
-  const defaultQuests = initializeQuests(level);
   const savedQuests = (heroObj.quests ?? []) as ActiveQuest[];
-  const savedQuestMap = new Map(
-    savedQuests.map((quest) => [quest.questId, quest])
-  );
+  const migrationFlags =
+    heroObj.migrationFlags && typeof heroObj.migrationFlags === 'object'
+      ? {
+          ...(heroObj.migrationFlags as Record<string, boolean>)
+        }
+      : {};
 
-  let quests = defaultQuests.map(
-    (quest) => savedQuestMap.get(quest.questId) ?? quest
-  );
+  let quests: ActiveQuest[];
 
-  // Auto-migrate active quest QST_004 targetId from 'thornrot_forest' to 'LOC_002' for compatibility
-  quests = quests.map((q) => {
-    if (q.questId === 'QST_004') {
-      return {
-        ...q,
-        objectives: q.objectives.map((o) => {
-          if (
-            o.type === 'travel_location' &&
-            o.targetId === 'thornrot_forest'
-          ) {
-            return {
-              ...o,
-              targetId: 'LOC_002'
-            };
-          }
+  if (migrationFlags.craftingQuestChainV1) {
+    const defaultQuests = initializeQuests(level);
+    const savedQuestMap = new Map(
+      savedQuests.map((quest) => [quest.questId, quest])
+    );
+    quests = defaultQuests.map(
+      (quest) => savedQuestMap.get(quest.questId) ?? quest
+    );
+  } else {
+    const curatedIds = new Set(curatedCraftingQuests.map((q) => q.id));
+    const nextQuests: ActiveQuest[] = [];
 
-          return o;
-        })
-      };
+    // 1. Keep and preserve active/completed/claimed curated crafting quests
+    for (const q of savedQuests) {
+      if (curatedIds.has(q.questId)) {
+        nextQuests.push(q);
+      }
     }
 
-    return q;
-  });
+    // 2. Populate missing curated crafting quests if hero level meets requiredLevel
+    for (const curated of curatedCraftingQuests) {
+      if (level >= (curated.requiredLevel ?? 1)) {
+        const alreadyHas = nextQuests.some((q) => q.questId === curated.id);
+        if (!alreadyHas) {
+          nextQuests.push({
+            questId: curated.id,
+            status: 'active',
+            objectives: curated.objectives.map((o) => ({ ...o, current: 0 }))
+          });
+        }
+      }
+    }
+
+    quests = nextQuests;
+    migrationFlags.craftingQuestChainV1 = true;
+  }
 
   const defeatedBossIds = (heroObj.defeatedBossIds ?? []) as string[];
 
@@ -183,12 +197,6 @@ export function normalizeHeroState(savedHero: unknown): HeroState {
     amulet: String(rawEquipment.amulet ?? '') || null
   };
 
-  const migrationFlags =
-    heroObj.migrationFlags && typeof heroObj.migrationFlags === 'object'
-      ? {
-          ...(heroObj.migrationFlags as Record<string, boolean>)
-        }
-      : {};
 
   if (!migrationFlags[STARTER_EQUIPMENT_V2_FLAG]) {
     for (const slot of STARTER_EQUIPMENT_SLOTS) {

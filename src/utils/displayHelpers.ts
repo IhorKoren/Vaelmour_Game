@@ -487,7 +487,7 @@ export function getDisplayItemName(id: string, item?: Partial<GeneratedEquipment
   }
 
   // If it is a recipe ID, resolve it to its result item name
-  if (id.toUpperCase().startsWith('REC_')) {
+  if (id.toUpperCase().startsWith('REC_') || id.toLowerCase().startsWith('recipe_')) {
     const foundRecipe = masterDatabase.recipes.find((r) => r.id.toLowerCase() === id.toLowerCase());
     if (foundRecipe) {
       return `Креслення: ${getDisplayItemName(foundRecipe.result)}`;
