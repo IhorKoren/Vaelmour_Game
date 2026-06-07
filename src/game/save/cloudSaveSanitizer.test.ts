@@ -133,13 +133,13 @@ describe('sanitizeCloudSavePayload', () => {
     const result = sanitizeCloudSavePayload(
       {
         level: 3,
-        tonWalletAddress: 'UQBdqN55xdNOeFprhqpEJ251GfxNvcf3bDeRZV9-gCdxb95U',
+        tonWalletAddress: 'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c',
         inventory: [],
       },
       'LOC_001',
       {},
     );
 
-    expect(result.hero.tonWalletAddress).toBe('UQBdqN55xdNOeFprhqpEJ251GfxNvcf3bDeRZV9-gCdxb95U');
+    expect(result.hero.tonWalletAddress).toBe('EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c');
   });
 });

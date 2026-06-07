@@ -173,12 +173,24 @@ describe('displayHelpers formatting and localization', () => {
   });
 
   it('should pass active UI static scan audit to prevent regressions', () => {
-    const _require = (globalThis as any).require;
+    interface SimpleFs {
+      readdirSync(path: string): string[];
+      statSync(path: string): { isDirectory(): boolean };
+      readFileSync(path: string, encoding: string): string;
+      existsSync(path: string): boolean;
+    }
+    interface SimplePath {
+      join(...paths: string[]): string;
+      resolve(...paths: string[]): string;
+      basename(path: string): string;
+    }
+
+    const _require = (globalThis as Record<string, unknown>).require as (name: string) => unknown;
     if (typeof _require !== 'function') {
       return;
     }
-    const fs = _require('fs');
-    const path = _require('path');
+    const fs = _require('fs') as SimpleFs;
+    const path = _require('path') as SimplePath;
 
     function walkDir(dir: string, callback: (filePath: string) => void) {
       const files = fs.readdirSync(dir);

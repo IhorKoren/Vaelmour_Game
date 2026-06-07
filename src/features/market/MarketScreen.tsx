@@ -2,17 +2,12 @@ import { useEffect } from 'react';
 import { Panel } from '../../components/ui/Panel';
 import type { HeroState } from '../../game/types';
 import { TonConnectButton, useTonAddress, useTonConnectUI } from '@tonconnect/ui-react';
+import { shortenAddress } from '../../utils/tonHelpers';
 
 type Props = {
   hero: HeroState;
   onHeroChange: (hero: HeroState) => void;
 };
-
-export function shortenAddress(addr: string): string {
-  if (!addr) return '';
-  if (addr.length <= 10) return addr;
-  return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
-}
 
 export function MarketScreen({ hero, onHeroChange }: Props) {
   const address = useTonAddress();
@@ -27,8 +22,9 @@ export function MarketScreen({ hero, onHeroChange }: Props) {
         tonWalletAddress: address
       });
     } else if (!address && hero.tonWalletAddress) {
-      const { tonWalletAddress: _, ...heroWithoutWallet } = hero;
-      onHeroChange(heroWithoutWallet as HeroState);
+      const heroWithoutWallet = { ...hero };
+      delete heroWithoutWallet.tonWalletAddress;
+      onHeroChange(heroWithoutWallet);
     }
   }, [address, hero, onHeroChange]);
 
