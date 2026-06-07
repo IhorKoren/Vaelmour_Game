@@ -363,6 +363,16 @@ export function sanitizeCloudSavePayload(
         )
       : undefined;
 
+  const rawRecipeDropPity = hero.recipeDropPity ?? existingHero.recipeDropPity;
+  const recipeDropPity = isRecord(rawRecipeDropPity) ? rawRecipeDropPity : undefined;
+  const sanitizedPity = recipeDropPity
+    ? Object.fromEntries(
+        Object.entries(recipeDropPity)
+          .filter(([k, v]) => typeof k === 'string' && typeof v === 'number')
+          .map(([k, v]) => [k, clampNumber(v, 0, 10000, 0)])
+      )
+    : undefined;
+
   const sanitizedHero: Record<string, unknown> = {
     ...existingHero,
     ...hero,
@@ -376,6 +386,7 @@ export function sanitizeCloudSavePayload(
     inventory: sanitizedInventory,
     equipment,
     knownRecipeIds,
+    recipeDropPity: sanitizedPity,
     equipmentDurability: sanitizeSlotNumberMap(
       hero.equipmentDurability ?? existingHero.equipmentDurability,
     ),

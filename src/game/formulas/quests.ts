@@ -163,13 +163,44 @@ export function claimQuestReward(hero: HeroState, questId: string): HeroState {
   const goldReward = def.rewards.gold ?? 0;
   const xpReward = def.rewards.xp ?? 0;
 
-  // For materials/items reward in future, we could safely append them to inventory.
-  // Gold and XP is the core reward.
+  // Grant Recipe rewards
+  const nextKnownRecipeIds = hero.knownRecipeIds ? [...hero.knownRecipeIds] : [];
+  if (def.rewards.recipeIds) {
+    for (const recipeId of def.rewards.recipeIds) {
+      if (!nextKnownRecipeIds.includes(recipeId)) {
+        nextKnownRecipeIds.push(recipeId);
+      }
+    }
+  }
+
+  // Grant Material rewards
+  const nextInventory = [...hero.inventory];
+  if (def.rewards.materialIds) {
+    for (const materialId of def.rewards.materialIds) {
+      const qty = (def.rewards.materialQuantities && def.rewards.materialQuantities[materialId]) ?? 1;
+      const existingStackIndex = nextInventory.findIndex(
+        (stack) => stack.itemId.toLowerCase() === materialId.toLowerCase() && !stack.generatedItem && (!stack.affixes || stack.affixes.length === 0)
+      );
+      if (existingStackIndex >= 0) {
+        nextInventory[existingStackIndex] = {
+          ...nextInventory[existingStackIndex],
+          qty: nextInventory[existingStackIndex].qty + qty
+        };
+      } else {
+        nextInventory.push({
+          itemId: materialId,
+          qty
+        });
+      }
+    }
+  }
 
   return {
     ...hero,
     gold: hero.gold + goldReward,
     xp: hero.xp + xpReward,
+    knownRecipeIds: nextKnownRecipeIds,
+    inventory: nextInventory,
     quests: nextQuests
   };
 }

@@ -57,13 +57,30 @@ describe('recipe unlock sources', () => {
   });
 
   it('rolls a live recipe unlock only when the source and chance match', () => {
-    const unlock = rollLiveRecipeUnlock('Young Wolf', 'LOC_002', [], 0.01);
-    const blockedByChance = rollLiveRecipeUnlock('Young Wolf', 'LOC_002', [], 0.99);
-    const blockedByKnown = rollLiveRecipeUnlock('Young Wolf', 'LOC_002', ['recipe_weapon_blade_lvl_03'], 0.01);
+    const result = rollLiveRecipeUnlock('Young Wolf', 'LOC_002', [], {}, 0.01);
+    const blockedByChance = rollLiveRecipeUnlock('Young Wolf', 'LOC_002', [], {}, 0.99);
+    const blockedByKnown = rollLiveRecipeUnlock('Young Wolf', 'LOC_002', ['recipe_shield_guard_lvl_03'], {}, 0.01);
 
-    expect(unlock?.id).toBe('recipe_weapon_blade_lvl_03');
-    expect(blockedByChance).toBeNull();
-    expect(blockedByKnown?.id).not.toBe('recipe_weapon_blade_lvl_03');
+    expect(result.learnedRecipe?.id).toBe('recipe_shield_guard_lvl_03');
+    expect(blockedByChance.learnedRecipe).toBeNull();
+    expect(blockedByKnown.learnedRecipe?.id).not.toBe('recipe_shield_guard_lvl_03');
+  });
+
+  it('increases recipe pity on failure and resets pity on unlock', () => {
+    // Let's check pity increment on fail
+    const pityBefore: Record<string, number> = {};
+    const resultFail = rollLiveRecipeUnlock('Young Wolf', 'LOC_002', [], pityBefore, 0.99);
+    expect(resultFail.learnedRecipe).toBeNull();
+    expect(resultFail.updatedPity['recipe_shield_guard_lvl_03']).toBe(1);
+
+    // Let's check pity increases the chance
+    // With 20 failed attempts, pity bonus is 20 * 0.5 = 10, which is maxBonus.
+    // effectiveChance = 4.5 (base) + 10 = 14.5%
+    const pityHigh = { recipe_shield_guard_lvl_03: 20 };
+    // randomValue 0.12 (12%) is > base 4.5% but <= effective 14.5%
+    const resultSuccess = rollLiveRecipeUnlock('Young Wolf', 'LOC_002', [], pityHigh, 0.12);
+    expect(resultSuccess.learnedRecipe?.id).toBe('recipe_shield_guard_lvl_03');
+    expect(resultSuccess.updatedPity['recipe_shield_guard_lvl_03']).toBe(0);
   });
 
   it('excludes starter recipe IDs from compatible known recipe list', () => {
@@ -80,5 +97,11 @@ describe('recipe unlock sources', () => {
     const compatibleIds = getCompatibleKnownRecipeIds();
     expect(compatibleIds).toContain('recipe_ring_band_lvl_01');
     expect(compatibleIds).toContain('recipe_amulet_charm_lvl_01');
+  });
+
+  it('guarantees no live recipe progression has unlockType boss', () => {
+    for (const rule of LIVE_RECIPE_UNLOCK_RULES) {
+      expect(rule.unlockType).not.toBe('boss');
+    }
   });
 });

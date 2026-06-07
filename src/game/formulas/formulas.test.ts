@@ -449,6 +449,27 @@ describe('Loot Drop Formulas (loot.ts)', () => {
     expect(result.itemId).toBe('MAT_001');
   });
 
+  it('should filter materials by location when location is provided', () => {
+    const beastEnemy: Enemy = {
+      ...mockEnemy,
+      name: 'Young Wolf',
+      family: 'Blackfang Wolves',
+      archetype: 'Hunter',
+      location: 'LOC_001',
+      rank: 'normal'
+    };
+
+    const pool: ItemDefinition[] = [
+      { id: 'MAT_001', name: 'Torn Cloth', category: 'material', rarity: 'common', tier: 1, description: '' },
+      { id: 'MAT_002', name: 'Ripped Leather', category: 'material', rarity: 'common', tier: 1, description: '' },
+    ];
+
+    const mockLocation = { materials: ['MAT_002'] };
+    const result = rollLootDrop(beastEnemy, pool, 'Safe', () => 0.0, mockLocation);
+    expect(result.dropped).toBe(true);
+    expect(result.itemId).toBe('MAT_002');
+  });
+
   it('should generate a full equipment instance when generated loot drop succeeds', () => {
     const enemy: Enemy = {
       ...mockEnemy,
@@ -1319,5 +1340,28 @@ describe('Combat Attack Intervals and Timing Multiplier', () => {
 describe('Telegram Full Health Notification', () => {
   it('should fail silently and handle missing user or WebApp context without crashing', async () => {
     await expect(sendFullHealthNotification()).resolves.not.toThrow();
+  });
+});
+
+describe('Quest Reward Claiming', () => {
+  it('claims recipe rewards and material rewards successfully', () => {
+    const hero: HeroState = {
+      ...mockHero,
+      gold: 50,
+      xp: 0,
+      knownRecipeIds: [],
+      inventory: [],
+      quests: [
+        { questId: 'quest_crafting_01', status: 'completed', objectives: [] }
+      ]
+    };
+
+    const updated = claimQuestReward(hero, 'quest_crafting_01');
+    expect(updated.gold).toBe(100); // 50 base + 50 reward
+    expect(updated.xp).toBe(50);
+    expect(updated.knownRecipeIds).toContain('recipe_weapon_blade_lvl_03');
+    const matStack = updated.inventory.find(i => i.itemId === 'MAT_003');
+    expect(matStack).toBeDefined();
+    expect(matStack?.qty).toBe(5);
   });
 });

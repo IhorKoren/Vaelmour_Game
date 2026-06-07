@@ -50,10 +50,16 @@ export function calculateVictoryRewards(
 ): VictoryCalculationResult {
   const xpReward = getEnemyXpReward(enemy);
   const goldReward = getEnemyGoldReward(enemy, Math.random, hero);
-  const lootResult = rollLootDrop(enemy, items, riskRaw);
+  const lootResult = rollLootDrop(enemy, items, riskRaw, Math.random, currentLocation);
   const generatedEquipmentDrop = rollGeneratedEquipmentDrop(enemy, hero, currentLocation.id);
   const knownRecipeIds = getKnownRecipeIds(hero);
-  const learnedRecipe = rollLiveRecipeUnlock(enemy.name, currentLocation.id, knownRecipeIds);
+  const pityRecord = hero.recipeDropPity ?? {};
+  const { learnedRecipe, updatedPity } = rollLiveRecipeUnlock(
+    enemy.name,
+    currentLocation.id,
+    knownRecipeIds,
+    pityRecord
+  );
   const nextKnownRecipeIds = learnedRecipe
     ? Array.from(new Set([...knownRecipeIds, learnedRecipe.id]))
     : knownRecipeIds;
@@ -113,6 +119,7 @@ export function calculateVictoryRewards(
     unspentStatPoints: nextStatPoints,
     gold: hero.gold + goldReward,
     knownRecipeIds: nextKnownRecipeIds,
+    recipeDropPity: updatedPity,
     inventory: updatedInventory,
     maxHp: nextDerived.maxHp,
     currentHp: didLevelUp ? nextDerived.maxHp : Math.min(nextDerived.maxHp, hero.currentHp),

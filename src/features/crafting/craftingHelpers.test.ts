@@ -6,7 +6,8 @@ import {
   getSafeVisibleRecipes,
   getRecipeStatChips,
   resolveCraftResult,
-  executeCraftTransaction
+  executeCraftTransaction,
+  rollCraftRarity
 } from './craftingHelpers';
 import type { HeroState, Recipe } from '../../game/types';
 import { weapons } from '../../data/weapons';
@@ -210,7 +211,7 @@ describe('craftingHelpers tests', () => {
       ]
     };
 
-    const result = executeCraftTransaction(recipe, hero, () => true);
+    const result = executeCraftTransaction(recipe, hero, () => true, () => 0.9);
     expect(result.success).toBe(true);
     expect(result.hero.gold).toBe(40);
     
@@ -265,4 +266,45 @@ describe('craftingHelpers tests', () => {
     const itemStack = result.hero.inventory.find(s => s.itemId.startsWith('generated_'));
     expect(itemStack).toBeUndefined();
   });
+
+  test('rollCraftRarity rolls correct rarities under default and improved conditions', () => {
+    const normalRecipe: Recipe = {
+      id: 'recipe_shield_guard_lvl_03',
+      result: 'shield_guard_lvl_03',
+      name: 'Shield',
+      requiredLevel: 3,
+      goldCost: 10,
+      materials: [{ id: 'MAT_001', qty: 2 }], // Torn Cloth (common)
+      tier: 1,
+      station: 'forge',
+      successChance: 1.0
+    };
+
+    const catalystRecipe: Recipe = {
+      id: 'recipe_shield_guard_lvl_12',
+      result: 'shield_guard_lvl_12',
+      name: 'Shield',
+      requiredLevel: 12,
+      goldCost: 20,
+      materials: [{ id: 'MAT_011', qty: 1 }], // Blood Ash (rare catalyst)
+      tier: 2,
+      station: 'forge',
+      successChance: 1.0
+    };
+
+    // Default Rarity Table Rolls (normalRecipe):
+    // roll < 2 -> epic, roll < 10 -> rare, roll < 35 -> uncommon, otherwise common
+    expect(rollCraftRarity(normalRecipe, () => 0.01)).toBe('epic');
+    expect(rollCraftRarity(normalRecipe, () => 0.05)).toBe('rare');
+    expect(rollCraftRarity(normalRecipe, () => 0.20)).toBe('uncommon');
+    expect(rollCraftRarity(normalRecipe, () => 0.50)).toBe('common');
+
+    // Improved Rarity Table Rolls (catalystRecipe):
+    // roll < 5 -> epic, roll < 20 -> rare, roll < 55 -> uncommon, otherwise common
+    expect(rollCraftRarity(catalystRecipe, () => 0.04)).toBe('epic');
+    expect(rollCraftRarity(catalystRecipe, () => 0.10)).toBe('rare');
+    expect(rollCraftRarity(catalystRecipe, () => 0.40)).toBe('uncommon');
+    expect(rollCraftRarity(catalystRecipe, () => 0.70)).toBe('common');
+  });
 });
+

@@ -279,7 +279,7 @@ const materialNameSet = new Set(materials.map((material) => normalizeLooseText(m
 const validCraftingLevelSteps = new Set(craftingLevelSteps.map((value) => Number(value)));
 const validMaterialTaxonomyCategories = new Set(materialTaxonomyCategories.map((value) => normalizeValue(value)));
 const validCraftingSlotIds = new Set(['weapon', 'shield', 'head', 'chest', 'hands', 'legs', 'feet', 'ring', 'amulet']);
-const validLiveRecipeUnlockTypes = new Set(['starter', 'drop', 'elite', 'boss']);
+const validLiveRecipeUnlockTypes = new Set(['starter', 'drop', 'elite', 'boss', 'quest']);
 
 const locationLookups = makeIndexedLookups(locations);
 const enemyLookups = makeIndexedLookups(enemies);
@@ -602,6 +602,9 @@ for (const template of liveRecipeUnlockTemplates) {
     if (!validLiveRecipeUnlockTypes.has(unlockType)) {
       addError(errors, `recipeDropSources ${recipeId}: invalid unlock type "${unlock.unlockType}"`);
     }
+    if (unlockType === 'boss') {
+      addError(errors, `recipeDropSources ${recipeId}: unlock type "boss" is forbidden in active live recipe progression`);
+    }
 
     if (!unlock.locationId || !String(unlock.locationId).trim()) {
       addError(errors, `recipeDropSources ${recipeId}: missing locationId`);
@@ -631,18 +634,20 @@ for (const template of liveRecipeUnlockTemplates) {
       addError(errors, `recipeDropSources ${recipeId}: chancePercent "${unlock.chancePercent}" exceeds 100`);
     } else if (unlockType === 'starter' && chancePercent !== 0) {
       addError(errors, `recipeDropSources ${recipeId}: starter unlock must use 0 chancePercent`);
-    } else if (unlockType !== 'starter' && chancePercent === 0) {
-      addError(errors, `recipeDropSources ${recipeId}: non-starter unlock must have a positive chancePercent`);
-    } else if (unlockType !== 'starter' && (chancePercent < 2 || chancePercent > 15)) {
+    } else if (unlockType === 'quest' && chancePercent !== 0) {
+      addError(errors, `recipeDropSources ${recipeId}: quest unlock must use 0 chancePercent`);
+    } else if (unlockType !== 'starter' && unlockType !== 'quest' && chancePercent === 0) {
+      addError(errors, `recipeDropSources ${recipeId}: non-starter and non-quest unlock must have a positive chancePercent`);
+    } else if (unlockType !== 'starter' && unlockType !== 'quest' && (chancePercent < 2 || chancePercent > 15)) {
       addWarning(warnings, `recipeDropSources ${recipeId}: chancePercent ${chancePercent} looks outside the normal live unlock range`);
     }
 
     const enemyNames = ensureArray(unlock.enemyNames).map((value) => String(value).trim()).filter(Boolean);
-    if (unlockType === 'starter' && enemyNames.length > 0) {
-      addError(errors, `recipeDropSources ${recipeId}: starter unlock should not list enemyNames`);
+    if ((unlockType === 'starter' || unlockType === 'quest') && enemyNames.length > 0) {
+      addError(errors, `recipeDropSources ${recipeId}: starter or quest unlock should not list enemyNames`);
     }
-    if (unlockType !== 'starter' && enemyNames.length === 0) {
-      addError(errors, `recipeDropSources ${recipeId}: non-starter unlock is missing enemyNames`);
+    if (unlockType !== 'starter' && unlockType !== 'quest' && enemyNames.length === 0) {
+      addError(errors, `recipeDropSources ${recipeId}: non-starter and non-quest unlock is missing enemyNames`);
     }
 
     for (const enemyName of enemyNames) {

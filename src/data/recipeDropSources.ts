@@ -32,16 +32,16 @@ export const LIVE_RECIPE_UNLOCK_TEMPLATES = [
     slot: 'weapon',
     unlocks: [
       { level: 1, unlockType: 'starter', locationId: 'LOC_001', enemyNames: [], chancePercent: 0, notes: 'Starter blacksmith pattern.' },
-      { level: 3, unlockType: 'drop', locationId: 'LOC_002', enemyNames: ['Young Wolf', 'Fang Stalker'], chancePercent: 5.5, notes: 'Early forest weapon pattern.' },
-      { level: 6, unlockType: 'drop', locationId: 'LOC_003', enemyNames: ['Wild Raider', 'Savage Marauder'], chancePercent: 4.5, notes: 'Aggressive frontier weapon unlock.' },
+      { level: 3, unlockType: 'quest', locationId: 'LOC_002', enemyNames: [], chancePercent: 0, notes: 'Quest reward: Early forest weapon.' },
+      { level: 6, unlockType: 'quest', locationId: 'LOC_003', enemyNames: [], chancePercent: 0, notes: 'Quest reward: Aggressive frontier weapon.' },
       { level: 9, unlockType: 'drop', locationId: 'LOC_004', enemyNames: ['Iron Guard', 'Tower Shield Veteran'], chancePercent: 4, notes: 'Watchtower-forged blade pattern.' },
-      { level: 12, unlockType: 'elite', locationId: 'LOC_005', enemyNames: ['Iron Gate Warden', 'Elite Spawn'], chancePercent: 3.5, notes: 'Fortress progression manual.' },
+      { level: 12, unlockType: 'drop', locationId: 'LOC_005', enemyNames: ['Iron Gate Warden', 'Elite Spawn'], chancePercent: 3.5, notes: 'Fortress progression manual.' },
       { level: 15, unlockType: 'drop', locationId: 'LOC_007', enemyNames: ['Veteran Sellblade', 'Crossroad Duelist'], chancePercent: 4, notes: 'Midgame duelist smithing pattern.' },
       { level: 18, unlockType: 'elite', locationId: 'LOC_008', enemyNames: ['Pit Crusher', 'Headsman Veteran'], chancePercent: 3, notes: 'Execution field weapon pattern.' },
       { level: 21, unlockType: 'elite', locationId: 'LOC_010', enemyNames: ['Iron Tyrant Guard', 'Elite Spawn'], chancePercent: 2.6, notes: 'Inner bastion weapon unlock.' },
-      { level: 24, unlockType: 'elite', locationId: 'LOC_012', enemyNames: ['Arena Duelist', 'Arena Champion Spawn'], chancePercent: 2.6, notes: 'Arena-forged high-tier blade pattern.' },
+      { level: 24, unlockType: 'quest', locationId: 'LOC_012', enemyNames: [], chancePercent: 0, notes: 'Quest reward: Arena-forged high-tier blade.' },
       { level: 27, unlockType: 'elite', locationId: 'LOC_013', enemyNames: ['Ironbound Breaker', 'Quarry Breaker Spawn'], chancePercent: 2.3, notes: 'Quarry capstone forge pattern.' },
-      { level: 30, unlockType: 'boss', locationId: 'LOC_014', enemyNames: ['Ash Lord Vaelor', 'Elite Spawn'], chancePercent: 12, notes: 'Final capstone weapon pattern.' }
+      { level: 30, unlockType: 'quest', locationId: 'LOC_014', enemyNames: [], chancePercent: 0, notes: 'Quest reward: Final capstone weapon.' }
     ]
   },
   {
@@ -49,15 +49,15 @@ export const LIVE_RECIPE_UNLOCK_TEMPLATES = [
     unlocks: [
       { level: 1, unlockType: 'starter', locationId: 'LOC_001', enemyNames: [], chancePercent: 0, notes: 'Starter guard shield pattern.' },
       { level: 3, unlockType: 'drop', locationId: 'LOC_002', enemyNames: ['Young Wolf', 'Fang Stalker'], chancePercent: 4.5, notes: 'Early hide shield pattern.' },
-      { level: 6, unlockType: 'drop', locationId: 'LOC_003', enemyNames: ['Wild Raider', 'Blood Raider'], chancePercent: 4.5, notes: 'First proper defensive shield pattern.' },
+      { level: 6, unlockType: 'quest', locationId: 'LOC_003', enemyNames: [], chancePercent: 0, notes: 'Quest reward: First proper defensive shield.' },
       { level: 9, unlockType: 'drop', locationId: 'LOC_005', enemyNames: ['Iron Guard', 'Iron Gate Warden'], chancePercent: 4.5, notes: 'Bastion approach shield pattern.' },
       { level: 12, unlockType: 'drop', locationId: 'LOC_006', enemyNames: ['Ash Disciple', 'Ash Blood Priest'], chancePercent: 2.6, notes: 'Ash-marsh warding shield pattern.' },
       { level: 15, unlockType: 'drop', locationId: 'LOC_007', enemyNames: ['Veteran Sellblade', 'Crossroad Duelist'], chancePercent: 4.5, notes: 'Parry shield pattern.' },
       { level: 18, unlockType: 'elite', locationId: 'LOC_008', enemyNames: ['Executioner', 'Headsman Veteran'], chancePercent: 2.6, notes: 'Execution-field defensive pattern.' },
       { level: 21, unlockType: 'elite', locationId: 'LOC_009', enemyNames: ['Raven Fang Stalker', 'Elite Spawn'], chancePercent: 2.6, notes: 'Late skirmish ward pattern.' },
       { level: 24, unlockType: 'elite', locationId: 'LOC_012', enemyNames: ['Arena Duelist', 'Ravager Sellblade'], chancePercent: 2.6, notes: 'Heavy quarry tower-shield pattern.' },
-      { level: 27, unlockType: 'boss', locationId: 'LOC_012', enemyNames: ['Arena Duelist', 'Arena Champion Spawn'], chancePercent: 12, notes: 'Arena champion defensive pattern.' },
-      { level: 30, unlockType: 'boss', locationId: 'LOC_014', enemyNames: ['Ash Lord Vaelor', 'Elite Spawn'], chancePercent: 12, notes: 'Final citadel shield pattern.' }
+      { level: 27, unlockType: 'elite', locationId: 'LOC_012', enemyNames: ['Arena Duelist', 'Arena Champion Spawn'], chancePercent: 4.5, notes: 'Arena champion defensive pattern.' },
+      { level: 30, unlockType: 'elite', locationId: 'LOC_014', enemyNames: ['Elite Spawn', 'Ash Fang Zealot'], chancePercent: 4.5, notes: 'Final citadel shield pattern.' }
     ]
   },
   {
@@ -65,15 +65,15 @@ export const LIVE_RECIPE_UNLOCK_TEMPLATES = [
     unlocks: [
       { level: 1, unlockType: 'starter', locationId: 'LOC_001', enemyNames: [], chancePercent: 0, notes: 'Starter helm pattern.' },
       { level: 3, unlockType: 'drop', locationId: 'LOC_002', enemyNames: ['Young Wolf', 'Fang Stalker'], chancePercent: 4.5, notes: 'Early frontier helm unlock.' },
-      { level: 6, unlockType: 'drop', locationId: 'LOC_003', enemyNames: ['Wild Raider', 'Blood Raider'], chancePercent: 4.5, notes: 'Watchtower helm pattern.' },
+      { level: 6, unlockType: 'quest', locationId: 'LOC_003', enemyNames: [], chancePercent: 0, notes: 'Quest reward: Watchtower helm.' },
       { level: 9, unlockType: 'drop', locationId: 'LOC_005', enemyNames: ['Iron Gate Warden'], chancePercent: 4.5, notes: 'Iron Bastion visor pattern.' },
       { level: 12, unlockType: 'drop', locationId: 'LOC_006', enemyNames: ['Ash Disciple', 'Ash Blood Priest'], chancePercent: 2.6, notes: 'Ashen hood pattern.' },
       { level: 15, unlockType: 'drop', locationId: 'LOC_007', enemyNames: ['Veteran Sellblade', 'Crossroad Duelist'], chancePercent: 4.5, notes: 'Duelist helm pattern.' },
       { level: 18, unlockType: 'elite', locationId: 'LOC_008', enemyNames: ['Executioner', 'Headsman Veteran'], chancePercent: 2.6, notes: 'Execution cowl pattern.' },
       { level: 21, unlockType: 'elite', locationId: 'LOC_009', enemyNames: ['Raven Fang Stalker', 'Elite Spawn'], chancePercent: 2.6, notes: 'Raven-hollow headgear pattern.' },
       { level: 24, unlockType: 'elite', locationId: 'LOC_012', enemyNames: ['Arena Duelist', 'Ravager Sellblade'], chancePercent: 2.6, notes: 'Late quarry helm pattern.' },
-      { level: 27, unlockType: 'boss', locationId: 'LOC_012', enemyNames: ['Arena Duelist', 'Arena Champion Spawn'], chancePercent: 12, notes: 'Warbound crown-helm pattern.' },
-      { level: 30, unlockType: 'boss', locationId: 'LOC_014', enemyNames: ['Ash Lord Vaelor', 'Elite Spawn'], chancePercent: 12, notes: 'Vaelor crown pattern.' }
+      { level: 27, unlockType: 'elite', locationId: 'LOC_012', enemyNames: ['Arena Duelist', 'Arena Champion Spawn'], chancePercent: 4.5, notes: 'Warbound crown-helm pattern.' },
+      { level: 30, unlockType: 'elite', locationId: 'LOC_014', enemyNames: ['Elite Spawn', 'Ash Fang Zealot'], chancePercent: 4.5, notes: 'Vaelor crown pattern.' }
     ]
   },
   {
@@ -82,14 +82,14 @@ export const LIVE_RECIPE_UNLOCK_TEMPLATES = [
       { level: 1, unlockType: 'starter', locationId: 'LOC_001', enemyNames: [], chancePercent: 0, notes: 'Starter chest pattern.' },
       { level: 3, unlockType: 'drop', locationId: 'LOC_002', enemyNames: ['Fang Stalker'], chancePercent: 5, notes: 'Early Blackfang chest pattern.' },
       { level: 6, unlockType: 'drop', locationId: 'LOC_003', enemyNames: ['Blood Raider'], chancePercent: 4.5, notes: 'Raider chest pattern.' },
-      { level: 9, unlockType: 'drop', locationId: 'LOC_004', enemyNames: ['Tower Shield Veteran'], chancePercent: 3.5, notes: 'Watchtower mail pattern.' },
+      { level: 9, unlockType: 'quest', locationId: 'LOC_004', enemyNames: [], chancePercent: 0, notes: 'Quest reward: Watchtower mail.' },
       { level: 12, unlockType: 'drop', locationId: 'LOC_005', enemyNames: ['Iron Gate Warden'], chancePercent: 3.2, notes: 'Fortress chest pattern.' },
       { level: 15, unlockType: 'drop', locationId: 'LOC_007', enemyNames: ['Crossroad Duelist'], chancePercent: 3, notes: 'Mercenary chest pattern.' },
       { level: 18, unlockType: 'drop', locationId: 'LOC_008', enemyNames: ['Pit Crusher'], chancePercent: 3, notes: 'Execution chest pattern.' },
       { level: 21, unlockType: 'elite', locationId: 'LOC_010', enemyNames: ['Iron Tyrant Guard'], chancePercent: 3, notes: 'Late legion chest pattern.' },
       { level: 24, unlockType: 'elite', locationId: 'LOC_011', enemyNames: ['Ash-Cursed Champion'], chancePercent: 3, notes: 'Sanctuary chest pattern.' },
-      { level: 27, unlockType: 'elite', locationId: 'LOC_013', enemyNames: ['Ironbound Breaker'], chancePercent: 3, notes: 'Quarry plate pattern.' },
-      { level: 30, unlockType: 'boss', locationId: 'LOC_014', enemyNames: ['Ash Lord Vaelor'], chancePercent: 18, notes: 'Guaranteed-feeling endgame chest pattern.' }
+      { level: 27, unlockType: 'quest', locationId: 'LOC_013', enemyNames: [], chancePercent: 0, notes: 'Quest reward: Quarry plate.' },
+      { level: 30, unlockType: 'elite', locationId: 'LOC_014', enemyNames: ['Elite Spawn', 'Ash Fang Zealot'], chancePercent: 5, notes: 'Endgame chest pattern.' }
     ]
   },
   {
@@ -99,13 +99,13 @@ export const LIVE_RECIPE_UNLOCK_TEMPLATES = [
       { level: 3, unlockType: 'drop', locationId: 'LOC_002', enemyNames: ['Young Wolf', 'Fang Stalker'], chancePercent: 4.5, notes: 'Early clawed glove pattern.' },
       { level: 6, unlockType: 'drop', locationId: 'LOC_003', enemyNames: ['Wild Raider', 'Blood Raider'], chancePercent: 4.5, notes: 'Watchtower bracer pattern.' },
       { level: 9, unlockType: 'drop', locationId: 'LOC_005', enemyNames: ['Iron Gate Warden'], chancePercent: 4.5, notes: 'Ironbound gauntlet pattern.' },
-      { level: 12, unlockType: 'drop', locationId: 'LOC_006', enemyNames: ['Ash Disciple', 'Ash Blood Priest'], chancePercent: 2.6, notes: 'Ash handwrap pattern.' },
+      { level: 12, unlockType: 'quest', locationId: 'LOC_006', enemyNames: [], chancePercent: 0, notes: 'Quest reward: Ash handwrap.' },
       { level: 15, unlockType: 'drop', locationId: 'LOC_007', enemyNames: ['Veteran Sellblade', 'Crossroad Duelist'], chancePercent: 4.5, notes: 'Sellblade glove pattern.' },
       { level: 18, unlockType: 'elite', locationId: 'LOC_008', enemyNames: ['Executioner', 'Headsman Veteran'], chancePercent: 2.6, notes: 'Execution gauntlet pattern.' },
       { level: 21, unlockType: 'elite', locationId: 'LOC_009', enemyNames: ['Raven Fang Stalker', 'Elite Spawn'], chancePercent: 2.6, notes: 'Raven grip pattern.' },
       { level: 24, unlockType: 'elite', locationId: 'LOC_012', enemyNames: ['Arena Duelist', 'Ravager Sellblade'], chancePercent: 2.6, notes: 'Crimson gauntlet pattern.' },
-      { level: 27, unlockType: 'boss', locationId: 'LOC_012', enemyNames: ['Arena Duelist', 'Arena Champion Spawn'], chancePercent: 12, notes: 'Warbound handguard pattern.' },
-      { level: 30, unlockType: 'boss', locationId: 'LOC_014', enemyNames: ['Ash Lord Vaelor', 'Elite Spawn'], chancePercent: 12, notes: 'Ash Lord handguard pattern.' }
+      { level: 27, unlockType: 'elite', locationId: 'LOC_012', enemyNames: ['Arena Duelist', 'Arena Champion Spawn'], chancePercent: 4.5, notes: 'Warbound handguard pattern.' },
+      { level: 30, unlockType: 'elite', locationId: 'LOC_014', enemyNames: ['Elite Spawn', 'Ash Fang Zealot'], chancePercent: 4.5, notes: 'Ash Lord handguard pattern.' }
     ]
   },
   {
@@ -116,19 +116,19 @@ export const LIVE_RECIPE_UNLOCK_TEMPLATES = [
       { level: 6, unlockType: 'drop', locationId: 'LOC_003', enemyNames: ['Wild Raider', 'Blood Raider'], chancePercent: 4.5, notes: 'Gatewarden greave pattern.' },
       { level: 9, unlockType: 'drop', locationId: 'LOC_005', enemyNames: ['Iron Gate Warden'], chancePercent: 4.5, notes: 'Ironmarch legguard pattern.' },
       { level: 12, unlockType: 'drop', locationId: 'LOC_006', enemyNames: ['Ash Disciple', 'Ash Blood Priest'], chancePercent: 2.6, notes: 'Ashbound legwrap pattern.' },
-      { level: 15, unlockType: 'drop', locationId: 'LOC_007', enemyNames: ['Veteran Sellblade', 'Crossroad Duelist'], chancePercent: 4.5, notes: 'Crossroads greave pattern.' },
+      { level: 15, unlockType: 'quest', locationId: 'LOC_007', enemyNames: [], chancePercent: 0, notes: 'Quest reward: Crossroads greave.' },
       { level: 18, unlockType: 'elite', locationId: 'LOC_008', enemyNames: ['Executioner', 'Headsman Veteran'], chancePercent: 2.6, notes: 'Pit-crusher legplate pattern.' },
       { level: 21, unlockType: 'elite', locationId: 'LOC_009', enemyNames: ['Raven Fang Stalker', 'Elite Spawn'], chancePercent: 2.6, notes: 'Ravenstep legguard pattern.' },
       { level: 24, unlockType: 'elite', locationId: 'LOC_012', enemyNames: ['Arena Duelist', 'Ravager Sellblade'], chancePercent: 2.6, notes: 'Crimson legguard pattern.' },
-      { level: 27, unlockType: 'boss', locationId: 'LOC_012', enemyNames: ['Arena Duelist', 'Arena Champion Spawn'], chancePercent: 12, notes: 'Warbound legplate pattern.' },
-      { level: 30, unlockType: 'boss', locationId: 'LOC_014', enemyNames: ['Ash Lord Vaelor', 'Elite Spawn'], chancePercent: 12, notes: 'Citadel greave pattern.' }
+      { level: 27, unlockType: 'elite', locationId: 'LOC_012', enemyNames: ['Arena Duelist', 'Arena Champion Spawn'], chancePercent: 4.5, notes: 'Warbound legplate pattern.' },
+      { level: 30, unlockType: 'elite', locationId: 'LOC_014', enemyNames: ['Elite Spawn', 'Ash Fang Zealot'], chancePercent: 4.5, notes: 'Citadel greave pattern.' }
     ]
   },
   {
     slot: 'feet',
     unlocks: [
       { level: 1, unlockType: 'starter', locationId: 'LOC_001', enemyNames: [], chancePercent: 0, notes: 'Starter boot pattern.' },
-      { level: 3, unlockType: 'drop', locationId: 'LOC_002', enemyNames: ['Young Wolf', 'Fang Stalker'], chancePercent: 4.5, notes: 'Trail boot pattern.' },
+      { level: 3, unlockType: 'quest', locationId: 'LOC_002', enemyNames: [], chancePercent: 0, notes: 'Quest reward: Trail boot.' },
       { level: 6, unlockType: 'drop', locationId: 'LOC_003', enemyNames: ['Wild Raider', 'Blood Raider'], chancePercent: 4.5, notes: 'Watchtower boot pattern.' },
       { level: 9, unlockType: 'drop', locationId: 'LOC_005', enemyNames: ['Iron Gate Warden'], chancePercent: 4.5, notes: 'Ironmarch boot pattern.' },
       { level: 12, unlockType: 'drop', locationId: 'LOC_006', enemyNames: ['Ash Disciple', 'Ash Blood Priest'], chancePercent: 2.6, notes: 'Ashwalk boot pattern.' },
@@ -136,8 +136,8 @@ export const LIVE_RECIPE_UNLOCK_TEMPLATES = [
       { level: 18, unlockType: 'elite', locationId: 'LOC_008', enemyNames: ['Executioner', 'Headsman Veteran'], chancePercent: 2.6, notes: 'Ravenstep boot pattern.' },
       { level: 21, unlockType: 'elite', locationId: 'LOC_009', enemyNames: ['Raven Fang Stalker', 'Elite Spawn'], chancePercent: 2.6, notes: 'Blood-tread boot pattern.' },
       { level: 24, unlockType: 'elite', locationId: 'LOC_012', enemyNames: ['Arena Duelist', 'Ravager Sellblade'], chancePercent: 2.6, notes: 'Quarry boot pattern.' },
-      { level: 27, unlockType: 'boss', locationId: 'LOC_012', enemyNames: ['Arena Duelist', 'Arena Champion Spawn'], chancePercent: 12, notes: 'Threshold strider pattern.' },
-      { level: 30, unlockType: 'boss', locationId: 'LOC_014', enemyNames: ['Ash Lord Vaelor', 'Elite Spawn'], chancePercent: 12, notes: 'Vaelor ash-tread pattern.' }
+      { level: 27, unlockType: 'elite', locationId: 'LOC_012', enemyNames: ['Arena Duelist', 'Arena Champion Spawn'], chancePercent: 4.5, notes: 'Threshold strider pattern.' },
+      { level: 30, unlockType: 'elite', locationId: 'LOC_014', enemyNames: ['Elite Spawn', 'Ash Fang Zealot'], chancePercent: 4.5, notes: 'Vaelor ash-tread pattern.' }
     ]
   },
   {
@@ -149,11 +149,11 @@ export const LIVE_RECIPE_UNLOCK_TEMPLATES = [
       { level: 9, unlockType: 'drop', locationId: 'LOC_005', enemyNames: ['Iron Gate Warden'], chancePercent: 4.5, notes: 'Fortress ring pattern.' },
       { level: 12, unlockType: 'drop', locationId: 'LOC_006', enemyNames: ['Ash Disciple', 'Ash Blood Priest'], chancePercent: 2.6, notes: 'Ash signet pattern.' },
       { level: 15, unlockType: 'drop', locationId: 'LOC_007', enemyNames: ['Veteran Sellblade', 'Crossroad Duelist'], chancePercent: 4.5, notes: 'Mercenary ring pattern.' },
-      { level: 18, unlockType: 'elite', locationId: 'LOC_008', enemyNames: ['Executioner', 'Headsman Veteran'], chancePercent: 2.6, notes: 'Execution-ground ring unlock.' },
+      { level: 18, unlockType: 'quest', locationId: 'LOC_008', enemyNames: [], chancePercent: 0, notes: 'Quest reward: Execution-ground ring.' },
       { level: 21, unlockType: 'elite', locationId: 'LOC_009', enemyNames: ['Raven Fang Stalker', 'Elite Spawn'], chancePercent: 2.6, notes: 'Late crit ring pattern.' },
       { level: 24, unlockType: 'elite', locationId: 'LOC_012', enemyNames: ['Arena Duelist', 'Arena Champion Spawn'], chancePercent: 2.6, notes: 'Crimson ring pattern.' },
-      { level: 27, unlockType: 'boss', locationId: 'LOC_012', enemyNames: ['Arena Duelist', 'Arena Champion Spawn'], chancePercent: 12, notes: 'Arena champion ring unlock.' },
-      { level: 30, unlockType: 'boss', locationId: 'LOC_014', enemyNames: ['Ash Lord Vaelor', 'Elite Spawn'], chancePercent: 12, notes: 'Final ash signet unlock.' }
+      { level: 27, unlockType: 'elite', locationId: 'LOC_012', enemyNames: ['Arena Duelist', 'Arena Champion Spawn'], chancePercent: 4.5, notes: 'Arena champion ring unlock.' },
+      { level: 30, unlockType: 'elite', locationId: 'LOC_014', enemyNames: ['Elite Spawn', 'Ash Fang Zealot'], chancePercent: 4.5, notes: 'Final ash signet unlock.' }
     ]
   },
   {
@@ -166,10 +166,10 @@ export const LIVE_RECIPE_UNLOCK_TEMPLATES = [
       { level: 12, unlockType: 'drop', locationId: 'LOC_006', enemyNames: ['Ash Disciple', 'Ash Blood Priest'], chancePercent: 2.6, notes: 'Mercenary talisman pattern.' },
       { level: 15, unlockType: 'drop', locationId: 'LOC_007', enemyNames: ['Veteran Sellblade', 'Crossroad Duelist'], chancePercent: 4.5, notes: 'Execution-mark style support pattern.' },
       { level: 18, unlockType: 'elite', locationId: 'LOC_008', enemyNames: ['Executioner', 'Headsman Veteran'], chancePercent: 2.6, notes: 'Ravenfeather talisman unlock.' },
-      { level: 21, unlockType: 'elite', locationId: 'LOC_009', enemyNames: ['Raven Fang Stalker', 'Elite Spawn'], chancePercent: 2.6, notes: 'Zealot ash charm pattern.' },
+      { level: 21, unlockType: 'quest', locationId: 'LOC_009', enemyNames: [], chancePercent: 0, notes: 'Quest reward: Zealot ash charm.' },
       { level: 24, unlockType: 'elite', locationId: 'LOC_012', enemyNames: ['Arena Duelist', 'Arena Champion Spawn'], chancePercent: 2.6, notes: 'Breaker sigil pattern.' },
-      { level: 27, unlockType: 'boss', locationId: 'LOC_012', enemyNames: ['Arena Duelist', 'Arena Champion Spawn'], chancePercent: 12, notes: 'Warbound pendant unlock.' },
-      { level: 30, unlockType: 'boss', locationId: 'LOC_014', enemyNames: ['Ash Lord Vaelor', 'Elite Spawn'], chancePercent: 12, notes: 'Final core amulet unlock.' }
+      { level: 27, unlockType: 'elite', locationId: 'LOC_012', enemyNames: ['Arena Duelist', 'Arena Champion Spawn'], chancePercent: 4.5, notes: 'Warbound pendant unlock.' },
+      { level: 30, unlockType: 'elite', locationId: 'LOC_014', enemyNames: ['Elite Spawn', 'Ash Fang Zealot'], chancePercent: 4.5, notes: 'Final core amulet unlock.' }
     ]
   }
 ] as const;
@@ -188,7 +188,7 @@ const LIVE_RECIPE_SLOT_CODE_PREFIX: Record<(typeof LIVE_RECIPE_UNLOCK_SLOTS)[num
 
 type UnlockTemplate = (typeof LIVE_RECIPE_UNLOCK_TEMPLATES)[number]['unlocks'][number];
 
-export type LiveRecipeUnlockType = UnlockTemplate['unlockType'];
+export type LiveRecipeUnlockType = UnlockTemplate['unlockType'] | 'quest';
 
 export type LiveRecipeUnlockRule = {
   recipeId: string;
@@ -210,7 +210,7 @@ export const LIVE_RECIPE_UNLOCK_RULES: LiveRecipeUnlockRule[] = LIVE_RECIPE_UNLO
     recipeId: buildLiveRecipeId(template.slot, unlock.level),
     slot: template.slot,
     level: unlock.level,
-    unlockType: unlock.unlockType,
+    unlockType: unlock.unlockType as LiveRecipeUnlockType,
     locationId: unlock.locationId,
     enemyNames: [...unlock.enemyNames],
     chancePercent: unlock.chancePercent,
@@ -266,8 +266,10 @@ export function getRecipeUnlockMethodDescriptor(recipeId: string): string {
       return 'Enemy recipe drop';
     case 'elite':
       return 'Elite recipe drop';
-    case 'boss':
-      return 'Boss recipe drop';
+    case 'quest':
+      return 'Quest reward';
+    default:
+      return 'Unknown unlock source';
   }
 }
 
@@ -279,6 +281,10 @@ export function getRecipeSourceDescriptor(recipeId: string): string {
 
   if (rule.unlockType === 'starter') {
     return 'Starter blacksmith pattern';
+  }
+
+  if (rule.unlockType === 'quest') {
+    return 'Guaranteed quest reward';
   }
 
   if (rule.enemyNames.length === 0) {
@@ -305,20 +311,31 @@ export function rollLiveRecipeUnlock(
   enemyName: string,
   locationId: string,
   knownRecipeIds: readonly string[],
+  pityRecord: Record<string, number> = {},
   randomValue = Math.random()
-): { id: string } | null {
+): { learnedRecipe: { id: string } | null; updatedPity: Record<string, number> } {
   const known = new Set(knownRecipeIds);
-  const candidates = getLiveRecipesForEnemy(locationId, enemyName).filter(
-    (rule) => !known.has(rule.recipeId) && rule.unlockType !== 'starter'
+  const eligibleCandidates = getLiveRecipesForEnemy(locationId, enemyName).filter(
+    (rule) => !known.has(rule.recipeId) && rule.unlockType !== 'starter' && rule.unlockType !== 'quest'
   );
 
-  for (const rule of candidates) {
-    if (randomValue * 100 > rule.chancePercent) {
-      continue;
-    }
+  const updatedPity = { ...pityRecord };
+  let learnedRecipe: { id: string } | null = null;
 
-    return { id: rule.recipeId };
+  for (const rule of eligibleCandidates) {
+    const baseChance = rule.chancePercent;
+    const failedAttempts = updatedPity[rule.recipeId] ?? 0;
+    const pityBonus = failedAttempts * 0.5;
+    const maxBonus = 10;
+    const effectiveChance = Math.min(baseChance + pityBonus, baseChance + maxBonus);
+
+    if (!learnedRecipe && randomValue * 100 <= effectiveChance) {
+      learnedRecipe = { id: rule.recipeId };
+      updatedPity[rule.recipeId] = 0;
+    } else {
+      updatedPity[rule.recipeId] = failedAttempts + 1;
+    }
   }
 
-  return null;
+  return { learnedRecipe, updatedPity };
 }

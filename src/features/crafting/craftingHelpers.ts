@@ -9,6 +9,35 @@ import { getLiveRecipeUnlockRule, isStarterRecipeId } from '../../data/recipeDro
 import { getEquippableSlot } from '../../game/formulas/equipment';
 import { createGeneratedEquipmentItem } from '../../game/equipment/generatedEquipment';
 import { updateQuestProgressOnCraftCompleted } from '../../game/formulas/quests';
+import { getMaterialTaxonomy } from '../../data/materialTaxonomy';
+
+export function usesCatalystOrRareMaterial(recipe: Recipe): boolean {
+  if (!recipe.materials) return false;
+  return recipe.materials.some((m) => {
+    const item = items.find((i) => i.id.toLowerCase() === m.id.toLowerCase());
+    if (!item) return false;
+    const isRareOrEpic = item.rarity === 'rare' || item.rarity === 'epic';
+    const taxonomy = getMaterialTaxonomy(m.id);
+    const isCatalyst = taxonomy?.category === 'catalyst';
+    return isRareOrEpic || isCatalyst;
+  });
+}
+
+export function rollCraftRarity(recipe: Recipe, random: () => number = Math.random): string {
+  const isImproved = usesCatalystOrRareMaterial(recipe);
+  const roll = random() * 100;
+  if (isImproved) {
+    if (roll < 5) return 'epic';
+    if (roll < 20) return 'rare';
+    if (roll < 55) return 'uncommon';
+    return 'common';
+  } else {
+    if (roll < 2) return 'epic';
+    if (roll < 10) return 'rare';
+    if (roll < 35) return 'uncommon';
+    return 'common';
+  }
+}
 
 export type CraftingBlockedReason =
   | 'INVALID_RECIPE'
@@ -122,7 +151,7 @@ export function getDisplayRecipeUnlockMethod(recipeId: string): string {
     return 'Невідомо';
   }
 
-  switch (rule.unlockType) {
+  switch (rule.unlockType as string) {
     case 'starter':
       return 'Стартовий рецепт';
     case 'drop':
@@ -131,6 +160,8 @@ export function getDisplayRecipeUnlockMethod(recipeId: string): string {
       return 'Елітний дроп';
     case 'boss':
       return 'Трофей боса';
+    case 'quest':
+      return 'Нагорода за квест';
     default:
       return 'Невідомо';
   }
@@ -279,7 +310,8 @@ export function getRecipeStatChips(recipe: Recipe): RecipeStatChip[] {
 export function executeCraftTransaction(
   recipe: Recipe,
   hero: HeroState,
-  rollSuccess: (chance: number) => boolean
+  rollSuccess: (chance: number) => boolean,
+  randomRarityChance: () => number = Math.random
 ): { success: boolean; hero: HeroState } {
   const knownRecipeIds = new Set(hero.knownRecipeIds ?? []);
   const blocked = getCraftingBlockedReason(recipe, hero, knownRecipeIds);
@@ -306,10 +338,11 @@ export function executeCraftTransaction(
     const isEquip = slot !== null;
 
     if (isEquip) {
+      const rolledRarity = rollCraftRarity(recipe, randomRarityChance);
       const generated = createGeneratedEquipmentItem({
         slot: slot as EquipmentSlot,
         level: recipe.requiredLevel,
-        rarity: recipe.rarity || 'common'
+        rarity: rolledRarity
       });
       nextInventory.push({
         itemId: generated.id,

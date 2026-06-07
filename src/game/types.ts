@@ -380,6 +380,7 @@ export type HeroState = {
   quests?: ActiveQuest[];
   defeatedBossIds?: string[];
   migrationFlags?: Record<string, boolean>;
+  recipeDropPity?: Record<string, number>;
 };
 
 export type QuestObjectiveType =
@@ -411,6 +412,8 @@ export type QuestReward = {
   xp?: number;
   itemIds?: string[];
   materialIds?: string[];
+  materialQuantities?: Record<string, number>;
+  recipeIds?: string[];
 };
 
 export type QuestDefinition = {

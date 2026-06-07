@@ -31,12 +31,22 @@ export function rollLootDrop(
   availableItems: ItemDefinition[],
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _risk: 'Safe' | 'Risky' | 'Dangerous' = 'Safe',
-  random: () => number = Math.random
+  random: () => number = Math.random,
+  location?: { materials: string[] }
 ): LootDropResult {
   if (!availableItems || availableItems.length === 0) return { dropped: false };
 
   const targetLevel = getEquipmentLevelForEnemy(enemy.level ?? 1);
-  const materialPool = availableItems.filter((item) => item.category === 'material' && item.tier <= Math.max(1, targetLevel));
+  let materialPool = availableItems.filter((item) => item.category === 'material' && item.tier <= Math.max(1, targetLevel));
+
+  if (location && location.materials && location.materials.length > 0) {
+    const locMaterials = new Set(location.materials.map((m) => m.toLowerCase()));
+    const filteredPool = materialPool.filter((item) => locMaterials.has(item.id.toLowerCase()));
+    if (filteredPool.length > 0) {
+      materialPool = filteredPool;
+    }
+  }
+
   const rolledMaterial = chooseRandomItem(materialPool, random);
 
   if (!rolledMaterial) return { dropped: false };

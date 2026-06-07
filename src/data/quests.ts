@@ -148,6 +148,211 @@ function mapQuest(category: string, quest: GeneratedQuest): QuestDefinition {
   };
 }
 
-export const questDefinitions: QuestDefinition[] = Object.entries(questBook).flatMap(([category, quests]) =>
-  quests.map((quest) => mapQuest(category, quest))
-);
+const curatedCraftingQuests: QuestDefinition[] = [
+  {
+    id: 'quest_crafting_01',
+    title: 'Перші кроки коваля',
+    description: 'Виграйте 3 битви та зберіть 3 шматки потрісканої шкіри для вивчення початкового ремесла.',
+    requiredLevel: 1,
+    locationId: 'LOC_001',
+    objectives: [
+      { type: 'win_battles', required: 3, current: 0 },
+      { type: 'collect_material', targetId: 'MAT_002', required: 3, current: 0 }
+    ],
+    rewards: {
+      gold: 50,
+      xp: 50,
+      recipeIds: ['recipe_weapon_blade_lvl_03'],
+      materialIds: ['MAT_003'],
+      materialQuantities: { 'MAT_003': 5 }
+    }
+  },
+  {
+    id: 'quest_crafting_02',
+    title: 'Збір лісових матеріалів',
+    description: 'Виграйте 5 битв у Чорнолісі та зберіть 3 вовчі ікла.',
+    requiredLevel: 3,
+    locationId: 'LOC_002',
+    objectives: [
+      { type: 'win_battles', required: 5, current: 0 },
+      { type: 'collect_material', targetId: 'MAT_004', required: 3, current: 0 }
+    ],
+    rewards: {
+      gold: 100,
+      xp: 100,
+      recipeIds: ['recipe_shield_guard_lvl_06'],
+      materialIds: ['MAT_007'],
+      materialQuantities: { 'MAT_007': 5 }
+    }
+  },
+  {
+    id: 'quest_crafting_03',
+    title: 'Перший викуваний предмет',
+    description: 'Виготуйте будь-який предмет та виграйте 5 битв у таборі рейдерів.',
+    requiredLevel: 5,
+    locationId: 'LOC_003',
+    objectives: [
+      { type: 'craft_item', required: 1, current: 0 },
+      { type: 'win_battles', required: 5, current: 0 }
+    ],
+    rewards: {
+      gold: 150,
+      xp: 150,
+      recipeIds: ['recipe_head_helmet_lvl_06', 'recipe_feet_boots_lvl_03'],
+      materialIds: ['MAT_005'],
+      materialQuantities: { 'MAT_005': 5 }
+    }
+  },
+  {
+    id: 'quest_crafting_04',
+    title: 'Оборона дозорної вежі',
+    description: 'Виграйте 8 битв біля старої вежі та зберіть 5 ланок ланцюга.',
+    requiredLevel: 7,
+    locationId: 'LOC_004',
+    objectives: [
+      { type: 'win_battles', required: 8, current: 0 },
+      { type: 'collect_material', targetId: 'MAT_008', required: 5, current: 0 }
+    ],
+    rewards: {
+      gold: 200,
+      xp: 200,
+      recipeIds: ['recipe_chest_armor_lvl_09'],
+      materialIds: ['MAT_009'],
+      materialQuantities: { 'MAT_009': 5 }
+    }
+  },
+  {
+    id: 'quest_crafting_05',
+    title: 'На підступах до Бастіону',
+    description: 'Виграйте 8 битв біля залізного бастіону та зберіть 3 сталеві пластини легіону.',
+    requiredLevel: 10,
+    locationId: 'LOC_005',
+    objectives: [
+      { type: 'win_battles', required: 8, current: 0 },
+      { type: 'collect_material', targetId: 'MAT_016', required: 3, current: 0 }
+    ],
+    rewards: {
+      gold: 300,
+      xp: 300,
+      recipeIds: ['recipe_hands_gloves_lvl_12'],
+      materialIds: ['MAT_013'],
+      materialQuantities: { 'MAT_013': 5 }
+    }
+  },
+  {
+    id: 'quest_crafting_06',
+    title: 'Болотяна алхімія',
+    description: 'Виграйте 10 битв на болотах попелу та зберіть 5 одиниць болотяної смоли.',
+    requiredLevel: 12,
+    locationId: 'LOC_006',
+    objectives: [
+      { type: 'win_battles', required: 10, current: 0 },
+      { type: 'collect_material', targetId: 'MAT_010', required: 5, current: 0 }
+    ],
+    rewards: {
+      gold: 400,
+      xp: 400,
+      recipeIds: ['recipe_legs_pants_lvl_15'],
+      materialIds: ['MAT_011'],
+      materialQuantities: { 'MAT_011': 3 }
+    }
+  },
+  {
+    id: 'quest_crafting_07',
+    title: 'Доручення найманців',
+    description: 'Виграйте 10 битв на перехресті найманців та зберіть 5 очищених металевих брусків.',
+    requiredLevel: 15,
+    locationId: 'LOC_007',
+    objectives: [
+      { type: 'win_battles', required: 10, current: 0 },
+      { type: 'collect_material', targetId: 'MAT_013', required: 5, current: 0 }
+    ],
+    rewards: {
+      gold: 500,
+      xp: 500,
+      recipeIds: ['recipe_ring_band_lvl_18'],
+      materialIds: ['MAT_014'],
+      materialQuantities: { 'MAT_014': 3 }
+    }
+  },
+  {
+    id: 'quest_crafting_08',
+    title: 'Полювання в гущавині',
+    description: 'Виграйте 10 битв у Воронячій порожнині та здолайте 3 елітних ворогів.',
+    requiredLevel: 18,
+    locationId: 'LOC_009',
+    objectives: [
+      { type: 'win_battles', required: 10, current: 0 },
+      { type: 'kill_elite', required: 3, current: 0 }
+    ],
+    rewards: {
+      gold: 600,
+      xp: 600,
+      recipeIds: ['recipe_amulet_charm_lvl_21'],
+      materialIds: ['MAT_015'],
+      materialQuantities: { 'MAT_015': 5 }
+    }
+  },
+  {
+    id: 'quest_crafting_09',
+    title: 'Бійці руїн арени',
+    description: 'Виграйте 12 битв у руїнах арени та зберіть 3 аренні відзнаки.',
+    requiredLevel: 21,
+    locationId: 'LOC_012',
+    objectives: [
+      { type: 'win_battles', required: 12, current: 0 },
+      { type: 'collect_material', targetId: 'MAT_018', required: 3, current: 0 }
+    ],
+    rewards: {
+      gold: 700,
+      xp: 700,
+      recipeIds: ['recipe_weapon_blade_lvl_24'],
+      materialIds: ['MAT_024'],
+      materialQuantities: { 'MAT_024': 3 }
+    }
+  },
+  {
+    id: 'quest_crafting_10',
+    title: 'Багряні розкопки',
+    description: 'Виграйте 12 битв у багряному кар’єрі та зберіть 5 одиниць тирової руди.',
+    requiredLevel: 24,
+    locationId: 'LOC_013',
+    objectives: [
+      { type: 'win_battles', required: 12, current: 0 },
+      { type: 'collect_material', targetId: 'MAT_019', required: 5, current: 0 }
+    ],
+    rewards: {
+      gold: 800,
+      xp: 800,
+      recipeIds: ['recipe_chest_armor_lvl_27'],
+      materialIds: ['MAT_019'],
+      materialQuantities: { 'MAT_019': 3 }
+    }
+  },
+  {
+    id: 'quest_crafting_11',
+    title: 'Останній поріг',
+    description: 'Виграйте 15 битв на порозі Велора та здолайте 5 елітних ворогів.',
+    requiredLevel: 27,
+    locationId: 'LOC_014',
+    objectives: [
+      { type: 'win_battles', required: 15, current: 0 },
+      { type: 'kill_elite', required: 5, current: 0 }
+    ],
+    rewards: {
+      gold: 1000,
+      xp: 1000,
+      recipeIds: ['recipe_weapon_blade_lvl_30'],
+      materialIds: ['MAT_020'],
+      materialQuantities: { 'MAT_020': 2 }
+    }
+  }
+];
+
+const generatedQuests = Object.entries(questBook)
+  .filter(([category]) => category !== 'bossUnlock')
+  .flatMap(([category, quests]) =>
+    quests.map((quest) => mapQuest(category, quest))
+  );
+
+export const questDefinitions: QuestDefinition[] = [...generatedQuests, ...curatedCraftingQuests];
