@@ -42,6 +42,17 @@ function optionalString(value: unknown): string | undefined {
   return value;
 }
 
+function stripCoinFields(hero: HeroJson): HeroJson {
+  const sanitizedHero = { ...hero };
+
+  delete sanitizedHero.coins;
+  delete sanitizedHero.coinBalance;
+  delete sanitizedHero.balanceCoins;
+  delete sanitizedHero.premiumCoins;
+
+  return sanitizedHero;
+}
+
 export async function handler(event: NetlifyEvent) {
   if (event.httpMethod !== 'POST') {
     return json(405, { error: 'Method Not Allowed' });
@@ -151,7 +162,7 @@ export async function handler(event: NetlifyEvent) {
   const heroFromUpdate =
     updates.hero && typeof updates.hero === 'object' ? (updates.hero as HeroJson) : null;
 
-  const nextHero: HeroJson = heroFromUpdate ? { ...heroFromUpdate } : { ...currentHero };
+  const nextHero: HeroJson = heroFromUpdate ? stripCoinFields(heroFromUpdate) : stripCoinFields(currentHero);
 
   const level = optionalNumber(updates.level);
   const xp = optionalNumber(updates.xp);

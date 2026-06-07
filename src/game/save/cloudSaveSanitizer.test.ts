@@ -142,4 +142,27 @@ describe('sanitizeCloudSavePayload', () => {
 
     expect(result.hero.tonWalletAddress).toBe('EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c');
   });
+
+  it('removes client-supplied Coins fields from the save payload', () => {
+    const result = sanitizeCloudSavePayload(
+      {
+        level: 3,
+        gold: 999,
+        coins: 5000,
+        coinBalance: 123,
+        balanceCoins: 777,
+        premiumCoins: 88,
+        inventory: [],
+      },
+      'LOC_001',
+      {},
+    );
+
+    expect(result.hero.gold).toBe(999);
+    expect(result.hero).not.toHaveProperty('coins');
+    expect(result.hero).not.toHaveProperty('coinBalance');
+    expect(result.hero).not.toHaveProperty('balanceCoins');
+    expect(result.hero).not.toHaveProperty('premiumCoins');
+    expect(result.changes).toContain('coin_fields_removed');
+  });
 });

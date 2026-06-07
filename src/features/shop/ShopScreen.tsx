@@ -1,18 +1,30 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { TonConnectButton, useTonAddress, useTonConnectUI } from '@tonconnect/ui-react';
 import { Panel } from '../../components/ui/Panel';
 import type { HeroState } from '../../game/types';
 import { shortenAddress } from '../../utils/tonHelpers';
+import { fetchCoinBalance } from './coinBalance';
 
 type Props = {
   hero: HeroState;
   onHeroChange: (hero: HeroState) => void;
 };
 
+type CoinBalanceViewState = {
+  status: 'loading' | 'ready' | 'error';
+  balanceCoins: number;
+  error: string | null;
+};
+
 export function ShopScreen({ hero, onHeroChange }: Props) {
   const address = useTonAddress();
   const [tonConnectUI] = useTonConnectUI();
   const treasuryAddress = (import.meta.env.VITE_VAELMOUR_TON_TREASURY_ADDRESS || '').trim();
+  const [coinBalanceState, setCoinBalanceState] = useState<CoinBalanceViewState>({
+    status: 'loading',
+    balanceCoins: 0,
+    error: null,
+  });
 
   useEffect(() => {
     if (address && hero.tonWalletAddress !== address) {
@@ -30,11 +42,65 @@ export function ShopScreen({ hero, onHeroChange }: Props) {
     }
   }, [address, hero, onHeroChange]);
 
+  useEffect(() => {
+    let isCancelled = false;
+
+    setCoinBalanceState({
+      status: 'loading',
+      balanceCoins: 0,
+      error: null,
+    });
+
+    void fetchCoinBalance()
+      .then((response) => {
+        if (isCancelled) {
+          return;
+        }
+
+        if (!response.success) {
+          setCoinBalanceState({
+            status: 'error',
+            balanceCoins: 0,
+            error: response.error ?? 'unknown_error',
+          });
+          return;
+        }
+
+        setCoinBalanceState({
+          status: 'ready',
+          balanceCoins: response.balanceCoins ?? 0,
+          error: null,
+        });
+      })
+      .catch(() => {
+        if (isCancelled) {
+          return;
+        }
+
+        setCoinBalanceState({
+          status: 'error',
+          balanceCoins: 0,
+          error: 'request_failed',
+        });
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
+
   const handleDisconnect = async () => {
     if (tonConnectUI.connected) {
       await tonConnectUI.disconnect();
     }
   };
+
+  const coinBalanceLabel =
+    coinBalanceState.status === 'loading'
+      ? 'Монети: завантаження...'
+      : coinBalanceState.status === 'error'
+        ? 'Монети: помилка завантаження'
+        : `Монети: ${coinBalanceState.balanceCoins}`;
 
   return (
     <div className="screen" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -138,8 +204,33 @@ export function ShopScreen({ hero, onHeroChange }: Props) {
               gap: '6px',
             }}
           >
-            <strong>🏛️ Скарбниця проєкту:</strong>
-            {treasuryAddress ? (
+            <strong>Монети:</strong>
+            <span style={{ color: 'var(--color-gold-gilded)', fontWeight: 'bold', fontSize: '14px' }}>
+              {coinBalanceLabel}
+            </span>
+            <span>Купівля монет через TON буде додана наступним етапом.</span>
+            {coinBalanceState.status === 'error' ? (
+              <span style={{ color: '#ff9900', fontSize: '11px' }}>
+                Не вдалося отримати баланс з бекенду: {coinBalanceState.error}
+              </span>
+            ) : null}
+          </div>
+
+          {treasuryAddress ? (
+            <div
+              style={{
+                background: 'rgba(20, 13, 9, 0.5)',
+                border: '1.5px solid rgba(212, 163, 115, 0.15)',
+                borderRadius: '16px',
+                padding: '12px',
+                fontSize: '12px',
+                color: 'var(--color-text-muted)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '6px',
+              }}
+            >
+              <strong>🏛️ Скарбниця проєкту:</strong>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '11.5px' }}>Статус:</span>
                 <span style={{ color: 'var(--color-uncommon)', fontWeight: 'bold' }}>Налаштовано</span>
@@ -156,29 +247,8 @@ export function ShopScreen({ hero, onHeroChange }: Props) {
                   {shortenAddress(treasuryAddress)}
                 </span>
               </div>
-            ) : (
-              <>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '11.5px' }}>Статус:</span>
-                  <span style={{ color: '#ff9900', fontWeight: 'bold' }}>Відсутній</span>
-                </div>
-                <div
-                  style={{
-                    color: '#ff9900',
-                    fontSize: '11.5px',
-                    fontWeight: 'bold',
-                    fontStyle: 'italic',
-                    background: 'rgba(255, 153, 0, 0.1)',
-                    padding: '8px',
-                    borderRadius: '8px',
-                    border: '1px dashed #ff9900',
-                  }}
-                >
-                  Адресу прийому TON ще не налаштовано.
-                </div>
-              </>
-            )}
-          </div>
+            </div>
+          ) : null}
         </div>
       </Panel>
     </div>

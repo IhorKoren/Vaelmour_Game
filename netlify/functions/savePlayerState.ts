@@ -69,6 +69,17 @@ function stableStringify(value: unknown): string {
   return JSON.stringify(sortValueForCompare(value));
 }
 
+function stripCoinFields(heroValue: Record<string, unknown>): Record<string, unknown> {
+  const sanitizedHero = { ...heroValue };
+
+  delete sanitizedHero.coins;
+  delete sanitizedHero.coinBalance;
+  delete sanitizedHero.balanceCoins;
+  delete sanitizedHero.premiumCoins;
+
+  return sanitizedHero;
+}
+
 function areDifferent(previousValue: unknown, nextValue: unknown): boolean {
   return stableStringify(previousValue) !== stableStringify(nextValue);
 }
@@ -394,7 +405,7 @@ export async function handler(event: NetlifyEvent) {
     existingHero,
   );
   const normalizedHero = {
-    ...sanitizedPayload.hero,
+    ...stripCoinFields(sanitizedPayload.hero),
     saveVersion: 2,
     updatedAt: now,
   };

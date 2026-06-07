@@ -36,6 +36,7 @@ const MAX_HP = 1_000_000_000;
 const MAX_INVENTORY_STACKS = 250;
 const MAX_STACK_QTY = 999;
 const MAX_AFFIXES_PER_ITEM = 8;
+const FORBIDDEN_COIN_FIELDS = ['coins', 'coinBalance', 'balanceCoins', 'premiumCoins'];
 
 type SanitizedSavePayload = {
   hero: Record<string, unknown>;
@@ -398,6 +399,15 @@ export function sanitizeCloudSavePayload(
     ),
   };
 
+  let coinFieldRemoved = false;
+
+  for (const field of FORBIDDEN_COIN_FIELDS) {
+    if (field in sanitizedHero) {
+      delete sanitizedHero[field];
+      coinFieldRemoved = true;
+    }
+  }
+
   if (typeof hero.wipeId === 'string') {
     sanitizedHero.wipeId = hero.wipeId;
   } else if (typeof existingHero.wipeId === 'string') {
@@ -428,6 +438,10 @@ export function sanitizeCloudSavePayload(
 
   if (Array.isArray(hero.knownRecipeIds) && knownRecipeIds?.length !== hero.knownRecipeIds.length) {
     changes.push('known_recipes_sanitized');
+  }
+
+  if (coinFieldRemoved) {
+    changes.push('coin_fields_removed');
   }
 
   if (

@@ -17,6 +17,14 @@ vi.mock('@tonconnect/ui-react', () => ({
   useTonConnectUI: () => [{ connected: tonMock.connected, disconnect: tonMock.disconnect }],
 }));
 
+vi.mock('../shop/coinBalance', () => ({
+  fetchCoinBalance: vi.fn(async () => ({
+    success: true,
+    balanceCoins: 0,
+    recentEntries: [],
+  })),
+}));
+
 function createHero(overrides: Partial<HeroState> = {}): HeroState {
   return {
     id: 'hero-1',
@@ -83,9 +91,9 @@ describe('TON Wallet and Treasury Foundation Tests', () => {
     expect(oldGoldEconomyExist).toBe(false);
   });
 
-  it('should render the active shop route with disconnected TON wallet state', () => {
+  it('should render the active shop route with disconnected TON wallet and backend coin loading state', () => {
     const html = renderToStaticMarkup(
-      React.createElement(ShopScreen, { hero: createHero(), onHeroChange: vi.fn() }),
+      React.createElement(ShopScreen, { hero: createHero({ gold: 999999 }), onHeroChange: vi.fn() }),
     );
 
     expect(html).toContain('Ринок і скрині тимчасово вимкнені. Система монет і TON буде додана пізніше.');
@@ -93,8 +101,10 @@ describe('TON Wallet and Treasury Foundation Tests', () => {
     expect(html).toContain('Статус підключення:');
     expect(html).toContain('Не підключено');
     expect(html).toContain('Connect TON');
-    expect(html).toContain('Відсутній');
-    expect(html).toContain('Адресу прийому TON ще не налаштовано.');
+    expect(html).toContain('Монети: завантаження...');
+    expect(html).toContain('Купівля монет через TON буде додана наступним етапом.');
+    expect(html).not.toContain('Скарбниця проєкту');
+    expect(html).not.toContain('Адресу прийому TON ще не налаштовано.');
     expect(html).not.toContain('Баланс Монет');
     expect(html).not.toContain('priceGold');
     expect(html).not.toContain('Купити');
@@ -115,6 +125,7 @@ describe('TON Wallet and Treasury Foundation Tests', () => {
     expect(html).toContain('Підключено');
     expect(html).toContain('EQAAAA...AM9c');
     expect(html).toContain('Відключити гаманець');
+    expect(html).toContain('Монети: завантаження...');
     expect(html).toContain('Налаштовано');
     expect(html).toContain('UQBBBB...BBBB');
   });
