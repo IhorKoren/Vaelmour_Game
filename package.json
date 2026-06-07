@@ -10,7 +10,8 @@
     "typecheck": "tsc -b --pretty",
     "lint": "eslint .",
     "test": "vitest run",
-    "validate:data": "node scripts/validateData.mjs"
+    "validate:data": "node scripts/validateData.mjs",
+    "balance:audit": "node scripts/combatBalanceAudit.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.107.0",

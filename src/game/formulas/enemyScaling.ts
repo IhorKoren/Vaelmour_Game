@@ -29,8 +29,8 @@ export function scaleEnemyForLocation(enemy: Enemy, location: Location, presetLe
   }
 
   // hp: 12%, stats: 8%, rewards: 10% per level difference
-  const hpFactor = Math.pow(1.12, levelDiff);
-  const statFactor = Math.pow(1.08, levelDiff);
+  const hpFactor = levelDiff > 0 ? (1 + levelDiff * 0.08) : Math.pow(1.12, levelDiff);
+  const statFactor = levelDiff > 0 ? (1 + levelDiff * 0.04) : Math.pow(1.08, levelDiff);
   const rewardFactor = Math.pow(1.10, levelDiff);
 
   return {
