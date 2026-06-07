@@ -17,6 +17,7 @@ import {
 import { getItemBaseStats } from '../../game/equipment/generatedEquipment';
 import type { HeroState, EquipmentSlot, Weapon, Armor } from '../../game/types';
 import { getDisplayItemDescription, getDisplayItemName, formatRarity, formatItemType, formatStatDisplay, formatStatName, ALLOWED_BONUS_STATS } from '../../utils/displayHelpers';
+import { canEquipItem, resolveItemRequiredLevel } from '../../game/formulas/equipmentRules';
 
 
 function getItemEmoji(itemId: string, category: string): string {
@@ -439,6 +440,8 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
         const slot = getEquippableSlot(item);
         const isEquippable = slot !== null;
         const isEquipped = compareDetails?.isEquipped;
+        const equipRequirement = isEquippable ? canEquipItem(hero, selectedStack.stack.generatedItem ?? item) : null;
+        const requiredLevel = resolveItemRequiredLevel(selectedStack.stack.generatedItem ?? item);
 
         const generated = selectedStack.stack.generatedItem;
         const baseStats = generated ? getItemBaseStats(generated) : null;
@@ -524,6 +527,18 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
                 </span>
               </div>
 
+              {isEquippable && (
+                <div style={{ marginBottom: '8px', padding: '6px 8px', borderRadius: '8px', background: 'rgba(0,0,0,0.18)', border: '1px solid rgba(212,163,115,0.04)', fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                  <div>Рівень предмета: <strong style={{ color: 'var(--color-leather)' }}>{requiredLevel}</strong></div>
+                  {equipRequirement && !equipRequirement.canEquip ? (
+                    <>
+                      <div style={{ color: '#ff9900', fontWeight: 'bold' }}>{equipRequirement.detailLines[0]}</div>
+                      <div style={{ color: '#ff9900', fontWeight: 'bold' }}>{equipRequirement.detailLines[1]}</div>
+                    </>
+                  ) : null}
+                </div>
+              )}
+
 
 
               {baseLines.length > 0 && (
@@ -608,6 +623,7 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
                   <button
                     className="small-button"
                     type="button"
+                    disabled={!isEquipped && !equipRequirement?.canEquip}
                     onClick={() => {
                       if (isEquipped) {
                         if (slot) {
@@ -626,10 +642,11 @@ export function InventoryScreen({ hero, onHeroChange }: Props) {
                       background: isEquipped ? 'rgba(255, 77, 77, 0.15)' : 'linear-gradient(180deg, var(--color-bronze), var(--color-bronze-dark))',
                       color: isEquipped ? '#ff6666' : '#fff9eb',
                       border: isEquipped ? '1px solid rgba(255, 77, 77, 0.3)' : 'none',
-                      cursor: 'pointer'
+                      cursor: isEquipped || equipRequirement?.canEquip ? 'pointer' : 'not-allowed',
+                      opacity: isEquipped || equipRequirement?.canEquip ? 1 : 0.6
                     }}
                   >
-                    {isEquipped ? '📥 Зняти' : '📥 Одягнути'}
+                    {isEquipped ? 'Зняти' : equipRequirement?.canEquip ? 'Одягнути' : 'Потрібен рівень'}
                   </button>
                 )}
 

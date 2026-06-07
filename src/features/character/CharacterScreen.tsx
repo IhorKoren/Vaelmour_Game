@@ -17,6 +17,7 @@ import type { EquipmentSlot, HeroState, CoreStats, Weapon } from '../../game/typ
 import { getDisplayItemName, formatRarity, formatStatValueOnly, formatStatName, ALLOWED_BONUS_STATS } from '../../utils/displayHelpers';
 import { getTelegramUser } from '../../telegram/telegramWebApp';
 import { calculateSecondaryStats, getEffectiveAttackSpeed } from '../../game/formulas/secondaryStats';
+import { canEquipItem, resolveItemRequiredLevel } from '../../game/formulas/equipmentRules';
 
 
 import heroWanderer from '../../assets/generated/hero_vaelmour_front_mobile.png';
@@ -151,10 +152,15 @@ export function CharacterScreen({ hero, onHeroChange }: Props) {
           return null;
         }
 
-        return { stack, item };
+        return {
+          stack,
+          item,
+          equipRequirement: canEquipItem(hero, stack.generatedItem ?? item),
+          requiredLevel: resolveItemRequiredLevel(stack.generatedItem ?? item),
+        };
       })
       .filter((entry) => entry !== null);
-  }, [selectedSlot, hero.inventory, hero.equipment]);
+  }, [selectedSlot, hero]);
 
   function renderDollSlot(slotKey: EquipmentSlot, placeholderLabel: string) {
     const itemStats = getEquippedItemStats(hero, slotKey);
@@ -430,6 +436,7 @@ export function CharacterScreen({ hero, onHeroChange }: Props) {
               const itemName = getDisplayItemName(itemId);
               const rarity = itemStats.rarity || 'common';
               const canUnequip = true;
+              const requiredLevel = resolveItemRequiredLevel(itemStats);
 
 
               const ukrSlotNames: Record<EquipmentSlot, string> = {
@@ -570,6 +577,10 @@ export function CharacterScreen({ hero, onHeroChange }: Props) {
 
                   {statsList}
 
+                  <div style={{ marginTop: '10px', fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                    Рівень предмета: <strong style={{ color: 'var(--color-leather)' }}>{requiredLevel}</strong>
+                  </div>
+
                   <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
                     {canUnequip && (
                       <button
@@ -604,16 +615,29 @@ export function CharacterScreen({ hero, onHeroChange }: Props) {
                           {entry.stack.generatedItem?.name ?? getDisplayItemName(entry.stack.itemId)}
                         </strong>
                         <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>
-                          Ранг {entry.stack.generatedItem?.level ?? entry.item.level ?? entry.item.tier ?? 1} · {entry.stack.qty} шт.
+                          Ранг {entry.requiredLevel} · {entry.stack.qty} шт.
                         </span>
+                        {!entry.equipRequirement.canEquip ? (
+                          <div style={{ marginTop: '4px', fontSize: '10px', color: '#ff9900', fontWeight: 700 }}>
+                            Потрібен рівень: {entry.requiredLevel}. Ваш рівень: {hero.level}
+                          </div>
+                        ) : null}
                       </div>
                       <button
                         type="button"
                         className="small-button"
+                        disabled={!entry.equipRequirement.canEquip}
                         onClick={() => handleEquip(entry.stack.itemId)}
-                        style={{ minHeight: '30px', padding: '4px 10px', fontSize: '11px', whiteSpace: 'nowrap' }}
+                        style={{
+                          minHeight: '30px',
+                          padding: '4px 10px',
+                          fontSize: '11px',
+                          whiteSpace: 'nowrap',
+                          cursor: entry.equipRequirement.canEquip ? 'pointer' : 'not-allowed',
+                          opacity: entry.equipRequirement.canEquip ? 1 : 0.6
+                        }}
                       >
-                        Одягти
+                        {entry.equipRequirement.canEquip ? 'Одягти' : 'Потрібен рівень'}
                       </button>
                     </div>
                   ))}

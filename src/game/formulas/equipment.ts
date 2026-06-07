@@ -5,6 +5,7 @@ import { shields } from '../../data/shields';
 import type { HeroState, EquipmentSlot, Weapon, Armor, Shield, GeneratedEquipmentItem, GeneratedEquipmentStats } from '../types';
 import { calculateDerivedStats } from './stats';
 import { getGeneratedItemFromHero } from '../equipment/generatedEquipment';
+import { canEquipItem } from './equipmentRules';
 
 
 const RING_SLOTS: EquipmentSlot[] = ['ring1', 'ring2'];
@@ -375,6 +376,11 @@ export function equipInventoryItem(hero: HeroState, itemId: string, stackIndexOv
     }
   }
   if (!item) return hero;
+
+  const equipCheck = canEquipItem(hero, locatedStack?.generatedItem ?? item);
+  if (!equipCheck.canEquip) {
+    return hero;
+  }
 
   const baseSlot = getEquippableSlot(item);
   if (!baseSlot) return hero;
