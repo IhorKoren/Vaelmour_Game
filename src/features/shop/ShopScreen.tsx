@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { TonConnectButton, useTonAddress, useTonConnectUI } from '@tonconnect/ui-react';
 import { Panel } from '../../components/ui/Panel';
+import { chestConfigs } from '../../data/chestConfigs';
 import type { HeroState } from '../../game/types';
+import { getChestPreview, resolvePreviewSlotLabel } from '../../game/formulas/chestRewards';
 import { shortenAddress } from '../../utils/tonHelpers';
 import { fetchCoinBalance } from './coinBalance';
 
@@ -101,6 +103,11 @@ export function ShopScreen({ hero, onHeroChange }: Props) {
       : coinBalanceState.status === 'error'
         ? 'Монети: помилка завантаження'
         : `Монети: ${coinBalanceState.balanceCoins}`;
+
+  const chestPreviews = chestConfigs.map((config) => ({
+    config,
+    preview: getChestPreview(config, hero.level),
+  }));
 
   return (
     <div className="screen" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -214,6 +221,73 @@ export function ShopScreen({ hero, onHeroChange }: Props) {
                 Не вдалося отримати баланс з бекенду: {coinBalanceState.error}
               </span>
             ) : null}
+          </div>
+
+          <div
+            style={{
+              background: 'rgba(20, 13, 9, 0.5)',
+              border: '1.5px solid rgba(212, 163, 115, 0.15)',
+              borderRadius: '16px',
+              padding: '12px',
+              fontSize: '12px',
+              color: 'var(--color-text-muted)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+            }}
+          >
+            <strong>Майбутні скрині</strong>
+            <span>Скрині будуть доступні після запуску системи монет.</span>
+            <div style={{ display: 'grid', gap: '8px' }}>
+              {chestPreviews.map(({ config, preview }) => (
+                <div
+                  key={config.id}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '6px',
+                    padding: '10px',
+                    borderRadius: '12px',
+                    background: 'rgba(0, 0, 0, 0.18)',
+                    border: '1px solid rgba(212, 163, 115, 0.12)',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px', alignItems: 'center' }}>
+                    <strong style={{ color: 'var(--color-text-dark)' }}>{config.nameUk}</strong>
+                    <span style={{ color: 'var(--color-gold-gilded)', fontWeight: 'bold' }}>{config.futurePriceCoins} Coins</span>
+                  </div>
+                  <span>{config.descriptionUk}</span>
+                  {preview.eligibleLevels.length > 0 ? (
+                    <span>Рівні предметів: {preview.eligibleLevels.join(', ')}</span>
+                  ) : (
+                    <span>Нагорода: лише матеріали</span>
+                  )}
+                  {config.id === 'chest_slot' ? (
+                    <span>Слоти: {preview.allowedSlots.map((slot) => resolvePreviewSlotLabel(slot)).join(', ')}</span>
+                  ) : null}
+                  {preview.rarityPreview.length > 0 ? (
+                    <span>
+                      Рідкості: {preview.rarityPreview.map((entry) => `${entry.rarity} ${entry.weight}%`).join(', ')}
+                    </span>
+                  ) : null}
+                  <button
+                    type="button"
+                    disabled
+                    className="small-button"
+                    style={{
+                      minHeight: '30px',
+                      padding: '4px 10px',
+                      fontSize: '11px',
+                      whiteSpace: 'nowrap',
+                      cursor: 'not-allowed',
+                      opacity: 0.6,
+                    }}
+                  >
+                    Скоро
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
 
           {treasuryAddress ? (
