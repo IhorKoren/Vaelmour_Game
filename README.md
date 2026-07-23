@@ -1,25 +1,28 @@
-# Racing
+# Racing Prototype v0.1
 
-Clean foundation for a standalone, mobile-first 2D web racing game.
+Core driving prototype for a portrait-first 2D web racing game.
 
-## Foundation
+## What v0.1 tests
 
-- React
-- TypeScript
-- Vite
-- Phaser
-- Portrait-first 9:16 game surface
+The prototype tests whether one-finger analog steering feels readable and
+enjoyable on a vertical phone screen. The car accelerates automatically. Touch
+or click anywhere in the lower half of the game, then drag horizontally from
+that neutral point to steer.
 
-The current project is client-only. Its source is separated into React
-application code and Phaser game code so the repository can later evolve into
-top-level `client/`, `server/`, and `shared/` packages without coupling the
-foundation to a server architecture now.
+Included:
 
-This root commit intentionally contains no physics, racing gameplay,
-multiplayer, WebSocket, Telegram API, database, profiles, rating, game data, or
-production assets.
+- one closed, hand-authored test track;
+- one car using a small custom 2D driving model;
+- track and off-road surface behavior;
+- smooth follow camera;
+- sequential checkpoints, lap timer, and session best lap;
+- minimal HUD and runtime driving-tuning panel;
+- Phaser primitives only.
 
-## Local development
+Not included: multiplayer, networking, Telegram integration, persistence,
+profiles, rating, bots, multiple cars or tracks, audio, and final art.
+
+## Run locally
 
 Requires Node.js 22.13 or newer.
 
@@ -27,6 +30,14 @@ Requires Node.js 22.13 or newer.
 npm install
 npm run dev
 ```
+
+To test from a phone on the same Wi-Fi network:
+
+```sh
+npm run dev -- --host
+```
+
+Open the `Network` URL printed by Vite on the phone.
 
 ## Checks
 
@@ -36,9 +47,15 @@ npm run lint
 npm run build
 ```
 
-## Source layout
+## Gameplay source
 
-- `src/client/App.tsx` — React application shell
-- `src/client/game/` — Phaser configuration and scenes
-- `src/main.tsx` — browser entry point
-- `src/styles.css` — mobile-first layout
+```text
+src/client/game/
+├── config/drivingConfig.ts
+├── entities/PlayerCar.ts
+├── input/SteeringInput.ts
+├── scenes/RacePrototypeScene.ts
+├── track/PrototypeTrack.ts
+├── createGame.ts
+└── types.ts
+```
