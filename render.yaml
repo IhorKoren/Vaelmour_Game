@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: vaelmour-racing-multiplayer
+    runtime: node
+    plan: free
+    branch: main
+    buildCommand: npm ci && npx tsc -b tsconfig.server.json
+    startCommand: npm run start:server
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_ENV
+        value: production

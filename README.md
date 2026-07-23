@@ -54,6 +54,25 @@ For another production endpoint, copy `.env.example` to `.env` and configure:
 VITE_WEBSOCKET_URL=wss://racing.example.com/ws
 ```
 
+## Render server deployment
+
+`render.yaml` defines a Free Node.js Web Service for the multiplayer server.
+The repository root remains the service root:
+
+```text
+Build: npm ci && npx tsc -b tsconfig.server.json
+Start: npm run start:server
+Health: /health
+```
+
+Render supplies the internal `PORT`; local development falls back to `8080`.
+Set the Netlify production environment variable to the deployed service URL
+without a custom port:
+
+```sh
+VITE_WEBSOCKET_URL=wss://<render-service>.onrender.com
+```
+
 ## Checks
 
 ```sh
