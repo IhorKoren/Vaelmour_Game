@@ -56,7 +56,7 @@ export function App() {
 
   return (
     <main className="app-shell">
-      <section className="game-frame" aria-label="Racing Prototype v0.3">
+      <section className="game-frame" aria-label="Racing Prototype v0.3.1">
         <div ref={gameHost} className="game-host" />
         <Hud telemetry={telemetry} />
         <DebugPanel
