@@ -22,20 +22,28 @@ export function Hud({ telemetry }: HudProps) {
   return (
     <div className="hud" aria-live="polite">
       <div className="hud-primary">
-        <div>
+        <section className="hud-card hud-speed">
           <span className="hud-label">Speed</span>
-          <strong>{telemetry.speedKph}</strong>
-          <span className="hud-unit">km/h</span>
-        </div>
-        <div className="hud-lap">
+          <div>
+            <strong>{telemetry.speedKph}</strong>
+            <span className="hud-unit">km/h</span>
+          </div>
+        </section>
+        <section className="hud-card hud-lap">
           <span className="hud-label">Lap</span>
           <strong>{telemetry.lap}</strong>
-        </div>
+        </section>
       </div>
 
       <div className="hud-times">
-        <span>Lap {formatLapTime(telemetry.currentLapMs)}</span>
-        <span>Best {formatLapTime(telemetry.bestLapMs)}</span>
+        <span>
+          <small>Current</small>
+          {formatLapTime(telemetry.currentLapMs)}
+        </span>
+        <span>
+          <small>Best</small>
+          {formatLapTime(telemetry.bestLapMs)}
+        </span>
       </div>
 
       <div className="hud-debug">

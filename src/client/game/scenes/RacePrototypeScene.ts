@@ -8,6 +8,7 @@ import { LookAheadCamera } from "../camera/LookAheadCamera";
 import type { DrivingConfig } from "../config/drivingConfig";
 import { PlayerCar } from "../entities/PlayerCar";
 import { RemoteCar } from "../entities/RemoteCar";
+import { DrivingEffects } from "../effects/DrivingEffects";
 import { SteeringInput } from "../input/SteeringInput";
 import { PrototypeTrack } from "../track/PrototypeTrack";
 import type { RaceTelemetry, Surface } from "../types";
@@ -29,6 +30,7 @@ export class RacePrototypeScene extends Phaser.Scene {
   private car!: PlayerCar;
   private lookAheadCamera!: LookAheadCamera;
   private steeringInput!: SteeringInput;
+  private drivingEffects!: DrivingEffects;
   private track!: PrototypeTrack;
   private multiplayerClient!: MultiplayerClient;
   private readonly remoteCars = new Map<string, RemoteCar>();
@@ -65,6 +67,7 @@ export class RacePrototypeScene extends Phaser.Scene {
       start.position.y,
       start.heading,
     ).setDepth(10);
+    this.drivingEffects = new DrivingEffects(this);
     this.steeringInput = new SteeringInput(this);
 
     this.cameras.main.setBounds(
@@ -106,6 +109,7 @@ export class RacePrototypeScene extends Phaser.Scene {
       this.acceptsNetworkEvents = false;
       this.pendingNetworkEvents.length = 0;
       this.steeringInput.destroy();
+      this.drivingEffects.destroy();
       this.multiplayerClient.destroy();
       this.clearRemoteCars();
     });
@@ -133,6 +137,12 @@ export class RacePrototypeScene extends Phaser.Scene {
     this.currentLapMs += deltaMs;
     this.telemetryElapsed += deltaMs;
     this.updateCheckpoints(carPosition);
+    this.drivingEffects.update(
+      deltaMs,
+      this.car,
+      this.surface,
+      steering,
+    );
     this.lookAheadCamera.update(deltaSeconds, drivingConfig);
     const multiplayerConfig = this.getMultiplayerConfig();
     const renderTime = performance.now();

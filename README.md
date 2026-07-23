@@ -1,8 +1,9 @@
-# Racing Prototype v0.2
+# Racing Prototype v0.3
 
-Live multiplayer prototype for a portrait-first 2D web racing game.
+Portrait-first arcade racing prototype with live multiplayer and a lightweight
+procedural visual pass.
 
-## What v0.2 tests
+## What v0.3 tests
 
 Players enter one shared `default` room immediately. Each browser simulates its
 own car locally and sends state snapshots at a fixed network rate. Remote cars
@@ -17,7 +18,8 @@ Included:
 - 20 state updates per second;
 - position and shortest-path rotation interpolation;
 - runtime remote opacity and interpolation-delay tuning;
-- typed shared client/server protocol.
+- typed shared client/server protocol;
+- procedural arcade track, car, HUD, and lightweight driving effects.
 
 Not included: race start synchronization, lobby, matchmaking, player
 collisions, database, profiles, Telegram authentication, results, chat, or

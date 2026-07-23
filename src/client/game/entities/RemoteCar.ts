@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import type { NetworkPlayerState } from "../../../shared/multiplayer/protocol";
+import { createCarVisual } from "./CarVisual";
 
 interface BufferedSnapshot {
   state: NetworkPlayerState;
@@ -10,6 +11,8 @@ const MAX_BUFFER_SIZE = 32;
 
 export class RemoteCar extends Phaser.GameObjects.Container {
   private readonly snapshots: BufferedSnapshot[] = [];
+  private readonly visualRoot: Phaser.GameObjects.Container;
+  private readonly nameplate: Phaser.GameObjects.Container;
 
   constructor(
     scene: Phaser.Scene,
@@ -18,24 +21,23 @@ export class RemoteCar extends Phaser.GameObjects.Container {
   ) {
     super(scene, 0, 0);
     const colorValue = Number.parseInt(color.slice(1), 16);
-    const body = scene.add
-      .rectangle(0, 0, 30, 54, colorValue)
-      .setStrokeStyle(2, 0xffffff)
-      .setOrigin(0.5);
-    const cabin = scene.add
-      .rectangle(0, -6, 22, 22, 0x20303a)
-      .setStrokeStyle(1, 0xcceeff)
+    this.visualRoot = createCarVisual(scene, colorValue).root;
+    this.nameplate = scene.add.container(0, -48);
+    const badge = scene.add
+      .rectangle(0, 0, 38, 15, 0x07110d, 0.72)
+      .setStrokeStyle(1, 0xffffff, 0.36)
       .setOrigin(0.5);
     const label = scene.add
-      .text(0, -38, playerId.slice(0, 4).toUpperCase(), {
+      .text(0, 0, playerId.slice(0, 4).toUpperCase(), {
         color: "#ffffff",
         fontFamily: "Arial, sans-serif",
-        fontSize: "10px",
+        fontSize: "9px",
         fontStyle: "bold",
       })
       .setOrigin(0.5);
 
-    this.add([body, cabin, label]);
+    this.nameplate.add([badge, label]);
+    this.add([this.visualRoot, this.nameplate]);
     scene.add.existing(this);
   }
 
@@ -89,7 +91,8 @@ export class RemoteCar extends Phaser.GameObjects.Container {
           progress;
     }
 
-    this.setAlpha(opacity);
+    this.visualRoot.setAlpha(opacity);
+    this.nameplate.rotation = -this.rotation;
   }
 
   private applyState(state: NetworkPlayerState) {

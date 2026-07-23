@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import type { DrivingConfig } from "../config/drivingConfig";
 import type { Surface } from "../types";
+import { createCarVisual } from "./CarVisual";
 
 export class PlayerCar extends Phaser.GameObjects.Container {
   readonly velocity = new Phaser.Math.Vector2();
@@ -16,23 +17,8 @@ export class PlayerCar extends Phaser.GameObjects.Container {
     this.heading = heading;
     this.rotation = heading;
 
-    const shadow = scene.add
-      .rectangle(4, 6, 30, 54, 0x000000, 0.32)
-      .setOrigin(0.5);
-    const body = scene.add
-      .rectangle(0, 0, 30, 54, 0xff5a36)
-      .setStrokeStyle(2, 0xffc3b4)
-      .setOrigin(0.5);
-    const cabin = scene.add
-      .rectangle(0, -6, 22, 22, 0x26313b)
-      .setStrokeStyle(1, 0xb9d5df)
-      .setOrigin(0.5);
-    const nose = scene.add
-      .triangle(0, -22, -8, 7, 8, 7, 0, -4, 0xffd046)
-      .setOrigin(0.5);
-
-    this.add([shadow, body, cabin, nose]);
-    this.setSize(30, 54);
+    this.add(createCarVisual(scene, 0xff5a36).root);
+    this.setSize(42, 68);
     scene.add.existing(this);
   }
 
