@@ -14,7 +14,7 @@ Included:
 - one closed, hand-authored test track;
 - one car using a small custom 2D driving model;
 - track and off-road surface behavior;
-- smooth follow camera;
+- smooth, speed-dependent velocity look-ahead camera;
 - sequential checkpoints, lap timer, and session best lap;
 - minimal HUD and runtime driving-tuning panel;
 - Phaser primitives only.

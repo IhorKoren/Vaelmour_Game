@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { LookAheadCamera } from "../camera/LookAheadCamera";
 import type { DrivingConfig } from "../config/drivingConfig";
 import { PlayerCar } from "../entities/PlayerCar";
 import { SteeringInput } from "../input/SteeringInput";
@@ -9,6 +10,7 @@ const TELEMETRY_INTERVAL_MS = 80;
 
 export class RacePrototypeScene extends Phaser.Scene {
   private car!: PlayerCar;
+  private lookAheadCamera!: LookAheadCamera;
   private steeringInput!: SteeringInput;
   private track!: PrototypeTrack;
   private nextCheckpoint = 1;
@@ -38,16 +40,18 @@ export class RacePrototypeScene extends Phaser.Scene {
     ).setDepth(10);
     this.steeringInput = new SteeringInput(this);
 
-    this.cameras.main
-      .setBounds(0, 0, this.track.worldWidth, this.track.worldHeight)
-      .startFollow(
-        this.car,
-        false,
-        this.getDrivingConfig().cameraLerp,
-        this.getDrivingConfig().cameraLerp,
-        0,
-        145,
-      );
+    this.cameras.main.setBounds(
+      0,
+      0,
+      this.track.worldWidth,
+      this.track.worldHeight,
+    );
+    this.lookAheadCamera = new LookAheadCamera(
+      this.cameras.main,
+      this,
+      this.car,
+      this.getDrivingConfig(),
+    );
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.steeringInput.destroy();
@@ -75,10 +79,7 @@ export class RacePrototypeScene extends Phaser.Scene {
     this.currentLapMs += deltaMs;
     this.telemetryElapsed += deltaMs;
     this.updateCheckpoints(carPosition);
-    this.cameras.main.setLerp(
-      drivingConfig.cameraLerp,
-      drivingConfig.cameraLerp,
-    );
+    this.lookAheadCamera.update(deltaSeconds, drivingConfig);
 
     if (this.telemetryElapsed >= TELEMETRY_INTERVAL_MS) {
       this.telemetryElapsed = 0;

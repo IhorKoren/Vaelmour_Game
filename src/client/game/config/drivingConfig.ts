@@ -12,6 +12,10 @@ export interface DrivingConfig {
   offroadAccelerationFactor: number;
   offroadGripFactor: number;
   cameraLerp: number;
+  cameraLookAhead: number;
+  cameraLookAheadSpeedFactor: number;
+  cameraHorizontalLookAheadFactor: number;
+  cameraDirectionSmoothing: number;
 }
 
 export const DEFAULT_DRIVING_CONFIG: Readonly<DrivingConfig> = {
@@ -28,6 +32,10 @@ export const DEFAULT_DRIVING_CONFIG: Readonly<DrivingConfig> = {
   offroadAccelerationFactor: 0.34,
   offroadGripFactor: 0.62,
   cameraLerp: 0.09,
+  cameraLookAhead: 32,
+  cameraLookAheadSpeedFactor: 165,
+  cameraHorizontalLookAheadFactor: 0.48,
+  cameraDirectionSmoothing: 4,
 };
 
 export interface TuningDefinition {
@@ -93,6 +101,30 @@ export const TUNING_DEFINITIONS: Record<
     min: 0.03,
     max: 0.24,
     step: 0.01,
+  },
+  cameraLookAhead: {
+    label: "CAMERA_LOOK_AHEAD",
+    min: 0,
+    max: 120,
+    step: 5,
+  },
+  cameraLookAheadSpeedFactor: {
+    label: "CAMERA_LOOK_AHEAD_SPEED_FACTOR",
+    min: 0,
+    max: 320,
+    step: 5,
+  },
+  cameraHorizontalLookAheadFactor: {
+    label: "CAMERA_HORIZONTAL_LOOK_AHEAD_FACTOR",
+    min: 0.1,
+    max: 1,
+    step: 0.02,
+  },
+  cameraDirectionSmoothing: {
+    label: "CAMERA_DIRECTION_SMOOTHING",
+    min: 1,
+    max: 12,
+    step: 0.25,
   },
 };
 
