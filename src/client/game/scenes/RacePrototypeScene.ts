@@ -1,18 +1,40 @@
 import Phaser from "phaser";
+import type {
+  NetworkPlayerState,
+  PlayerDescriptor,
+  RoomPlayer,
+} from "../../../shared/multiplayer/protocol";
 import { LookAheadCamera } from "../camera/LookAheadCamera";
 import type { DrivingConfig } from "../config/drivingConfig";
 import { PlayerCar } from "../entities/PlayerCar";
+import { RemoteCar } from "../entities/RemoteCar";
 import { SteeringInput } from "../input/SteeringInput";
 import { PrototypeTrack } from "../track/PrototypeTrack";
 import type { RaceTelemetry, Surface } from "../types";
+import { MultiplayerClient } from "../../multiplayer/MultiplayerClient";
+import type { MultiplayerRuntimeConfig } from "../../multiplayer/config";
+import { resolveWebSocketUrl } from "../../multiplayer/networkEndpoint";
+import type { MultiplayerTelemetry } from "../../multiplayer/types";
 
 const TELEMETRY_INTERVAL_MS = 80;
+
+type PendingNetworkEvent =
+  | { type: "room-snapshot"; players: RoomPlayer[] }
+  | { type: "player-joined"; player: PlayerDescriptor }
+  | { type: "player-left"; playerId: string }
+  | { type: "player-state"; state: NetworkPlayerState }
+  | { type: "reset" };
 
 export class RacePrototypeScene extends Phaser.Scene {
   private car!: PlayerCar;
   private lookAheadCamera!: LookAheadCamera;
   private steeringInput!: SteeringInput;
   private track!: PrototypeTrack;
+  private multiplayerClient!: MultiplayerClient;
+  private readonly remoteCars = new Map<string, RemoteCar>();
+  private readonly remotePlayers = new Map<string, PlayerDescriptor>();
+  private readonly pendingNetworkEvents: PendingNetworkEvent[] = [];
+  private acceptsNetworkEvents = false;
   private nextCheckpoint = 1;
   private lap = 1;
   private currentLapMs = 0;
@@ -22,12 +44,17 @@ export class RacePrototypeScene extends Phaser.Scene {
 
   constructor(
     private readonly getDrivingConfig: () => DrivingConfig,
+    private readonly getMultiplayerConfig: () => MultiplayerRuntimeConfig,
     private readonly onTelemetry: (telemetry: RaceTelemetry) => void,
+    private readonly onMultiplayerTelemetry: (
+      telemetry: MultiplayerTelemetry,
+    ) => void,
   ) {
     super("race-prototype");
   }
 
   create() {
+    this.acceptsNetworkEvents = true;
     this.track = new PrototypeTrack();
     this.track.draw(this);
 
@@ -52,13 +79,40 @@ export class RacePrototypeScene extends Phaser.Scene {
       this.car,
       this.getDrivingConfig(),
     );
+    this.multiplayerClient = new MultiplayerClient({
+      url: resolveWebSocketUrl(),
+      getLocalState: () => ({
+        x: this.car.x,
+        y: this.car.y,
+        rotation: this.car.rotation,
+        speed: this.car.velocity.length(),
+        velocityX: this.car.velocity.x,
+        velocityY: this.car.velocity.y,
+      }),
+      onRoomSnapshot: (players) =>
+        this.queueNetworkEvent({ type: "room-snapshot", players }),
+      onPlayerJoined: (player) =>
+        this.queueNetworkEvent({ type: "player-joined", player }),
+      onPlayerLeft: (playerId) =>
+        this.queueNetworkEvent({ type: "player-left", playerId }),
+      onPlayerState: (state) =>
+        this.queueNetworkEvent({ type: "player-state", state }),
+      onReset: () => this.queueNetworkEvent({ type: "reset" }),
+      onTelemetry: this.onMultiplayerTelemetry,
+    });
+    this.multiplayerClient.connect();
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.acceptsNetworkEvents = false;
+      this.pendingNetworkEvents.length = 0;
       this.steeringInput.destroy();
+      this.multiplayerClient.destroy();
+      this.clearRemoteCars();
     });
   }
 
   update(_time: number, deltaMs: number) {
+    this.flushNetworkEvents();
     const deltaSeconds = Math.min(deltaMs / 1000, 0.05);
     const drivingConfig = this.getDrivingConfig();
     const steering = this.steeringInput.update(
@@ -80,6 +134,15 @@ export class RacePrototypeScene extends Phaser.Scene {
     this.telemetryElapsed += deltaMs;
     this.updateCheckpoints(carPosition);
     this.lookAheadCamera.update(deltaSeconds, drivingConfig);
+    const multiplayerConfig = this.getMultiplayerConfig();
+    const renderTime = performance.now();
+    for (const remoteCar of this.remoteCars.values()) {
+      remoteCar.update(
+        renderTime,
+        multiplayerConfig.interpolationDelayMs,
+        multiplayerConfig.remoteCarOpacity,
+      );
+    }
 
     if (this.telemetryElapsed >= TELEMETRY_INTERVAL_MS) {
       this.telemetryElapsed = 0;
@@ -93,6 +156,74 @@ export class RacePrototypeScene extends Phaser.Scene {
         surface: this.surface,
       });
     }
+  }
+
+  private queueNetworkEvent(event: PendingNetworkEvent) {
+    if (this.acceptsNetworkEvents) {
+      this.pendingNetworkEvents.push(event);
+    }
+  }
+
+  private flushNetworkEvents() {
+    for (const event of this.pendingNetworkEvents.splice(0)) {
+      switch (event.type) {
+        case "room-snapshot":
+          this.handleRoomSnapshot(event.players);
+          break;
+        case "player-joined":
+          this.remotePlayers.set(event.player.playerId, event.player);
+          break;
+        case "player-left":
+          this.removeRemoteCar(event.playerId);
+          break;
+        case "player-state":
+          this.handleRemoteState(event.state);
+          break;
+        case "reset":
+          this.clearRemoteCars();
+          break;
+      }
+    }
+  }
+
+  private handleRoomSnapshot(players: RoomPlayer[]) {
+    for (const player of players) {
+      this.remotePlayers.set(player.playerId, player);
+      if (player.state) {
+        this.handleRemoteState(player.state);
+      }
+    }
+  }
+
+  private handleRemoteState(state: NetworkPlayerState) {
+    let remoteCar = this.remoteCars.get(state.playerId);
+
+    if (!remoteCar) {
+      const descriptor = this.remotePlayers.get(state.playerId);
+      remoteCar = new RemoteCar(
+        this,
+        state.playerId,
+        descriptor?.color ?? "#47c7ff",
+      ).setDepth(9);
+      this.remoteCars.set(state.playerId, remoteCar);
+    }
+
+    remoteCar.pushSnapshot(state);
+  }
+
+  private removeRemoteCar(playerId: string) {
+    this.remotePlayers.delete(playerId);
+    const remoteCar = this.remoteCars.get(playerId);
+    remoteCar?.destroy();
+    this.remoteCars.delete(playerId);
+  }
+
+  private clearRemoteCars() {
+    for (const remoteCar of this.remoteCars.values()) {
+      remoteCar.destroy();
+    }
+    this.remoteCars.clear();
+    this.remotePlayers.clear();
   }
 
   private updateCheckpoints(carPosition: Phaser.Math.Vector2) {

@@ -4,17 +4,34 @@ import {
   TUNING_DEFINITIONS,
   type DrivingConfig,
 } from "../game/config/drivingConfig";
+import {
+  MULTIPLAYER_TUNING_DEFINITIONS,
+  type MultiplayerRuntimeConfig,
+} from "../multiplayer/config";
+import type { MultiplayerTelemetry } from "../multiplayer/types";
 
 interface DebugPanelProps {
   config: DrivingConfig;
   onChange: (config: DrivingConfig) => void;
+  multiplayerConfig: MultiplayerRuntimeConfig;
+  onMultiplayerChange: (config: MultiplayerRuntimeConfig) => void;
+  multiplayerTelemetry: MultiplayerTelemetry;
 }
 
 const tuningKeys = Object.keys(
   TUNING_DEFINITIONS,
 ) as (keyof DrivingConfig)[];
+const multiplayerTuningKeys = Object.keys(
+  MULTIPLAYER_TUNING_DEFINITIONS,
+) as (keyof MultiplayerRuntimeConfig)[];
 
-export function DebugPanel({ config, onChange }: DebugPanelProps) {
+export function DebugPanel({
+  config,
+  onChange,
+  multiplayerConfig,
+  onMultiplayerChange,
+  multiplayerTelemetry,
+}: DebugPanelProps) {
   const [open, setOpen] = useState(false);
 
   const updateValue = (key: keyof DrivingConfig, value: number) => {
@@ -23,6 +40,13 @@ export function DebugPanel({ config, onChange }: DebugPanelProps) {
 
   const reset = () => {
     onChange({ ...DEFAULT_DRIVING_CONFIG });
+  };
+
+  const updateMultiplayerValue = (
+    key: keyof MultiplayerRuntimeConfig,
+    value: number,
+  ) => {
+    onMultiplayerChange({ ...multiplayerConfig, [key]: value });
   };
 
   return (
@@ -73,6 +97,78 @@ export function DebugPanel({ config, onChange }: DebugPanelProps) {
               );
             })}
           </div>
+
+          <section className="multiplayer-debug" aria-label="Multiplayer debug">
+            <div className="debug-section-heading">
+              <strong>Multiplayer</strong>
+              <span
+                className={
+                  multiplayerTelemetry.connection === "CONNECTED"
+                    ? "connection-online"
+                    : "connection-offline"
+                }
+              >
+                {multiplayerTelemetry.connection}
+              </span>
+            </div>
+
+            <dl className="network-stats">
+              <div>
+                <dt>Players online</dt>
+                <dd data-testid="players-online">
+                  {multiplayerTelemetry.playersOnline}
+                </dd>
+              </div>
+              <div>
+                <dt>Ping</dt>
+                <dd>
+                  {multiplayerTelemetry.pingMs === null
+                    ? "--"
+                    : `${multiplayerTelemetry.pingMs} ms`}
+                </dd>
+              </div>
+              <div>
+                <dt>Send rate</dt>
+                <dd>{multiplayerTelemetry.sendRateHz} Hz</dd>
+              </div>
+              <div>
+                <dt>Interpolation</dt>
+                <dd>{multiplayerConfig.interpolationDelayMs} ms</dd>
+              </div>
+            </dl>
+
+            <div className="tuning-list multiplayer-tuning">
+              {multiplayerTuningKeys.map((key) => {
+                const definition = MULTIPLAYER_TUNING_DEFINITIONS[key];
+
+                return (
+                  <label className="tuning-control" key={key}>
+                    <span>
+                      {definition.label}
+                      <output>
+                        {multiplayerConfig[key].toFixed(
+                          definition.step < 0.1 ? 2 : 0,
+                        )}
+                      </output>
+                    </span>
+                    <input
+                      type="range"
+                      min={definition.min}
+                      max={definition.max}
+                      step={definition.step}
+                      value={multiplayerConfig[key]}
+                      onChange={(event) =>
+                        updateMultiplayerValue(
+                          key,
+                          Number(event.currentTarget.value),
+                        )
+                      }
+                    />
+                  </label>
+                );
+              })}
+            </div>
+          </section>
         </div>
       )}
     </div>

@@ -1,61 +1,79 @@
-# Racing Prototype v0.1
+# Racing Prototype v0.2
 
-Core driving prototype for a portrait-first 2D web racing game.
+Live multiplayer prototype for a portrait-first 2D web racing game.
 
-## What v0.1 tests
+## What v0.2 tests
 
-The prototype tests whether one-finger analog steering feels readable and
-enjoyable on a vertical phone screen. The car accelerates automatically. Touch
-or click anywhere in the lower half of the game, then drag horizontally from
-that neutral point to steer.
+Players enter one shared `default` room immediately. Each browser simulates its
+own car locally and sends state snapshots at a fixed network rate. Remote cars
+are translucent, non-colliding, and rendered from a short interpolation buffer.
 
 Included:
 
-- one closed, hand-authored test track;
-- one car using a small custom 2D driving model;
-- track and off-road surface behavior;
-- smooth, speed-dependent velocity look-ahead camera;
-- sequential checkpoints, lap timer, and session best lap;
-- minimal HUD and runtime driving-tuning panel;
-- Phaser primitives only.
+- all v0.1 driving, touch controls, track, laps, camera, HUD, and tuning;
+- standalone Node.js WebSocket server;
+- temporary connection-scoped player IDs and automatic colors;
+- late join, disconnect cleanup, and reconnect;
+- 20 state updates per second;
+- position and shortest-path rotation interpolation;
+- runtime remote opacity and interpolation-delay tuning;
+- typed shared client/server protocol.
 
-Not included: multiplayer, networking, Telegram integration, persistence,
-profiles, rating, bots, multiple cars or tracks, audio, and final art.
+Not included: race start synchronization, lobby, matchmaking, player
+collisions, database, profiles, Telegram authentication, results, chat, or
+final art.
 
 ## Run locally
 
 Requires Node.js 22.13 or newer.
 
+Install once:
+
 ```sh
 npm install
-npm run dev
 ```
 
-To test from a phone on the same Wi-Fi network:
+Start the multiplayer server:
+
+```sh
+npm run dev:server
+```
+
+In another terminal, start the web client:
 
 ```sh
 npm run dev -- --host
 ```
 
-Open the `Network` URL printed by Vite on the phone.
+Open the Vite URL in two browser tabs or two phones on the same network. The
+client derives the WebSocket hostname from the page URL and uses port `8080`.
+
+For another production endpoint, copy `.env.example` to `.env` and configure:
+
+```sh
+VITE_WEBSOCKET_URL=wss://racing.example.com/ws
+```
 
 ## Checks
 
 ```sh
 npm run typecheck
 npm run lint
+npm run test:server
 npm run build
 ```
 
-## Gameplay source
+## Architecture
 
 ```text
-src/client/game/
-├── config/drivingConfig.ts
-├── entities/PlayerCar.ts
-├── input/SteeringInput.ts
-├── scenes/RacePrototypeScene.ts
-├── track/PrototypeTrack.ts
-├── createGame.ts
-└── types.ts
+src/
+|-- client/
+|   |-- game/
+|   `-- multiplayer/
+`-- shared/
+    `-- multiplayer/
+server/
+|-- index.ts
+|-- multiplayerServer.ts
+`-- multiplayerServer.test.ts
 ```

@@ -1,9 +1,11 @@
 node_modules/
 dist/
+dist-server/
 *.local
 *.log
 *.tsbuildinfo
 .env*
+!.env.example
 .DS_Store
 .idea/
 .vscode/

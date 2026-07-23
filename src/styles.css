@@ -251,6 +251,70 @@ button {
   accent-color: #d8ff43;
 }
 
+.multiplayer-debug {
+  margin-top: 18px;
+  padding-top: 15px;
+  border-top: 1px solid rgb(255 255 255 / 12%);
+}
+
+.debug-section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.debug-section-heading strong {
+  font-size: 12px;
+}
+
+.debug-section-heading span {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.connection-online {
+  color: #d8ff43;
+}
+
+.connection-offline {
+  color: #ff8f70;
+}
+
+.network-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  margin: 0 0 14px;
+}
+
+.network-stats div {
+  padding: 8px 9px;
+  border: 1px solid rgb(255 255 255 / 9%);
+  border-radius: 9px;
+  background: rgb(255 255 255 / 4%);
+}
+
+.network-stats dt {
+  color: #818c96;
+  font-size: 8px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.network-stats dd {
+  margin: 3px 0 0;
+  color: #f4f7f9;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.multiplayer-tuning {
+  gap: 10px;
+}
+
 .steering-hint {
   position: absolute;
   z-index: 2;
