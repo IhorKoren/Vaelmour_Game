@@ -17,6 +17,11 @@ import {
   type ProjectionConfig,
 } from "../game/config/projectionConfig";
 import {
+  CAR_RENDER_TUNING_DEFINITIONS,
+  DEFAULT_CAR_RENDER_CONFIG,
+  type CarRenderConfig,
+} from "../game/config/carRenderConfig";
+import {
   MULTIPLAYER_TUNING_DEFINITIONS,
   type MultiplayerRuntimeConfig,
 } from "../multiplayer/config";
@@ -29,6 +34,8 @@ interface DebugPanelProps {
   onCameraChange: (config: CameraConfig) => void;
   projectionConfig: ProjectionConfig;
   onProjectionChange: (config: ProjectionConfig) => void;
+  carRenderConfig: CarRenderConfig;
+  onCarRenderChange: (config: CarRenderConfig) => void;
   multiplayerConfig: MultiplayerRuntimeConfig;
   onMultiplayerChange: (config: MultiplayerRuntimeConfig) => void;
   multiplayerTelemetry: MultiplayerTelemetry;
@@ -43,6 +50,9 @@ const cameraTuningKeys = Object.keys(
 const projectionTuningKeys = Object.keys(
   PROJECTION_TUNING_DEFINITIONS,
 ) as (keyof ProjectionConfig)[];
+const carRenderTuningKeys = Object.keys(
+  CAR_RENDER_TUNING_DEFINITIONS,
+) as (keyof CarRenderConfig)[];
 const multiplayerTuningKeys = Object.keys(
   MULTIPLAYER_TUNING_DEFINITIONS,
 ) as (keyof MultiplayerRuntimeConfig)[];
@@ -54,6 +64,8 @@ export function DebugPanel({
   onCameraChange,
   projectionConfig,
   onProjectionChange,
+  carRenderConfig,
+  onCarRenderChange,
   multiplayerConfig,
   onMultiplayerChange,
   multiplayerTelemetry,
@@ -68,6 +80,7 @@ export function DebugPanel({
     onChange({ ...DEFAULT_DRIVING_CONFIG });
     onCameraChange({ ...DEFAULT_CAMERA_CONFIG });
     onProjectionChange({ ...DEFAULT_PROJECTION_CONFIG });
+    onCarRenderChange({ ...DEFAULT_CAR_RENDER_CONFIG });
   };
 
   const updateCameraValue = (
@@ -82,6 +95,13 @@ export function DebugPanel({
     value: number,
   ) => {
     onProjectionChange({ ...projectionConfig, [key]: value });
+  };
+
+  const updateCarRenderValue = (
+    key: keyof CarRenderConfig,
+    value: number,
+  ) => {
+    onCarRenderChange({ ...carRenderConfig, [key]: value });
   };
 
   const updateMultiplayerValue = (
@@ -220,6 +240,36 @@ export function DebugPanel({
                       value={projectionConfig[key]}
                       onChange={(event) =>
                         updateProjectionValue(
+                          key,
+                          Number(event.currentTarget.value),
+                        )
+                      }
+                    />
+                  </label>
+                );
+              })}
+
+              {carRenderTuningKeys.map((key) => {
+                const definition = CAR_RENDER_TUNING_DEFINITIONS[key];
+
+                return (
+                  <label className="tuning-control" key={key}>
+                    <span>
+                      {definition.label}
+                      <output>
+                        {carRenderConfig[key].toFixed(
+                          definition.step < 0.1 ? 2 : 1,
+                        )}
+                      </output>
+                    </span>
+                    <input
+                      type="range"
+                      min={definition.min}
+                      max={definition.max}
+                      step={definition.step}
+                      value={carRenderConfig[key]}
+                      onChange={(event) =>
+                        updateCarRenderValue(
                           key,
                           Number(event.currentTarget.value),
                         )

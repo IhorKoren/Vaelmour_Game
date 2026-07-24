@@ -10,6 +10,7 @@ export interface WorldPoint extends Point2D {
 export interface ProjectionCamera {
   x: number;
   y: number;
+  rotation: number;
   screenCenterX: number;
   screenCenterY: number;
   zoom: number;
@@ -52,6 +53,7 @@ function validateSettings(settings: ProjectionSettings) {
 function validateCamera(camera: ProjectionCamera) {
   assertFinite("camera.x", camera.x);
   assertFinite("camera.y", camera.y);
+  assertFinite("camera.rotation", camera.rotation);
   assertFinite("camera.screenCenterX", camera.screenCenterX);
   assertFinite("camera.screenCenterY", camera.screenCenterY);
   assertPositive("camera.zoom", camera.zoom);
@@ -64,14 +66,20 @@ export function projectWorldVector(
   vector: Point2D,
   zoom = 1,
   settings: ProjectionSettings = DEFAULT_PROJECTION_SETTINGS,
+  cameraRotation = 0,
 ): Point2D {
   validatePoint("vector", vector);
   assertPositive("zoom", zoom);
   validateSettings(settings);
+  assertFinite("cameraRotation", cameraRotation);
+  const cosine = Math.cos(cameraRotation);
+  const sine = Math.sin(cameraRotation);
+  const cameraX = vector.x * cosine + vector.y * sine;
+  const cameraY = -vector.x * sine + vector.y * cosine;
 
   return {
-    x: vector.x * zoom,
-    y: vector.y * zoom * settings.depthScale,
+    x: cameraX * zoom,
+    y: cameraY * zoom * settings.depthScale,
   };
 }
 
@@ -81,14 +89,20 @@ export function projectWorldVector(
 export function projectWorldAngle(
   worldAngle: number,
   settings: ProjectionSettings = DEFAULT_PROJECTION_SETTINGS,
+  cameraRotation = 0,
 ) {
   assertFinite("worldAngle", worldAngle);
   validateSettings(settings);
-
-  return Math.atan2(
-    Math.sin(worldAngle) * settings.depthScale,
-    Math.cos(worldAngle),
+  const projected = projectWorldVector(
+    {
+      x: Math.cos(worldAngle),
+      y: Math.sin(worldAngle),
+    },
+    1,
+    settings,
+    cameraRotation,
   );
+  return Math.atan2(projected.y, projected.x);
 }
 
 /**
@@ -128,6 +142,7 @@ export function worldToScreen(
     },
     camera.zoom,
     settings,
+    camera.rotation,
   );
 
   return {
@@ -161,14 +176,18 @@ export function screenToWorld(
   validateCamera(camera);
   validateSettings(settings);
   assertFinite("height", height);
+  const cameraLocalX =
+    (point.x - camera.screenCenterX) / camera.zoom;
+  const cameraLocalY =
+    (point.y -
+      camera.screenCenterY +
+      projectHeight(height, camera.zoom, settings)) /
+    (camera.zoom * settings.depthScale);
+  const cosine = Math.cos(camera.rotation);
+  const sine = Math.sin(camera.rotation);
 
   return {
-    x: camera.x + (point.x - camera.screenCenterX) / camera.zoom,
-    y:
-      camera.y +
-      (point.y -
-        camera.screenCenterY +
-        projectHeight(height, camera.zoom, settings)) /
-        (camera.zoom * settings.depthScale),
+    x: camera.x + cameraLocalX * cosine - cameraLocalY * sine,
+    y: camera.y + cameraLocalX * sine + cameraLocalY * cosine,
   };
 }

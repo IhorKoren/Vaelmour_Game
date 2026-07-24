@@ -280,6 +280,29 @@ collision, shadow ordering, Canvas/WebGL, multiplayer two-client smoke test.
 **Не повинно зламатися.** `PlayerCar` physics entity, snapshot schema,
 world-space interpolation і remote transparency.
 
+### Phase 4 implementation note
+
+- Новий default `PROJECTED_FOLLOW` плавно наздоганяє world-space heading автомобіля
+  через frame-rate-independent shortest-angle interpolation. `REFERENCE_FIXED`
+  лишається для A/B, а `LEGACY_FOLLOW_ROTATION` із `PseudoPerspectiveRenderer` —
+  лише compatibility/debug path.
+- Централізована projection API тепер виконує translation → inverse camera rotation
+  → depth compression → zoom та підтримує точний inverse transform. Rotated viewport
+  culling використовує conservative bounds усіх чотирьох inverse-projected кутів.
+- `ProjectedTrackRenderer` працює і з fixed, і з rotating projected camera без
+  global Phaser scene rotation або legacy mesh deformation.
+- `ProjectedCarRenderer` проєктує local/remote world position та relative heading
+  після physics/network interpolation. Кузов зберігає нормальні пропорції й має
+  окремий runtime scale; procedural visual закладає foundation для 16/32 напрямків.
+- Ground shadow є окремим м'яким projected visual із world-relative offset та
+  runtime opacity. Remote cars зберігають однаковий scale, opacity і ID badge.
+- Phase 4 defaults: depth `0.58`, zoom `0.55`, position lerp `0.35`, rotation lerp
+  `0.10`, portrait anchor `0.60`, look-ahead `0`, car render scale `1.00`, shadow
+  opacity `0.25`.
+- Unit coverage включає camera wrap/smoothing, rotated/inverse projection,
+  transform order та projected car angles/directional frames. Manual WebGL smoke
+  tests пройдено для всіх camera modes, `390×844`, `320×700` і двох клієнтів.
+
 ## Phase 5 — Curbs, barriers, guardrails і pseudo-height
 
 **Мета.** Alternating red/white curb segments та pseudo-3D track props із

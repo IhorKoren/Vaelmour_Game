@@ -74,7 +74,7 @@ export class PseudoPerspectiveRenderer {
     projectionConfig: ProjectionConfig,
   ) {
     const enabled =
-      cameraConfig.mode === "FOLLOW_ROTATION" &&
+      cameraConfig.mode === "LEGACY_FOLLOW_ROTATION" &&
       projectionConfig.legacyMeshEnabled >= 0.5 &&
       this.sourceTexture !== null &&
       this.mesh !== null;

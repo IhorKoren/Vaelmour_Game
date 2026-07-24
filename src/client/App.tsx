@@ -13,6 +13,10 @@ import {
   createProjectionConfig,
   type ProjectionConfig,
 } from "./game/config/projectionConfig";
+import {
+  createCarRenderConfig,
+  type CarRenderConfig,
+} from "./game/config/carRenderConfig";
 import { createGame } from "./game/createGame";
 import { INITIAL_TELEMETRY, type RaceTelemetry } from "./game/types";
 import {
@@ -34,6 +38,9 @@ export function App() {
   const [projectionConfig, setProjectionConfig] =
     useState<ProjectionConfig>(createProjectionConfig);
   const projectionConfigRef = useRef(projectionConfig);
+  const [carRenderConfig, setCarRenderConfig] =
+    useState<CarRenderConfig>(createCarRenderConfig);
+  const carRenderConfigRef = useRef(carRenderConfig);
   const [multiplayerConfig, setMultiplayerConfig] =
     useState<MultiplayerRuntimeConfig>(createMultiplayerConfig);
   const multiplayerConfigRef = useRef(multiplayerConfig);
@@ -55,6 +62,10 @@ export function App() {
   }, [projectionConfig]);
 
   useEffect(() => {
+    carRenderConfigRef.current = carRenderConfig;
+  }, [carRenderConfig]);
+
+  useEffect(() => {
     multiplayerConfigRef.current = multiplayerConfig;
   }, [multiplayerConfig]);
 
@@ -68,6 +79,7 @@ export function App() {
       () => configRef.current,
       () => cameraConfigRef.current,
       () => projectionConfigRef.current,
+      () => carRenderConfigRef.current,
       () => multiplayerConfigRef.current,
       setTelemetry,
       setMultiplayerTelemetry,
@@ -90,6 +102,8 @@ export function App() {
           onCameraChange={setCameraConfig}
           projectionConfig={projectionConfig}
           onProjectionChange={setProjectionConfig}
+          carRenderConfig={carRenderConfig}
+          onCarRenderChange={setCarRenderConfig}
           multiplayerConfig={multiplayerConfig}
           onMultiplayerChange={setMultiplayerConfig}
           multiplayerTelemetry={multiplayerTelemetry}

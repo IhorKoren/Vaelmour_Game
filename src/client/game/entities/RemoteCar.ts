@@ -17,7 +17,7 @@ export class RemoteCar extends Phaser.GameObjects.Container {
   constructor(
     scene: Phaser.Scene,
     readonly playerId: string,
-    color: string,
+    readonly color: string,
   ) {
     super(scene, 0, 0);
     const colorValue = Number.parseInt(color.slice(1), 16);
@@ -43,6 +43,11 @@ export class RemoteCar extends Phaser.GameObjects.Container {
 
   get nameplateObject() {
     return this.nameplate;
+  }
+
+  setLegacyVisualVisible(visible: boolean) {
+    this.visualRoot.setVisible(visible);
+    this.nameplate.setVisible(visible);
   }
 
   pushSnapshot(state: NetworkPlayerState, receivedAt = performance.now()) {

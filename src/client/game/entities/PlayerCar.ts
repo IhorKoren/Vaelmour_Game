@@ -5,6 +5,7 @@ import { createCarVisual } from "./CarVisual";
 
 export class PlayerCar extends Phaser.GameObjects.Container {
   readonly velocity = new Phaser.Math.Vector2();
+  private readonly visualRoot: Phaser.GameObjects.Container;
   private heading: number;
 
   constructor(
@@ -17,9 +18,14 @@ export class PlayerCar extends Phaser.GameObjects.Container {
     this.heading = heading;
     this.rotation = heading;
 
-    this.add(createCarVisual(scene, 0xff5a36).root);
+    this.visualRoot = createCarVisual(scene, 0xff5a36).root;
+    this.add(this.visualRoot);
     this.setSize(42, 68);
     scene.add.existing(this);
+  }
+
+  setLegacyVisualVisible(visible: boolean) {
+    this.visualRoot.setVisible(visible);
   }
 
   update(

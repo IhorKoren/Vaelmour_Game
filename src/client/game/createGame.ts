@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import type { CameraConfig } from "./config/cameraConfig";
 import type { DrivingConfig } from "./config/drivingConfig";
 import type { ProjectionConfig } from "./config/projectionConfig";
+import type { CarRenderConfig } from "./config/carRenderConfig";
 import { RacePrototypeScene } from "./scenes/RacePrototypeScene";
 import type { RaceTelemetry } from "./types";
 import type { MultiplayerRuntimeConfig } from "../multiplayer/config";
@@ -15,6 +16,7 @@ export function createGame(
   getDrivingConfig: () => DrivingConfig,
   getCameraConfig: () => CameraConfig,
   getProjectionConfig: () => ProjectionConfig,
+  getCarRenderConfig: () => CarRenderConfig,
   getMultiplayerConfig: () => MultiplayerRuntimeConfig,
   onTelemetry: (telemetry: RaceTelemetry) => void,
   onMultiplayerTelemetry: (telemetry: MultiplayerTelemetry) => void,
@@ -30,6 +32,7 @@ export function createGame(
         getDrivingConfig,
         getCameraConfig,
         getProjectionConfig,
+        getCarRenderConfig,
         getMultiplayerConfig,
         onTelemetry,
         onMultiplayerTelemetry,

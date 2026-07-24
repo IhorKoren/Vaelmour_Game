@@ -90,25 +90,23 @@ export function getProjectedWorldBounds(
   viewportHeight: number,
   margin = 0,
 ): WorldBounds {
-  const topLeft = screenToWorld(
+  const corners = [
     { x: -margin, y: -margin },
-    camera,
-    settings,
-  );
-  const bottomRight = screenToWorld(
+    { x: viewportWidth + margin, y: -margin },
     {
       x: viewportWidth + margin,
       y: viewportHeight + margin,
     },
-    camera,
-    settings,
-  );
+    { x: -margin, y: viewportHeight + margin },
+  ].map((point) => screenToWorld(point, camera, settings));
+  const xs = corners.map((point) => point.x);
+  const ys = corners.map((point) => point.y);
 
   return {
-    left: Math.min(topLeft.x, bottomRight.x),
-    right: Math.max(topLeft.x, bottomRight.x),
-    top: Math.min(topLeft.y, bottomRight.y),
-    bottom: Math.max(topLeft.y, bottomRight.y),
+    left: Math.min(...xs),
+    right: Math.max(...xs),
+    top: Math.min(...ys),
+    bottom: Math.max(...ys),
   };
 }
 

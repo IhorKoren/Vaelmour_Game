@@ -1,14 +1,20 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { Point2D, ProjectionCamera } from "./projection";
+import {
+  screenToWorld,
+  type Point2D,
+  type ProjectionCamera,
+} from "./projection";
 import {
   createRoadSegmentQuad,
+  getProjectedWorldBounds,
   projectTrackPoints,
 } from "./trackProjectionGeometry";
 
 const camera: ProjectionCamera = {
   x: 0,
   y: 0,
+  rotation: 0,
   screenCenterX: 0,
   screenCenterY: 0,
   zoom: 1,
@@ -133,5 +139,35 @@ test("curve, hairpin, and S-section segments stay finite and consistent", () => 
         (point) => Number.isFinite(point.x) && Number.isFinite(point.y),
       ),
     );
+  }
+});
+
+test("rotated culling bounds contain every inverse-projected viewport corner", () => {
+  const rotatedCamera: ProjectionCamera = {
+    x: 420,
+    y: -180,
+    rotation: Math.PI / 4,
+    screenCenterX: 160,
+    screenCenterY: 350,
+    zoom: 0.55,
+  };
+  const settings = { depthScale: 0.58, heightScale: 1 };
+  const bounds = getProjectedWorldBounds(
+    rotatedCamera,
+    settings,
+    320,
+    700,
+    24,
+  );
+  const corners = [
+    { x: -24, y: -24 },
+    { x: 344, y: -24 },
+    { x: 344, y: 724 },
+    { x: -24, y: 724 },
+  ].map((point) => screenToWorld(point, rotatedCamera, settings));
+
+  for (const corner of corners) {
+    assert.ok(corner.x >= bounds.left && corner.x <= bounds.right);
+    assert.ok(corner.y >= bounds.top && corner.y <= bounds.bottom);
   }
 });

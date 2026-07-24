@@ -18,6 +18,7 @@ const EPSILON = 1e-10;
 const camera: ProjectionCamera = {
   x: 100,
   y: 200,
+  rotation: 0,
   screenCenterX: 225,
   screenCenterY: 400,
   zoom: 2,
@@ -126,4 +127,49 @@ test("rejects projection values that cannot produce a stable inverse", () => {
     () => projectWorldAngle(Number.NaN, settings),
     /worldAngle must be finite/,
   );
+});
+
+test("rotates into camera-local space before depth compression", () => {
+  const rotatedCamera = { ...camera, rotation: Math.PI / 2 };
+  const projected = worldToScreen(
+    { x: camera.x + 20, y: camera.y },
+    rotatedCamera,
+    settings,
+  );
+
+  assertPointApproximatelyEqual(projected, {
+    x: camera.screenCenterX,
+    y: camera.screenCenterY - 20 * camera.zoom * settings.depthScale,
+  });
+});
+
+test("supports 180-degree and diagonal camera rotations", () => {
+  const worldPoint = { x: 135, y: 245 };
+
+  for (const rotation of [Math.PI, Math.PI / 4]) {
+    const rotatedCamera = { ...camera, rotation };
+    const screenPoint = worldToScreen(
+      worldPoint,
+      rotatedCamera,
+      settings,
+    );
+    assertPointApproximatelyEqual(
+      screenToWorld(screenPoint, rotatedCamera, settings),
+      worldPoint,
+    );
+  }
+});
+
+test("camera rotation happens before depth compression", () => {
+  const projected = projectWorldVector(
+    { x: 10, y: 0 },
+    1,
+    { depthScale: 0.5, heightScale: 1 },
+    Math.PI / 4,
+  );
+
+  assertPointApproximatelyEqual(projected, {
+    x: Math.SQRT1_2 * 10,
+    y: -Math.SQRT1_2 * 5,
+  });
 });

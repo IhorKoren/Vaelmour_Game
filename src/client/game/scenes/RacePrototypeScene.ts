@@ -7,6 +7,7 @@ import type {
 import { FollowCamera } from "../camera/FollowCamera";
 import { PseudoPerspectiveRenderer } from "../camera/PseudoPerspectiveRenderer";
 import type { CameraConfig } from "../config/cameraConfig";
+import type { CarRenderConfig } from "../config/carRenderConfig";
 import type { DrivingConfig } from "../config/drivingConfig";
 import type { ProjectionConfig } from "../config/projectionConfig";
 import { PlayerCar } from "../entities/PlayerCar";
@@ -14,6 +15,7 @@ import { RemoteCar } from "../entities/RemoteCar";
 import { DrivingEffects } from "../effects/DrivingEffects";
 import { SteeringInput } from "../input/SteeringInput";
 import { LegacyTrackRenderer } from "../rendering/LegacyTrackRenderer";
+import { ProjectedCarRenderer } from "../rendering/ProjectedCarRenderer";
 import { ProjectedTrackRenderer } from "../rendering/ProjectedTrackRenderer";
 import { PrototypeTrack } from "../track/PrototypeTrack";
 import type { RaceTelemetry, Surface } from "../types";
@@ -40,6 +42,7 @@ export class RacePrototypeScene extends Phaser.Scene {
   private track!: PrototypeTrack;
   private legacyTrackRenderer!: LegacyTrackRenderer;
   private projectedTrackRenderer!: ProjectedTrackRenderer;
+  private projectedCarRenderer!: ProjectedCarRenderer;
   private multiplayerClient!: MultiplayerClient;
   private readonly remoteCars = new Map<string, RemoteCar>();
   private readonly remotePlayers = new Map<string, PlayerDescriptor>();
@@ -58,6 +61,7 @@ export class RacePrototypeScene extends Phaser.Scene {
     private readonly getDrivingConfig: () => DrivingConfig,
     private readonly getCameraConfig: () => CameraConfig,
     private readonly getProjectionConfig: () => ProjectionConfig,
+    private readonly getCarRenderConfig: () => CarRenderConfig,
     private readonly getMultiplayerConfig: () => MultiplayerRuntimeConfig,
     private readonly onTelemetry: (telemetry: RaceTelemetry) => void,
     private readonly onMultiplayerTelemetry: (
@@ -113,6 +117,11 @@ export class RacePrototypeScene extends Phaser.Scene {
     this.legacyTrackRenderer.setVisible(
       !this.projectedTrackRenderer.isActive,
     );
+    this.projectedCarRenderer = new ProjectedCarRenderer(
+      this,
+      this.car,
+      this.followCamera,
+    );
     this.multiplayerClient = new MultiplayerClient({
       url: resolveWebSocketUrl(),
       getLocalState: () => ({
@@ -144,6 +153,7 @@ export class RacePrototypeScene extends Phaser.Scene {
       this.multiplayerClient.destroy();
       this.clearRemoteCars();
       this.perspectiveRenderer.destroy();
+      this.projectedCarRenderer.destroy();
       this.projectedTrackRenderer.destroy();
       this.legacyTrackRenderer.destroy();
     });
@@ -200,6 +210,12 @@ export class RacePrototypeScene extends Phaser.Scene {
     );
     this.legacyTrackRenderer.setVisible(
       !this.projectedTrackRenderer.isActive,
+    );
+    this.projectedCarRenderer.update(
+      cameraConfig,
+      projectionConfig,
+      this.getCarRenderConfig(),
+      multiplayerConfig.remoteCarOpacity,
     );
     this.perspectiveRenderer.update(cameraConfig, projectionConfig);
     for (const remoteCar of this.remoteCars.values()) {
@@ -282,6 +298,7 @@ export class RacePrototypeScene extends Phaser.Scene {
         descriptor?.color ?? "#47c7ff",
       ).setDepth(9);
       this.remoteCars.set(state.playerId, remoteCar);
+      this.projectedCarRenderer.addRemote(remoteCar);
       this.perspectiveRenderer.addOverlay(remoteCar.nameplateObject);
     }
 
@@ -292,6 +309,7 @@ export class RacePrototypeScene extends Phaser.Scene {
     this.remotePlayers.delete(playerId);
     const remoteCar = this.remoteCars.get(playerId);
     if (remoteCar) {
+      this.projectedCarRenderer.removeRemote(playerId);
       this.perspectiveRenderer.removeOverlay(remoteCar.nameplateObject);
     }
     remoteCar?.destroy();
@@ -300,6 +318,7 @@ export class RacePrototypeScene extends Phaser.Scene {
 
   private clearRemoteCars() {
     for (const remoteCar of this.remoteCars.values()) {
+      this.projectedCarRenderer.removeRemote(remoteCar.playerId);
       this.perspectiveRenderer.removeOverlay(remoteCar.nameplateObject);
       remoteCar.destroy();
     }

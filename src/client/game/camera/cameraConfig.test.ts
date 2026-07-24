@@ -14,6 +14,11 @@ import {
   phaserHeadingToWorldVector,
   projectionAngleToPhaserHeading,
 } from "./angleConvention";
+import {
+  frameRateIndependentAlpha,
+  interpolateAngleShortest,
+  shortestAngleDelta,
+} from "./cameraMath";
 
 const EPSILON = 1e-10;
 
@@ -31,15 +36,17 @@ function assertAnglesEquivalent(actual: number, expected: number) {
   );
 }
 
-test("defaults to a centered fixed camera and reference depth scale", () => {
+test("defaults to projected follow and the approved runtime tuning", () => {
   const cameraConfig = createCameraConfig();
   const projectionConfig = createProjectionConfig();
 
-  assert.equal(cameraConfig.mode, "REFERENCE_FIXED");
-  assert.equal(cameraConfig.referenceLookAhead, 0);
-  assert.equal(cameraConfig.positionLerp, 0.1);
-  assert.equal(projectionConfig.depthScale, 0.62);
-  assert.equal(projectionConfig.zoom, 1);
+  assert.equal(cameraConfig.mode, "PROJECTED_FOLLOW");
+  assert.equal(cameraConfig.projectedLookAhead, 0);
+  assert.equal(cameraConfig.projectedPlayerScreenY, 0.6);
+  assert.equal(cameraConfig.positionLerp, 0.35);
+  assert.equal(cameraConfig.rotationLerp, 0.1);
+  assert.equal(projectionConfig.depthScale, 0.58);
+  assert.equal(projectionConfig.zoom, 0.55);
   assert.equal(projectionConfig.groundProjectionEnabled, 1);
 });
 
@@ -52,7 +59,7 @@ test("validates camera and projection runtime configs", () => {
     () =>
       validateCameraConfig({
         ...createCameraConfig(),
-        mode: "INVALID" as "REFERENCE_FIXED",
+        mode: "INVALID" as "PROJECTED_FOLLOW",
       }),
     /Unsupported camera mode/,
   );
@@ -64,6 +71,38 @@ test("validates camera and projection runtime configs", () => {
       }),
     /depthScale must be between/,
   );
+});
+
+test("shortest angle delta handles cardinal and wraparound cases", () => {
+  const degrees = (value: number) => (value * Math.PI) / 180;
+  const cases = [
+    [0, 90, 90],
+    [90, 180, 90],
+    [179, -179, 2],
+    [359, 1, 2],
+    [-179, 179, -2],
+  ];
+
+  for (const [from, to, expected] of cases) {
+    assertApproximatelyEqual(
+      shortestAngleDelta(degrees(from), degrees(to)),
+      degrees(expected),
+    );
+  }
+});
+
+test("camera smoothing is frame-rate independent and stable at rest", () => {
+  const oneFrameAlpha = frameRateIndependentAlpha(0.1, 1 / 60);
+  assertApproximatelyEqual(oneFrameAlpha, 0.1);
+  assertApproximatelyEqual(
+    interpolateAngleShortest(Math.PI / 3, Math.PI / 3, oneFrameAlpha),
+    Math.PI / 3,
+  );
+
+  const current = (359 * Math.PI) / 180;
+  const target = Math.PI / 180;
+  const next = interpolateAngleShortest(current, target, oneFrameAlpha);
+  assert.ok(shortestAngleDelta(current, next) > 0);
 });
 
 test("converts Phaser up-forward headings to projection angles", () => {
@@ -112,6 +151,7 @@ test("camera projection state maps its world center to viewport center", () => {
     {
       x: 120,
       y: 450,
+      rotation: 0,
       screenCenterX: 225,
       screenCenterY: 400,
       zoom: projectionConfig.zoom,

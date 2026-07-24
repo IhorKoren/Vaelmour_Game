@@ -4,14 +4,24 @@ export interface CarVisual {
   root: Phaser.GameObjects.Container;
 }
 
+interface CarVisualOptions {
+  includeShadow?: boolean;
+}
+
 export function createCarVisual(
   scene: Phaser.Scene,
   bodyColor: number,
+  options: CarVisualOptions = {},
 ): CarVisual {
   const root = scene.add.container(0, 0);
-  const shadow = scene.add
-    .ellipse(3, 5, 38, 64, 0x07110d, 0.34)
-    .setOrigin(0.5);
+  const includeShadow = options.includeShadow ?? true;
+  if (includeShadow) {
+    root.add(
+      scene.add
+        .ellipse(3, 5, 38, 64, 0x07110d, 0.34)
+        .setOrigin(0.5),
+    );
+  }
   const wheels = scene.add.graphics();
   wheels.fillStyle(0x11171a, 1);
   wheels.fillRoundedRect(-21, -20, 8, 17, 3);
@@ -50,6 +60,6 @@ export function createCarVisual(
   directionCue.fillStyle(0xffffff, 0.92);
   directionCue.fillTriangle(-4, -32, 4, -32, 0, -37);
 
-  root.add([shadow, wheels, body, directionCue]);
+  root.add([wheels, body, directionCue]);
   return { root };
 }

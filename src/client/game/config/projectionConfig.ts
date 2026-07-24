@@ -23,7 +23,8 @@ export interface ProjectionTuningDefinition {
 
 export const DEFAULT_PROJECTION_CONFIG: Readonly<ProjectionConfig> = {
   ...DEFAULT_PROJECTION_SETTINGS,
-  zoom: 1,
+  depthScale: 0.58,
+  zoom: 0.55,
   groundProjectionEnabled: 1,
   legacyMeshEnabled: 1,
   legacyMeshPitch: 22,
@@ -39,7 +40,7 @@ export const PROJECTION_TUNING_DEFINITIONS: Record<
 > = {
   depthScale: {
     label: "DEPTH_SCALE",
-    min: 0.55,
+    min: 0.5,
     max: 0.68,
     step: 0.01,
   },
@@ -51,7 +52,7 @@ export const PROJECTION_TUNING_DEFINITIONS: Record<
   },
   zoom: {
     label: "CAMERA_ZOOM",
-    min: 0.8,
+    min: 0.45,
     max: 1.2,
     step: 0.01,
   },

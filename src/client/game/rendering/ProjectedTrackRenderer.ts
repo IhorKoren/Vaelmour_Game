@@ -60,7 +60,7 @@ export class ProjectedTrackRenderer {
     projectionConfig: ProjectionConfig,
   ) {
     const active =
-      cameraConfig.mode === "REFERENCE_FIXED" &&
+      cameraConfig.mode !== "LEGACY_FOLLOW_ROTATION" &&
       projectionConfig.groundProjectionEnabled >= 0.5;
     this.setActive(active);
 

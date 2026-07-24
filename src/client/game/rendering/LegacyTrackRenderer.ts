@@ -6,8 +6,8 @@ type VisibleGameObject = Phaser.GameObjects.GameObject & {
 };
 
 /**
- * Compatibility renderer for FOLLOW_ROTATION. New ground work must go into
- * ProjectedTrackRenderer; this class intentionally preserves the v0.3.1 path.
+ * Compatibility renderer for LEGACY_FOLLOW_ROTATION. New ground work belongs
+ * in ProjectedTrackRenderer; this intentionally preserves the v0.3.1 path.
  */
 export class LegacyTrackRenderer {
   private readonly gameObjects: VisibleGameObject[] = [];

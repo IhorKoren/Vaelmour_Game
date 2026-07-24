@@ -1,6 +1,7 @@
 export const CAMERA_MODES = [
+  "PROJECTED_FOLLOW",
   "REFERENCE_FIXED",
-  "FOLLOW_ROTATION",
+  "LEGACY_FOLLOW_ROTATION",
 ] as const;
 
 export type CameraMode = (typeof CAMERA_MODES)[number];
@@ -10,6 +11,8 @@ export interface CameraConfig {
   positionLerp: number;
   rotationLerp: number;
   referenceLookAhead: number;
+  projectedLookAhead: number;
+  projectedPlayerScreenY: number;
   followRotationLookAhead: number;
   followRotationLookAheadSpeedFactor: number;
   followRotationPlayerScreenY: number;
@@ -26,10 +29,12 @@ export interface CameraTuningDefinition {
 }
 
 export const DEFAULT_CAMERA_CONFIG: Readonly<CameraConfig> = {
-  mode: "REFERENCE_FIXED",
-  positionLerp: 0.1,
-  rotationLerp: 0.09,
+  mode: "PROJECTED_FOLLOW",
+  positionLerp: 0.35,
+  rotationLerp: 0.1,
   referenceLookAhead: 0,
+  projectedLookAhead: 0,
+  projectedPlayerScreenY: 0.6,
   followRotationLookAhead: 8,
   followRotationLookAheadSpeedFactor: 44,
   followRotationPlayerScreenY: 0.62,
@@ -43,11 +48,11 @@ export const CAMERA_TUNING_DEFINITIONS: Record<
   positionLerp: {
     label: "CAMERA_POSITION_LERP",
     min: 0.02,
-    max: 0.3,
+    max: 0.5,
     step: 0.01,
   },
   rotationLerp: {
-    label: "FOLLOW_ROTATION_LERP",
+    label: "CAMERA_ROTATION_LERP",
     min: 0.02,
     max: 0.3,
     step: 0.01,
@@ -57,6 +62,18 @@ export const CAMERA_TUNING_DEFINITIONS: Record<
     min: 0,
     max: 80,
     step: 2,
+  },
+  projectedLookAhead: {
+    label: "PROJECTED_LOOK_AHEAD",
+    min: 0,
+    max: 80,
+    step: 2,
+  },
+  projectedPlayerScreenY: {
+    label: "PROJECTED_CAR_SCREEN_Y",
+    min: 0.55,
+    max: 0.65,
+    step: 0.01,
   },
   followRotationLookAhead: {
     label: "FOLLOW_LOOK_AHEAD",

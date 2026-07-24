@@ -9,8 +9,10 @@ import {
   type WorldPoint,
 } from "../rendering/projection";
 import { phaserHeadingToWorldVector } from "./angleConvention";
-
-const REFERENCE_FPS = 60;
+import {
+  frameRateIndependentAlpha,
+  interpolateAngleShortest,
+} from "./cameraMath";
 
 export class FollowCamera {
   private readonly smoothedTarget = new Phaser.Math.Vector2();
@@ -18,6 +20,7 @@ export class FollowCamera {
   private readonly projectionCamera: ProjectionCamera = {
     x: 0,
     y: 0,
+    rotation: 0,
     screenCenterX: 0,
     screenCenterY: 0,
     zoom: 1,
@@ -75,7 +78,7 @@ export class FollowCamera {
 
     const positionAlpha = initialize
       ? 1
-      : this.getFrameRateIndependentAlpha(
+      : frameRateIndependentAlpha(
           cameraConfig.positionLerp,
           deltaSeconds,
         );
@@ -92,17 +95,50 @@ export class FollowCamera {
         this.car.x + forward.x * this.smoothedLookAhead,
         this.car.y + forward.y * this.smoothedLookAhead,
       );
-    } else {
+    } else if (cameraConfig.mode === "PROJECTED_FOLLOW") {
       const rotationAlpha = initialize
         ? 1
-        : this.getFrameRateIndependentAlpha(
+        : frameRateIndependentAlpha(
             cameraConfig.rotationLerp,
             deltaSeconds,
           );
-      this.smoothedRotation +=
-        Phaser.Math.Angle.Wrap(
-          this.car.rotation - this.smoothedRotation,
-        ) * rotationAlpha;
+      this.smoothedRotation = interpolateAngleShortest(
+        this.smoothedRotation,
+        this.car.rotation,
+        rotationAlpha,
+      );
+      this.appliedRotation = this.smoothedRotation;
+      this.smoothedLookAhead = Phaser.Math.Linear(
+        this.smoothedLookAhead,
+        cameraConfig.projectedLookAhead,
+        positionAlpha,
+      );
+
+      const rotatedForward = phaserHeadingToWorldVector(
+        this.smoothedRotation,
+      );
+      const playerAnchorDistance =
+        ((cameraConfig.projectedPlayerScreenY - 0.5) *
+          this.camera.height) /
+        (projectionConfig.zoom * projectionConfig.depthScale);
+      const targetDistance =
+        playerAnchorDistance + this.smoothedLookAhead;
+      this.desiredTarget.set(
+        this.car.x + rotatedForward.x * targetDistance,
+        this.car.y + rotatedForward.y * targetDistance,
+      );
+    } else {
+      const rotationAlpha = initialize
+        ? 1
+        : frameRateIndependentAlpha(
+            cameraConfig.rotationLerp,
+            deltaSeconds,
+          );
+      this.smoothedRotation = interpolateAngleShortest(
+        this.smoothedRotation,
+        this.car.rotation,
+        rotationAlpha,
+      );
       this.appliedRotation = this.smoothedRotation;
       this.smoothedLookAhead = Phaser.Math.Linear(
         this.smoothedLookAhead,
@@ -134,7 +170,11 @@ export class FollowCamera {
 
     this.camera
       .setZoom(projectionConfig.zoom)
-      .setRotation(-this.appliedRotation)
+      .setRotation(
+        cameraConfig.mode === "LEGACY_FOLLOW_ROTATION"
+          ? -this.appliedRotation
+          : 0,
+      )
       .centerOn(this.smoothedTarget.x, this.smoothedTarget.y);
   }
 
@@ -156,6 +196,7 @@ export class FollowCamera {
   ): Readonly<ProjectionCamera> {
     this.projectionCamera.x = this.smoothedTarget.x;
     this.projectionCamera.y = this.smoothedTarget.y;
+    this.projectionCamera.rotation = this.appliedRotation;
     this.projectionCamera.screenCenterX = this.camera.width * 0.5;
     this.projectionCamera.screenCenterY = this.camera.height * 0.5;
     this.projectionCamera.zoom = projectionConfig.zoom;
@@ -168,6 +209,9 @@ export class FollowCamera {
   ) {
     if (cameraConfig.mode === "REFERENCE_FIXED") {
       return cameraConfig.referenceLookAhead;
+    }
+    if (cameraConfig.mode === "PROJECTED_FOLLOW") {
+      return cameraConfig.projectedLookAhead;
     }
 
     const speedRatio = Phaser.Math.Clamp(
@@ -183,10 +227,4 @@ export class FollowCamera {
     );
   }
 
-  private getFrameRateIndependentAlpha(
-    lerpAt60Fps: number,
-    deltaSeconds: number,
-  ) {
-    return 1 - (1 - lerpAt60Fps) ** (deltaSeconds * REFERENCE_FPS);
-  }
 }
