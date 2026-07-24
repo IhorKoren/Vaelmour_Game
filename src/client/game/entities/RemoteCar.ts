@@ -57,7 +57,12 @@ export class RemoteCar extends Phaser.GameObjects.Container {
     }
   }
 
-  update(renderTime: number, interpolationDelayMs: number, opacity: number) {
+  update(
+    renderTime: number,
+    interpolationDelayMs: number,
+    opacity: number,
+    cameraHeading: number,
+  ) {
     if (this.snapshots.length === 0) {
       return;
     }
@@ -92,7 +97,7 @@ export class RemoteCar extends Phaser.GameObjects.Container {
     }
 
     this.visualRoot.setAlpha(opacity);
-    this.nameplate.rotation = -this.rotation;
+    this.nameplate.rotation = cameraHeading - this.rotation;
   }
 
   private applyState(state: NetworkPlayerState) {

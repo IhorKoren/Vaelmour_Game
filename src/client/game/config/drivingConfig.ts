@@ -11,11 +11,12 @@ export interface DrivingConfig {
   offroadMaxSpeedFactor: number;
   offroadAccelerationFactor: number;
   offroadGripFactor: number;
-  cameraLerp: number;
+  cameraRotationSmoothing: number;
+  cameraPositionSmoothing: number;
   cameraLookAhead: number;
   cameraLookAheadSpeedFactor: number;
-  cameraHorizontalLookAheadFactor: number;
-  cameraDirectionSmoothing: number;
+  cameraPlayerScreenY: number;
+  cameraMaxLookAhead: number;
 }
 
 export const DEFAULT_DRIVING_CONFIG: Readonly<DrivingConfig> = {
@@ -31,11 +32,12 @@ export const DEFAULT_DRIVING_CONFIG: Readonly<DrivingConfig> = {
   offroadMaxSpeedFactor: 0.42,
   offroadAccelerationFactor: 0.34,
   offroadGripFactor: 0.62,
-  cameraLerp: 0.09,
-  cameraLookAhead: 32,
-  cameraLookAheadSpeedFactor: 165,
-  cameraHorizontalLookAheadFactor: 0.48,
-  cameraDirectionSmoothing: 4,
+  cameraRotationSmoothing: 5.5,
+  cameraPositionSmoothing: 12,
+  cameraLookAhead: 8,
+  cameraLookAheadSpeedFactor: 44,
+  cameraPlayerScreenY: 0.62,
+  cameraMaxLookAhead: 52,
 };
 
 export interface TuningDefinition {
@@ -96,35 +98,41 @@ export const TUNING_DEFINITIONS: Record<
     max: 1,
     step: 0.02,
   },
-  cameraLerp: {
-    label: "CAMERA_LERP",
-    min: 0.03,
-    max: 0.24,
-    step: 0.01,
+  cameraRotationSmoothing: {
+    label: "CAMERA_ROTATION_SMOOTHING",
+    min: 1,
+    max: 12,
+    step: 0.25,
+  },
+  cameraPositionSmoothing: {
+    label: "CAMERA_POSITION_SMOOTHING",
+    min: 1,
+    max: 20,
+    step: 0.25,
   },
   cameraLookAhead: {
     label: "CAMERA_LOOK_AHEAD",
     min: 0,
-    max: 120,
-    step: 5,
+    max: 80,
+    step: 2,
   },
   cameraLookAheadSpeedFactor: {
     label: "CAMERA_LOOK_AHEAD_SPEED_FACTOR",
     min: 0,
-    max: 320,
-    step: 5,
+    max: 120,
+    step: 2,
   },
-  cameraHorizontalLookAheadFactor: {
-    label: "CAMERA_HORIZONTAL_LOOK_AHEAD_FACTOR",
-    min: 0.1,
-    max: 1,
-    step: 0.02,
+  cameraPlayerScreenY: {
+    label: "CAMERA_PLAYER_SCREEN_Y",
+    min: 0.55,
+    max: 0.7,
+    step: 0.01,
   },
-  cameraDirectionSmoothing: {
-    label: "CAMERA_DIRECTION_SMOOTHING",
-    min: 1,
-    max: 12,
-    step: 0.25,
+  cameraMaxLookAhead: {
+    label: "CAMERA_MAX_LOOK_AHEAD",
+    min: 16,
+    max: 140,
+    step: 2,
   },
 };
 

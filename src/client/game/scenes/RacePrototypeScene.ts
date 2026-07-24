@@ -4,7 +4,7 @@ import type {
   PlayerDescriptor,
   RoomPlayer,
 } from "../../../shared/multiplayer/protocol";
-import { LookAheadCamera } from "../camera/LookAheadCamera";
+import { RotatingFollowCamera } from "../camera/RotatingFollowCamera";
 import type { DrivingConfig } from "../config/drivingConfig";
 import { PlayerCar } from "../entities/PlayerCar";
 import { RemoteCar } from "../entities/RemoteCar";
@@ -28,7 +28,7 @@ type PendingNetworkEvent =
 
 export class RacePrototypeScene extends Phaser.Scene {
   private car!: PlayerCar;
-  private lookAheadCamera!: LookAheadCamera;
+  private followCamera!: RotatingFollowCamera;
   private steeringInput!: SteeringInput;
   private drivingEffects!: DrivingEffects;
   private track!: PrototypeTrack;
@@ -76,9 +76,8 @@ export class RacePrototypeScene extends Phaser.Scene {
       this.track.worldWidth,
       this.track.worldHeight,
     );
-    this.lookAheadCamera = new LookAheadCamera(
+    this.followCamera = new RotatingFollowCamera(
       this.cameras.main,
-      this,
       this.car,
       this.getDrivingConfig(),
     );
@@ -143,7 +142,7 @@ export class RacePrototypeScene extends Phaser.Scene {
       this.surface,
       steering,
     );
-    this.lookAheadCamera.update(deltaSeconds, drivingConfig);
+    this.followCamera.update(deltaSeconds, drivingConfig);
     const multiplayerConfig = this.getMultiplayerConfig();
     const renderTime = performance.now();
     for (const remoteCar of this.remoteCars.values()) {
@@ -151,6 +150,7 @@ export class RacePrototypeScene extends Phaser.Scene {
         renderTime,
         multiplayerConfig.interpolationDelayMs,
         multiplayerConfig.remoteCarOpacity,
+        this.followCamera.rotation,
       );
     }
 
