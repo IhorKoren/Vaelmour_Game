@@ -5,6 +5,7 @@ import type {
   RoomPlayer,
 } from "../../../shared/multiplayer/protocol";
 import { RotatingFollowCamera } from "../camera/RotatingFollowCamera";
+import { PseudoPerspectiveRenderer } from "../camera/PseudoPerspectiveRenderer";
 import type { DrivingConfig } from "../config/drivingConfig";
 import { PlayerCar } from "../entities/PlayerCar";
 import { RemoteCar } from "../entities/RemoteCar";
@@ -29,6 +30,7 @@ type PendingNetworkEvent =
 export class RacePrototypeScene extends Phaser.Scene {
   private car!: PlayerCar;
   private followCamera!: RotatingFollowCamera;
+  private perspectiveRenderer!: PseudoPerspectiveRenderer;
   private steeringInput!: SteeringInput;
   private drivingEffects!: DrivingEffects;
   private track!: PrototypeTrack;
@@ -43,6 +45,8 @@ export class RacePrototypeScene extends Phaser.Scene {
   private bestLapMs: number | null = null;
   private telemetryElapsed = 0;
   private surface: Surface = "TRACK";
+  private readonly remoteNameplateAnchor = new Phaser.Math.Vector2();
+  private readonly remoteNameplatePosition = new Phaser.Math.Vector2();
 
   constructor(
     private readonly getDrivingConfig: () => DrivingConfig,
@@ -81,6 +85,12 @@ export class RacePrototypeScene extends Phaser.Scene {
       this.car,
       this.getDrivingConfig(),
     );
+    this.perspectiveRenderer = new PseudoPerspectiveRenderer(
+      this,
+      this.cameras.main,
+      this.followCamera,
+      this.car,
+    );
     this.multiplayerClient = new MultiplayerClient({
       url: resolveWebSocketUrl(),
       getLocalState: () => ({
@@ -111,6 +121,7 @@ export class RacePrototypeScene extends Phaser.Scene {
       this.drivingEffects.destroy();
       this.multiplayerClient.destroy();
       this.clearRemoteCars();
+      this.perspectiveRenderer.destroy();
     });
   }
 
@@ -150,7 +161,24 @@ export class RacePrototypeScene extends Phaser.Scene {
         renderTime,
         multiplayerConfig.interpolationDelayMs,
         multiplayerConfig.remoteCarOpacity,
+      );
+    }
+    this.perspectiveRenderer.update(drivingConfig);
+    for (const remoteCar of this.remoteCars.values()) {
+      const anchor = remoteCar.getNameplateAnchor(
+        this.remoteNameplateAnchor,
+      );
+      const projectedPosition = this.perspectiveRenderer.isActive
+        ? this.perspectiveRenderer.projectWorldToOverlay(
+            anchor.x,
+            anchor.y,
+            drivingConfig,
+            this.remoteNameplatePosition,
+          )
+        : undefined;
+      remoteCar.updateNameplate(
         this.followCamera.rotation,
+        projectedPosition,
       );
     }
 
@@ -216,6 +244,7 @@ export class RacePrototypeScene extends Phaser.Scene {
         descriptor?.color ?? "#47c7ff",
       ).setDepth(9);
       this.remoteCars.set(state.playerId, remoteCar);
+      this.perspectiveRenderer.addOverlay(remoteCar.nameplateObject);
     }
 
     remoteCar.pushSnapshot(state);
@@ -224,12 +253,16 @@ export class RacePrototypeScene extends Phaser.Scene {
   private removeRemoteCar(playerId: string) {
     this.remotePlayers.delete(playerId);
     const remoteCar = this.remoteCars.get(playerId);
+    if (remoteCar) {
+      this.perspectiveRenderer.removeOverlay(remoteCar.nameplateObject);
+    }
     remoteCar?.destroy();
     this.remoteCars.delete(playerId);
   }
 
   private clearRemoteCars() {
     for (const remoteCar of this.remoteCars.values()) {
+      this.perspectiveRenderer.removeOverlay(remoteCar.nameplateObject);
       remoteCar.destroy();
     }
     this.remoteCars.clear();

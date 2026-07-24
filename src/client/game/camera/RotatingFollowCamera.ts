@@ -22,6 +22,14 @@ export class RotatingFollowCamera {
     return this.smoothedRotation;
   }
 
+  get centerX() {
+    return this.smoothedTarget.x;
+  }
+
+  get centerY() {
+    return this.smoothedTarget.y;
+  }
+
   update(deltaSeconds: number, config: DrivingConfig) {
     const rotationAlpha = this.getSmoothingAlpha(
       config.cameraRotationSmoothing,

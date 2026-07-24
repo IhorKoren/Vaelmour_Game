@@ -17,6 +17,12 @@ export interface DrivingConfig {
   cameraLookAheadSpeedFactor: number;
   cameraPlayerScreenY: number;
   cameraMaxLookAhead: number;
+  cameraPerspectiveEnabled: number;
+  cameraPitch: number;
+  cameraPerspectiveStrength: number;
+  cameraVanishingPointY: number;
+  cameraNearScale: number;
+  cameraFarScale: number;
 }
 
 export const DEFAULT_DRIVING_CONFIG: Readonly<DrivingConfig> = {
@@ -38,6 +44,12 @@ export const DEFAULT_DRIVING_CONFIG: Readonly<DrivingConfig> = {
   cameraLookAheadSpeedFactor: 44,
   cameraPlayerScreenY: 0.62,
   cameraMaxLookAhead: 52,
+  cameraPerspectiveEnabled: 1,
+  cameraPitch: 22,
+  cameraPerspectiveStrength: 0.72,
+  cameraVanishingPointY: 0.12,
+  cameraNearScale: 1.04,
+  cameraFarScale: 0.76,
 };
 
 export interface TuningDefinition {
@@ -133,6 +145,42 @@ export const TUNING_DEFINITIONS: Record<
     min: 16,
     max: 140,
     step: 2,
+  },
+  cameraPerspectiveEnabled: {
+    label: "CAMERA_PERSPECTIVE_ENABLED",
+    min: 0,
+    max: 1,
+    step: 1,
+  },
+  cameraPitch: {
+    label: "CAMERA_PITCH",
+    min: 0,
+    max: 35,
+    step: 1,
+  },
+  cameraPerspectiveStrength: {
+    label: "CAMERA_PERSPECTIVE_STRENGTH",
+    min: 0,
+    max: 1,
+    step: 0.02,
+  },
+  cameraVanishingPointY: {
+    label: "CAMERA_VANISHING_POINT_Y",
+    min: 0.05,
+    max: 0.3,
+    step: 0.01,
+  },
+  cameraNearScale: {
+    label: "CAMERA_NEAR_SCALE",
+    min: 0.9,
+    max: 1.25,
+    step: 0.01,
+  },
+  cameraFarScale: {
+    label: "CAMERA_FAR_SCALE",
+    min: 0.7,
+    max: 1,
+    step: 0.01,
   },
 };
 

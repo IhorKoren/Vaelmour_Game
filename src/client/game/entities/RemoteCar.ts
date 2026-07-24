@@ -22,7 +22,7 @@ export class RemoteCar extends Phaser.GameObjects.Container {
     super(scene, 0, 0);
     const colorValue = Number.parseInt(color.slice(1), 16);
     this.visualRoot = createCarVisual(scene, colorValue).root;
-    this.nameplate = scene.add.container(0, -48);
+    this.nameplate = scene.add.container(0, 0).setDepth(11);
     const badge = scene.add
       .rectangle(0, 0, 38, 15, 0x07110d, 0.72)
       .setStrokeStyle(1, 0xffffff, 0.36)
@@ -37,8 +37,12 @@ export class RemoteCar extends Phaser.GameObjects.Container {
       .setOrigin(0.5);
 
     this.nameplate.add([badge, label]);
-    this.add([this.visualRoot, this.nameplate]);
+    this.add(this.visualRoot);
     scene.add.existing(this);
+  }
+
+  get nameplateObject() {
+    return this.nameplate;
   }
 
   pushSnapshot(state: NetworkPlayerState, receivedAt = performance.now()) {
@@ -61,7 +65,6 @@ export class RemoteCar extends Phaser.GameObjects.Container {
     renderTime: number,
     interpolationDelayMs: number,
     opacity: number,
-    cameraHeading: number,
   ) {
     if (this.snapshots.length === 0) {
       return;
@@ -97,7 +100,34 @@ export class RemoteCar extends Phaser.GameObjects.Container {
     }
 
     this.visualRoot.setAlpha(opacity);
-    this.nameplate.rotation = cameraHeading - this.rotation;
+  }
+
+  getNameplateAnchor(out: Phaser.Math.Vector2) {
+    return out.set(
+      this.x + Math.sin(this.rotation) * 48,
+      this.y - Math.cos(this.rotation) * 48,
+    );
+  }
+
+  updateNameplate(
+    cameraHeading: number,
+    projectedPosition?: Phaser.Math.Vector2,
+  ) {
+    if (projectedPosition) {
+      this.nameplate.setPosition(projectedPosition.x, projectedPosition.y);
+    } else {
+      this.nameplate.setPosition(
+        this.x + Math.sin(this.rotation) * 48,
+        this.y - Math.cos(this.rotation) * 48,
+      );
+    }
+
+    this.nameplate.rotation = cameraHeading;
+  }
+
+  override destroy(fromScene?: boolean) {
+    this.nameplate.destroy(fromScene);
+    super.destroy(fromScene);
   }
 
   private applyState(state: NetworkPlayerState) {
