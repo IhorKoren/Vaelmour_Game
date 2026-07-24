@@ -10,6 +10,8 @@
     "dev": "vite",
     "dev:server": "tsx watch server/index.ts",
     "start:server": "node dist-server/server/index.js",
+    "test": "npm run test:projection && npm run test:server",
+    "test:projection": "node --import tsx --test src/client/game/rendering/projection.test.ts",
     "test:server": "node --import tsx --test server/multiplayerServer.test.ts",
     "build:server": "tsc -b tsconfig.server.json",
     "build": "tsc -b && vite build",
