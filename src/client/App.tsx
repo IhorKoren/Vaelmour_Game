@@ -5,6 +5,14 @@ import {
   createDrivingConfig,
   type DrivingConfig,
 } from "./game/config/drivingConfig";
+import {
+  createCameraConfig,
+  type CameraConfig,
+} from "./game/config/cameraConfig";
+import {
+  createProjectionConfig,
+  type ProjectionConfig,
+} from "./game/config/projectionConfig";
 import { createGame } from "./game/createGame";
 import { INITIAL_TELEMETRY, type RaceTelemetry } from "./game/types";
 import {
@@ -20,6 +28,12 @@ export function App() {
   const gameHost = useRef<HTMLDivElement>(null);
   const [config, setConfig] = useState<DrivingConfig>(createDrivingConfig);
   const configRef = useRef(config);
+  const [cameraConfig, setCameraConfig] =
+    useState<CameraConfig>(createCameraConfig);
+  const cameraConfigRef = useRef(cameraConfig);
+  const [projectionConfig, setProjectionConfig] =
+    useState<ProjectionConfig>(createProjectionConfig);
+  const projectionConfigRef = useRef(projectionConfig);
   const [multiplayerConfig, setMultiplayerConfig] =
     useState<MultiplayerRuntimeConfig>(createMultiplayerConfig);
   const multiplayerConfigRef = useRef(multiplayerConfig);
@@ -33,6 +47,14 @@ export function App() {
   }, [config]);
 
   useEffect(() => {
+    cameraConfigRef.current = cameraConfig;
+  }, [cameraConfig]);
+
+  useEffect(() => {
+    projectionConfigRef.current = projectionConfig;
+  }, [projectionConfig]);
+
+  useEffect(() => {
     multiplayerConfigRef.current = multiplayerConfig;
   }, [multiplayerConfig]);
 
@@ -44,6 +66,8 @@ export function App() {
     const game = createGame(
       gameHost.current,
       () => configRef.current,
+      () => cameraConfigRef.current,
+      () => projectionConfigRef.current,
       () => multiplayerConfigRef.current,
       setTelemetry,
       setMultiplayerTelemetry,
@@ -62,6 +86,10 @@ export function App() {
         <DebugPanel
           config={config}
           onChange={setConfig}
+          cameraConfig={cameraConfig}
+          onCameraChange={setCameraConfig}
+          projectionConfig={projectionConfig}
+          onProjectionChange={setProjectionConfig}
           multiplayerConfig={multiplayerConfig}
           onMultiplayerChange={setMultiplayerConfig}
           multiplayerTelemetry={multiplayerTelemetry}

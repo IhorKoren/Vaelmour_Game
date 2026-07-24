@@ -1,5 +1,7 @@
 import Phaser from "phaser";
+import type { CameraConfig } from "./config/cameraConfig";
 import type { DrivingConfig } from "./config/drivingConfig";
+import type { ProjectionConfig } from "./config/projectionConfig";
 import { RacePrototypeScene } from "./scenes/RacePrototypeScene";
 import type { RaceTelemetry } from "./types";
 import type { MultiplayerRuntimeConfig } from "../multiplayer/config";
@@ -11,6 +13,8 @@ const GAME_HEIGHT = 800;
 export function createGame(
   parent: HTMLElement,
   getDrivingConfig: () => DrivingConfig,
+  getCameraConfig: () => CameraConfig,
+  getProjectionConfig: () => ProjectionConfig,
   getMultiplayerConfig: () => MultiplayerRuntimeConfig,
   onTelemetry: (telemetry: RaceTelemetry) => void,
   onMultiplayerTelemetry: (telemetry: MultiplayerTelemetry) => void,
@@ -24,6 +28,8 @@ export function createGame(
     scene: [
       new RacePrototypeScene(
         getDrivingConfig,
+        getCameraConfig,
+        getProjectionConfig,
         getMultiplayerConfig,
         onTelemetry,
         onMultiplayerTelemetry,

@@ -184,6 +184,25 @@ Canvas/WebGL smoke test; повний validation suite.
 **Не повинно зламатися.** World coordinates, multiplayer payload, checkpoint
 logic, remote interpolation, touch steering і tuning persistence for session.
 
+### Phase 2 implementation note
+
+- `FollowCamera` тепер має explicit modes. `REFERENCE_FIXED` є default, тримає
+  Phaser camera rotation на `0`, використовує frame-rate-independent position
+  lerp і нульовий reference look-ahead. `FOLLOW_ROTATION` зберігає попередні
+  rotation, portrait anchor і speed look-ahead defaults.
+- Camera tuning винесено з physics `DrivingConfig` у `cameraConfig.ts`.
+  Projection/legacy mesh tuning знаходиться у `projectionConfig.ts`;
+  `depthScale` default — `0.62`, `zoom` — `1`.
+- `FollowCamera.getProjectionCamera()` та `projectWorldPoint()` є integration
+  boundary для layer renderer Phase 3. Track поки лишається у Phaser top-down
+  display list, тому depth compression навмисно ще не застосовується до road.
+- Legacy `PseudoPerspectiveRenderer` тепер є compatibility effect лише для
+  `FOLLOW_ROTATION`. У `REFERENCE_FIXED` він вимкнений, що виключає подвійну
+  deformation перед layer-based projection Phase 3.
+- `angleConvention.ts` централізує перехід між car/Phaser heading
+  (`0 = up`) і projection angle (`0 = +X`). Physics/network headings не
+  конвертуються й залишаються world-space.
+
 ## Phase 3 — Projected track і terrain layers
 
 **Мета.** Рендерити terrain/road/markings через projection API без

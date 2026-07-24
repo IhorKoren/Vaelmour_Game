@@ -5,6 +5,18 @@ import {
   type DrivingConfig,
 } from "../game/config/drivingConfig";
 import {
+  CAMERA_MODES,
+  CAMERA_TUNING_DEFINITIONS,
+  DEFAULT_CAMERA_CONFIG,
+  type CameraConfig,
+  type NumericCameraConfigKey,
+} from "../game/config/cameraConfig";
+import {
+  DEFAULT_PROJECTION_CONFIG,
+  PROJECTION_TUNING_DEFINITIONS,
+  type ProjectionConfig,
+} from "../game/config/projectionConfig";
+import {
   MULTIPLAYER_TUNING_DEFINITIONS,
   type MultiplayerRuntimeConfig,
 } from "../multiplayer/config";
@@ -13,6 +25,10 @@ import type { MultiplayerTelemetry } from "../multiplayer/types";
 interface DebugPanelProps {
   config: DrivingConfig;
   onChange: (config: DrivingConfig) => void;
+  cameraConfig: CameraConfig;
+  onCameraChange: (config: CameraConfig) => void;
+  projectionConfig: ProjectionConfig;
+  onProjectionChange: (config: ProjectionConfig) => void;
   multiplayerConfig: MultiplayerRuntimeConfig;
   onMultiplayerChange: (config: MultiplayerRuntimeConfig) => void;
   multiplayerTelemetry: MultiplayerTelemetry;
@@ -21,6 +37,12 @@ interface DebugPanelProps {
 const tuningKeys = Object.keys(
   TUNING_DEFINITIONS,
 ) as (keyof DrivingConfig)[];
+const cameraTuningKeys = Object.keys(
+  CAMERA_TUNING_DEFINITIONS,
+) as NumericCameraConfigKey[];
+const projectionTuningKeys = Object.keys(
+  PROJECTION_TUNING_DEFINITIONS,
+) as (keyof ProjectionConfig)[];
 const multiplayerTuningKeys = Object.keys(
   MULTIPLAYER_TUNING_DEFINITIONS,
 ) as (keyof MultiplayerRuntimeConfig)[];
@@ -28,6 +50,10 @@ const multiplayerTuningKeys = Object.keys(
 export function DebugPanel({
   config,
   onChange,
+  cameraConfig,
+  onCameraChange,
+  projectionConfig,
+  onProjectionChange,
   multiplayerConfig,
   onMultiplayerChange,
   multiplayerTelemetry,
@@ -40,6 +66,22 @@ export function DebugPanel({
 
   const reset = () => {
     onChange({ ...DEFAULT_DRIVING_CONFIG });
+    onCameraChange({ ...DEFAULT_CAMERA_CONFIG });
+    onProjectionChange({ ...DEFAULT_PROJECTION_CONFIG });
+  };
+
+  const updateCameraValue = (
+    key: NumericCameraConfigKey,
+    value: number,
+  ) => {
+    onCameraChange({ ...cameraConfig, [key]: value });
+  };
+
+  const updateProjectionValue = (
+    key: keyof ProjectionConfig,
+    value: number,
+  ) => {
+    onProjectionChange({ ...projectionConfig, [key]: value });
   };
 
   const updateMultiplayerValue = (
@@ -97,6 +139,97 @@ export function DebugPanel({
               );
             })}
           </div>
+
+          <section
+            className="multiplayer-debug"
+            aria-label="Camera and projection tuning"
+          >
+            <div className="debug-section-heading">
+              <strong>Camera / projection</strong>
+              <span>{cameraConfig.mode}</span>
+            </div>
+
+            <label className="tuning-control camera-mode-control">
+              <span>CAMERA_MODE</span>
+              <select
+                value={cameraConfig.mode}
+                onChange={(event) =>
+                  onCameraChange({
+                    ...cameraConfig,
+                    mode: event.currentTarget.value as CameraConfig["mode"],
+                  })
+                }
+              >
+                {CAMERA_MODES.map((mode) => (
+                  <option key={mode} value={mode}>
+                    {mode}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <div className="tuning-list camera-tuning">
+              {cameraTuningKeys.map((key) => {
+                const definition = CAMERA_TUNING_DEFINITIONS[key];
+
+                return (
+                  <label className="tuning-control" key={key}>
+                    <span>
+                      {definition.label}
+                      <output>
+                        {cameraConfig[key].toFixed(
+                          definition.step < 0.1 ? 2 : 1,
+                        )}
+                      </output>
+                    </span>
+                    <input
+                      type="range"
+                      min={definition.min}
+                      max={definition.max}
+                      step={definition.step}
+                      value={cameraConfig[key]}
+                      onChange={(event) =>
+                        updateCameraValue(
+                          key,
+                          Number(event.currentTarget.value),
+                        )
+                      }
+                    />
+                  </label>
+                );
+              })}
+
+              {projectionTuningKeys.map((key) => {
+                const definition = PROJECTION_TUNING_DEFINITIONS[key];
+
+                return (
+                  <label className="tuning-control" key={key}>
+                    <span>
+                      {definition.label}
+                      <output>
+                        {projectionConfig[key].toFixed(
+                          definition.step < 0.1 ? 2 : 1,
+                        )}
+                      </output>
+                    </span>
+                    <input
+                      type="range"
+                      min={definition.min}
+                      max={definition.max}
+                      step={definition.step}
+                      value={projectionConfig[key]}
+                      onChange={(event) =>
+                        updateProjectionValue(
+                          key,
+                          Number(event.currentTarget.value),
+                        )
+                      }
+                    />
+                  </label>
+                );
+              })}
+            </div>
+          </section>
 
           <section className="multiplayer-debug" aria-label="Multiplayer debug">
             <div className="debug-section-heading">

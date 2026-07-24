@@ -4,9 +4,11 @@ import type {
   PlayerDescriptor,
   RoomPlayer,
 } from "../../../shared/multiplayer/protocol";
-import { RotatingFollowCamera } from "../camera/RotatingFollowCamera";
+import { FollowCamera } from "../camera/FollowCamera";
 import { PseudoPerspectiveRenderer } from "../camera/PseudoPerspectiveRenderer";
+import type { CameraConfig } from "../config/cameraConfig";
 import type { DrivingConfig } from "../config/drivingConfig";
+import type { ProjectionConfig } from "../config/projectionConfig";
 import { PlayerCar } from "../entities/PlayerCar";
 import { RemoteCar } from "../entities/RemoteCar";
 import { DrivingEffects } from "../effects/DrivingEffects";
@@ -29,7 +31,7 @@ type PendingNetworkEvent =
 
 export class RacePrototypeScene extends Phaser.Scene {
   private car!: PlayerCar;
-  private followCamera!: RotatingFollowCamera;
+  private followCamera!: FollowCamera;
   private perspectiveRenderer!: PseudoPerspectiveRenderer;
   private steeringInput!: SteeringInput;
   private drivingEffects!: DrivingEffects;
@@ -50,6 +52,8 @@ export class RacePrototypeScene extends Phaser.Scene {
 
   constructor(
     private readonly getDrivingConfig: () => DrivingConfig,
+    private readonly getCameraConfig: () => CameraConfig,
+    private readonly getProjectionConfig: () => ProjectionConfig,
     private readonly getMultiplayerConfig: () => MultiplayerRuntimeConfig,
     private readonly onTelemetry: (telemetry: RaceTelemetry) => void,
     private readonly onMultiplayerTelemetry: (
@@ -80,10 +84,12 @@ export class RacePrototypeScene extends Phaser.Scene {
       this.track.worldWidth,
       this.track.worldHeight,
     );
-    this.followCamera = new RotatingFollowCamera(
+    this.followCamera = new FollowCamera(
       this.cameras.main,
       this.car,
+      this.getCameraConfig(),
       this.getDrivingConfig(),
+      this.getProjectionConfig(),
     );
     this.perspectiveRenderer = new PseudoPerspectiveRenderer(
       this,
@@ -153,7 +159,14 @@ export class RacePrototypeScene extends Phaser.Scene {
       this.surface,
       steering,
     );
-    this.followCamera.update(deltaSeconds, drivingConfig);
+    const cameraConfig = this.getCameraConfig();
+    const projectionConfig = this.getProjectionConfig();
+    this.followCamera.update(
+      deltaSeconds,
+      cameraConfig,
+      drivingConfig,
+      projectionConfig,
+    );
     const multiplayerConfig = this.getMultiplayerConfig();
     const renderTime = performance.now();
     for (const remoteCar of this.remoteCars.values()) {
@@ -163,7 +176,7 @@ export class RacePrototypeScene extends Phaser.Scene {
         multiplayerConfig.remoteCarOpacity,
       );
     }
-    this.perspectiveRenderer.update(drivingConfig);
+    this.perspectiveRenderer.update(cameraConfig, projectionConfig);
     for (const remoteCar of this.remoteCars.values()) {
       const anchor = remoteCar.getNameplateAnchor(
         this.remoteNameplateAnchor,
@@ -172,7 +185,7 @@ export class RacePrototypeScene extends Phaser.Scene {
         ? this.perspectiveRenderer.projectWorldToOverlay(
             anchor.x,
             anchor.y,
-            drivingConfig,
+            projectionConfig,
             this.remoteNameplatePosition,
           )
         : undefined;

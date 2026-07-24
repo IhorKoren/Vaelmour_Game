@@ -1,7 +1,8 @@
 import Phaser from "phaser";
-import type { DrivingConfig } from "../config/drivingConfig";
+import type { CameraConfig } from "../config/cameraConfig";
+import type { ProjectionConfig } from "../config/projectionConfig";
 import type { PlayerCar } from "../entities/PlayerCar";
-import type { RotatingFollowCamera } from "./RotatingFollowCamera";
+import type { FollowCamera } from "./FollowCamera";
 
 const HORIZONTAL_OVERSCAN = 1.45;
 const VERTICAL_OVERSCAN = 1.25;
@@ -22,7 +23,7 @@ export class PseudoPerspectiveRenderer {
   constructor(
     private readonly scene: Phaser.Scene,
     private readonly camera: Phaser.Cameras.Scene2D.Camera,
-    private readonly followCamera: RotatingFollowCamera,
+    private readonly followCamera: FollowCamera,
     private readonly playerCar: PlayerCar,
   ) {
     this.overlays.add(playerCar);
@@ -68,9 +69,13 @@ export class PseudoPerspectiveRenderer {
     this.overlays.delete(gameObject);
   }
 
-  update(config: DrivingConfig) {
+  update(
+    cameraConfig: CameraConfig,
+    projectionConfig: ProjectionConfig,
+  ) {
     const enabled =
-      config.cameraPerspectiveEnabled >= 0.5 &&
+      cameraConfig.mode === "FOLLOW_ROTATION" &&
+      projectionConfig.legacyMeshEnabled >= 0.5 &&
       this.sourceTexture !== null &&
       this.mesh !== null;
     this.active = enabled;
@@ -103,7 +108,7 @@ export class PseudoPerspectiveRenderer {
     this.outputAnchorY = this.mainPoint.y;
 
     this.renderWorldTexture();
-    this.updateMeshGeometry(config);
+    this.updateMeshGeometry(projectionConfig);
     this.mesh
       .setPosition(this.camera.midPoint.x, this.camera.midPoint.y)
       .setRotation(this.followCamera.rotation)
@@ -113,7 +118,7 @@ export class PseudoPerspectiveRenderer {
   projectWorldToOverlay(
     worldX: number,
     worldY: number,
-    config: DrivingConfig,
+    config: ProjectionConfig,
     out: Phaser.Math.Vector2,
   ) {
     if (!this.active || !this.sourceTexture) {
@@ -178,7 +183,7 @@ export class PseudoPerspectiveRenderer {
     this.mesh.addVertices(vertices, uvs);
   }
 
-  private updateMeshGeometry(config: DrivingConfig) {
+  private updateMeshGeometry(config: ProjectionConfig) {
     if (!this.mesh || !this.sourceTexture) {
       return;
     }
@@ -340,7 +345,7 @@ export class PseudoPerspectiveRenderer {
     );
   }
 
-  private projectY(sourceY: number, config: DrivingConfig) {
+  private projectY(sourceY: number, config: ProjectionConfig) {
     return (
       this.outputAnchorY +
       (sourceY - this.sourceAnchorY) *
@@ -348,12 +353,12 @@ export class PseudoPerspectiveRenderer {
     );
   }
 
-  private getScaleAt(sourceY: number, config: DrivingConfig) {
+  private getScaleAt(sourceY: number, config: ProjectionConfig) {
     const aheadDistance = Math.max(0, this.sourceAnchorY - sourceY);
     const vanishingDistance = Math.max(
       1,
       this.outputAnchorY -
-        config.cameraVanishingPointY * this.camera.height,
+        config.legacyMeshVanishingPointY * this.camera.height,
     );
     const distanceRatio = Phaser.Math.Clamp(
       aheadDistance / vanishingDistance,
@@ -363,18 +368,18 @@ export class PseudoPerspectiveRenderer {
     const easedDistance =
       distanceRatio * distanceRatio * (3 - 2 * distanceRatio);
     const pitchInfluence = Phaser.Math.Clamp(
-      config.cameraPitch / 25,
+      config.legacyMeshPitch / 25,
       0,
       1,
     );
     const perspectiveMix =
       easedDistance *
       pitchInfluence *
-      config.cameraPerspectiveStrength;
+      config.legacyMeshStrength;
 
     return Phaser.Math.Linear(
-      config.cameraNearScale,
-      config.cameraFarScale,
+      config.legacyMeshNearScale,
+      config.legacyMeshFarScale,
       perspectiveMix,
     );
   }

@@ -11,18 +11,6 @@ export interface DrivingConfig {
   offroadMaxSpeedFactor: number;
   offroadAccelerationFactor: number;
   offroadGripFactor: number;
-  cameraRotationSmoothing: number;
-  cameraPositionSmoothing: number;
-  cameraLookAhead: number;
-  cameraLookAheadSpeedFactor: number;
-  cameraPlayerScreenY: number;
-  cameraMaxLookAhead: number;
-  cameraPerspectiveEnabled: number;
-  cameraPitch: number;
-  cameraPerspectiveStrength: number;
-  cameraVanishingPointY: number;
-  cameraNearScale: number;
-  cameraFarScale: number;
 }
 
 export const DEFAULT_DRIVING_CONFIG: Readonly<DrivingConfig> = {
@@ -38,18 +26,6 @@ export const DEFAULT_DRIVING_CONFIG: Readonly<DrivingConfig> = {
   offroadMaxSpeedFactor: 0.42,
   offroadAccelerationFactor: 0.34,
   offroadGripFactor: 0.62,
-  cameraRotationSmoothing: 5.5,
-  cameraPositionSmoothing: 12,
-  cameraLookAhead: 8,
-  cameraLookAheadSpeedFactor: 44,
-  cameraPlayerScreenY: 0.62,
-  cameraMaxLookAhead: 52,
-  cameraPerspectiveEnabled: 1,
-  cameraPitch: 22,
-  cameraPerspectiveStrength: 0.72,
-  cameraVanishingPointY: 0.12,
-  cameraNearScale: 1.04,
-  cameraFarScale: 0.76,
 };
 
 export interface TuningDefinition {
@@ -109,78 +85,6 @@ export const TUNING_DEFINITIONS: Record<
     min: 0.2,
     max: 1,
     step: 0.02,
-  },
-  cameraRotationSmoothing: {
-    label: "CAMERA_ROTATION_SMOOTHING",
-    min: 1,
-    max: 12,
-    step: 0.25,
-  },
-  cameraPositionSmoothing: {
-    label: "CAMERA_POSITION_SMOOTHING",
-    min: 1,
-    max: 20,
-    step: 0.25,
-  },
-  cameraLookAhead: {
-    label: "CAMERA_LOOK_AHEAD",
-    min: 0,
-    max: 80,
-    step: 2,
-  },
-  cameraLookAheadSpeedFactor: {
-    label: "CAMERA_LOOK_AHEAD_SPEED_FACTOR",
-    min: 0,
-    max: 120,
-    step: 2,
-  },
-  cameraPlayerScreenY: {
-    label: "CAMERA_PLAYER_SCREEN_Y",
-    min: 0.55,
-    max: 0.7,
-    step: 0.01,
-  },
-  cameraMaxLookAhead: {
-    label: "CAMERA_MAX_LOOK_AHEAD",
-    min: 16,
-    max: 140,
-    step: 2,
-  },
-  cameraPerspectiveEnabled: {
-    label: "CAMERA_PERSPECTIVE_ENABLED",
-    min: 0,
-    max: 1,
-    step: 1,
-  },
-  cameraPitch: {
-    label: "CAMERA_PITCH",
-    min: 0,
-    max: 35,
-    step: 1,
-  },
-  cameraPerspectiveStrength: {
-    label: "CAMERA_PERSPECTIVE_STRENGTH",
-    min: 0,
-    max: 1,
-    step: 0.02,
-  },
-  cameraVanishingPointY: {
-    label: "CAMERA_VANISHING_POINT_Y",
-    min: 0.05,
-    max: 0.3,
-    step: 0.01,
-  },
-  cameraNearScale: {
-    label: "CAMERA_NEAR_SCALE",
-    min: 0.9,
-    max: 1.25,
-    step: 0.01,
-  },
-  cameraFarScale: {
-    label: "CAMERA_FAR_SCALE",
-    min: 0.7,
-    max: 1,
-    step: 0.01,
   },
 };
 
