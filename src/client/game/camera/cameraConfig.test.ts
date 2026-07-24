@@ -40,6 +40,7 @@ test("defaults to a centered fixed camera and reference depth scale", () => {
   assert.equal(cameraConfig.positionLerp, 0.1);
   assert.equal(projectionConfig.depthScale, 0.62);
   assert.equal(projectionConfig.zoom, 1);
+  assert.equal(projectionConfig.groundProjectionEnabled, 1);
 });
 
 test("validates camera and projection runtime configs", () => {

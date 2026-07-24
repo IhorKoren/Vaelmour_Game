@@ -5,6 +5,7 @@ import {
 
 export interface ProjectionConfig extends ProjectionSettings {
   zoom: number;
+  groundProjectionEnabled: number;
   legacyMeshEnabled: number;
   legacyMeshPitch: number;
   legacyMeshStrength: number;
@@ -23,6 +24,7 @@ export interface ProjectionTuningDefinition {
 export const DEFAULT_PROJECTION_CONFIG: Readonly<ProjectionConfig> = {
   ...DEFAULT_PROJECTION_SETTINGS,
   zoom: 1,
+  groundProjectionEnabled: 1,
   legacyMeshEnabled: 1,
   legacyMeshPitch: 22,
   legacyMeshStrength: 0.72,
@@ -52,6 +54,12 @@ export const PROJECTION_TUNING_DEFINITIONS: Record<
     min: 0.8,
     max: 1.2,
     step: 0.01,
+  },
+  groundProjectionEnabled: {
+    label: "GROUND_PROJECTION",
+    min: 0,
+    max: 1,
+    step: 1,
   },
   legacyMeshEnabled: {
     label: "FOLLOW_LEGACY_MESH",

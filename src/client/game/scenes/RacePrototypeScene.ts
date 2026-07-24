@@ -13,6 +13,8 @@ import { PlayerCar } from "../entities/PlayerCar";
 import { RemoteCar } from "../entities/RemoteCar";
 import { DrivingEffects } from "../effects/DrivingEffects";
 import { SteeringInput } from "../input/SteeringInput";
+import { LegacyTrackRenderer } from "../rendering/LegacyTrackRenderer";
+import { ProjectedTrackRenderer } from "../rendering/ProjectedTrackRenderer";
 import { PrototypeTrack } from "../track/PrototypeTrack";
 import type { RaceTelemetry, Surface } from "../types";
 import { MultiplayerClient } from "../../multiplayer/MultiplayerClient";
@@ -36,6 +38,8 @@ export class RacePrototypeScene extends Phaser.Scene {
   private steeringInput!: SteeringInput;
   private drivingEffects!: DrivingEffects;
   private track!: PrototypeTrack;
+  private legacyTrackRenderer!: LegacyTrackRenderer;
+  private projectedTrackRenderer!: ProjectedTrackRenderer;
   private multiplayerClient!: MultiplayerClient;
   private readonly remoteCars = new Map<string, RemoteCar>();
   private readonly remotePlayers = new Map<string, PlayerDescriptor>();
@@ -66,7 +70,7 @@ export class RacePrototypeScene extends Phaser.Scene {
   create() {
     this.acceptsNetworkEvents = true;
     this.track = new PrototypeTrack();
-    this.track.draw(this);
+    this.legacyTrackRenderer = new LegacyTrackRenderer(this, this.track);
 
     const start = this.track.getStart();
     this.car = new PlayerCar(
@@ -96,6 +100,18 @@ export class RacePrototypeScene extends Phaser.Scene {
       this.cameras.main,
       this.followCamera,
       this.car,
+    );
+    this.projectedTrackRenderer = new ProjectedTrackRenderer(
+      this,
+      this.track,
+      this.followCamera,
+    );
+    this.projectedTrackRenderer.update(
+      this.getCameraConfig(),
+      this.getProjectionConfig(),
+    );
+    this.legacyTrackRenderer.setVisible(
+      !this.projectedTrackRenderer.isActive,
     );
     this.multiplayerClient = new MultiplayerClient({
       url: resolveWebSocketUrl(),
@@ -128,6 +144,8 @@ export class RacePrototypeScene extends Phaser.Scene {
       this.multiplayerClient.destroy();
       this.clearRemoteCars();
       this.perspectiveRenderer.destroy();
+      this.projectedTrackRenderer.destroy();
+      this.legacyTrackRenderer.destroy();
     });
   }
 
@@ -176,6 +194,13 @@ export class RacePrototypeScene extends Phaser.Scene {
         multiplayerConfig.remoteCarOpacity,
       );
     }
+    this.projectedTrackRenderer.update(
+      cameraConfig,
+      projectionConfig,
+    );
+    this.legacyTrackRenderer.setVisible(
+      !this.projectedTrackRenderer.isActive,
+    );
     this.perspectiveRenderer.update(cameraConfig, projectionConfig);
     for (const remoteCar of this.remoteCars.values()) {
       const anchor = remoteCar.getNameplateAnchor(

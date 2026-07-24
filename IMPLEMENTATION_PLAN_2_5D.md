@@ -232,6 +232,28 @@ portrait phone; track/offroad regression.
 **Не повинно зламатися.** Centerline, spawn, checkpoints, lap count і server
 state.
 
+### Phase 3 implementation note
+
+- `PrototypeTrack` тепер зберігає лише source-of-truth world geometry,
+  checkpoints, sand zone data, normal queries, spawn і `isOnTrack()`. Physics,
+  laps і network координати не проектуються.
+- `ProjectedTrackRenderer` читає ту саму centerline/road width/sand data та
+  щокадру будує лише видимі camera-relative ground quads через Phase 1 API.
+  Окрема ground camera рендериться позаду main object camera, тому cars не
+  стискаються глобальним `scaleY`.
+- Projected layers у `REFERENCE_FIXED`: world-stable grass detail, sand
+  polygons, layered asphalt strip, asphalt marks, thin boundary strips і
+  checker start line. Runtime `depthScale` змінює всі ground vertices без
+  reload; `GROUND_PROJECTION=0` вмикає flat legacy comparison.
+- Обрано compatibility strategy A: `REFERENCE_FIXED` використовує projected
+  ground, а `FOLLOW_ROTATION` — `LegacyTrackRenderer` плюс існуючий
+  `PseudoPerspectiveRenderer`. Legacy renderer винесений з track data class,
+  але поки збережений для A/B і містить старі curbs/trackside props.
+- Renderer culls world segments за inverse-projected viewport bounds. Geometry
+  helpers не мутують centerline; поточна кількість allocations прийнятна для
+  correctness pass, але reusable projected buffers залишаються optimization
+  risk для Phase 11.
+
 ## Phase 4 — Car renderer і ground shadow
 
 **Мета.** Проєктувати позицію та direction car, зберігаючи пропорції sprite;
