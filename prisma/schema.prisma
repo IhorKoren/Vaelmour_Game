@@ -1,0 +1,290 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../server/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum CharacterClass {
+  warrior
+  ranger
+  blacksmith
+  alchemist
+  jeweler
+}
+
+enum ItemLocation {
+  INVENTORY
+  STORAGE
+  EQUIPPED
+  MARKET_ESCROW
+  TRADE_ESCROW
+}
+
+enum EquipmentSlot {
+  weapon
+  head
+  chest
+  hands
+  legs
+  feet
+  ring1
+  ring2
+  amulet
+}
+
+enum CoinLedgerReason {
+  RIFT_REWARD
+  CRAFT_FEE
+  AUCTION_BUY
+  AUCTION_SELL
+  TRADE
+  PARTY_SLOT
+  ADMIN
+  MARKET_BUY_RESERVE
+  MARKET_BUY_RELEASE
+  MARKET_BUY
+  MARKET_SELL
+  MARKET_BUY_ORDER_FEE
+  MARKET_TRANSACTION_FEE
+  DIRECT_TRADE
+  PARTY_SLOT_RESERVE
+  PARTY_SLOT_REFUND
+  PARTY_SLOT_PAYMENT
+}
+
+enum MarketSide {
+  BUY
+  SELL
+}
+
+enum MarketOrderStatus {
+  OPEN
+  PARTIALLY_FILLED
+  FILLED
+  CANCELLED
+}
+
+enum DirectTradeStatus {
+  REQUESTED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  DECLINED
+}
+
+enum PartySlotReservationStatus {
+  PRE_START
+  ACCEPTED
+  SETTLED
+  REFUNDED
+}
+
+model Account {
+  id           String   @id @default(uuid()) @db.Uuid
+  devTokenHash String   @unique @map("dev_token_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  player       Player?
+
+  @@map("accounts")
+}
+
+model Player {
+  id               String                 @id @default(uuid()) @db.Uuid
+  accountId        String                 @unique @map("account_id") @db.Uuid
+  account          Account                @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  name             String                 @db.VarChar(18)
+  classId          CharacterClass         @map("class_id")
+  level            Int                    @default(1)
+  currentXP        Int                    @default(0) @map("current_xp")
+  coins            Int                    @default(0)
+  reservedCoins    Int                    @default(0) @map("reserved_coins")
+  version          Int                    @default(0)
+  createdAt        DateTime               @default(now()) @map("created_at")
+  updatedAt        DateTime               @updatedAt @map("updated_at")
+  items            ItemEntry[]
+  learnedRecipes   LearnedRecipe[]
+  coinLedger       CoinLedgerEntry[]
+  operations       EconomyOperation[]
+  marketOrders     MarketOrder[]
+  requestedTrades  DirectTrade[]          @relation("TradeRequester")
+  receivedTrades   DirectTrade[]          @relation("TradeReceiver")
+  tradeOfferItems  TradeOfferItem[]
+  tradeOfferCoins  TradeOfferCoin[]
+  slotReservations PartySlotReservation[] @relation("SlotApplicant")
+  slotPayments     PartySlotReservation[] @relation("SlotLeader")
+
+  @@index([accountId])
+  @@map("players")
+}
+
+model ItemEntry {
+  id            String          @id @default(uuid()) @db.Uuid
+  playerId      String          @map("player_id") @db.Uuid
+  player        Player          @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  itemId        String          @map("item_id") @db.VarChar(100)
+  quantity      Int
+  location      ItemLocation
+  equipmentSlot EquipmentSlot?  @map("equipment_slot")
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+  marketOrder   MarketOrder?
+  tradeOffer    TradeOfferItem?
+
+  @@unique([playerId, equipmentSlot])
+  @@index([playerId, location])
+  @@index([playerId, itemId])
+  @@map("item_entries")
+}
+
+model LearnedRecipe {
+  id        String   @id @default(uuid()) @db.Uuid
+  playerId  String   @map("player_id") @db.Uuid
+  player    Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  recipeId  String   @map("recipe_id") @db.VarChar(100)
+  learnedAt DateTime @default(now()) @map("learned_at")
+
+  @@unique([playerId, recipeId])
+  @@index([playerId])
+  @@map("learned_recipes")
+}
+
+model CoinLedgerEntry {
+  id               String           @id @default(uuid()) @db.Uuid
+  playerId         String           @map("player_id") @db.Uuid
+  player           Player           @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  amount           Int
+  resultingBalance Int              @map("resulting_balance")
+  reason           CoinLedgerReason
+  referenceId      String?          @map("reference_id") @db.VarChar(150)
+  createdAt        DateTime         @default(now()) @map("created_at")
+
+  @@unique([playerId, reason, referenceId])
+  @@index([playerId, createdAt])
+  @@map("coin_ledger")
+}
+
+model EconomyOperation {
+  id           String   @id @default(uuid()) @db.Uuid
+  playerId     String   @map("player_id") @db.Uuid
+  player       Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  operationKey String   @unique @map("operation_key") @db.VarChar(200)
+  type         String   @db.VarChar(50)
+  referenceId  String?  @map("reference_id") @db.VarChar(150)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([playerId, type])
+  @@map("economy_operations")
+}
+
+model MarketOrder {
+  id                String            @id @default(uuid()) @db.Uuid
+  playerId          String            @map("player_id") @db.Uuid
+  player            Player            @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  itemId            String            @map("item_id") @db.VarChar(100)
+  escrowItemId      String?           @unique @map("escrow_item_id") @db.Uuid
+  escrowItem        ItemEntry?        @relation(fields: [escrowItemId], references: [id], onDelete: SetNull)
+  side              MarketSide
+  pricePerUnit      Int               @map("price_per_unit")
+  originalQuantity  Int               @map("original_quantity")
+  remainingQuantity Int               @map("remaining_quantity")
+  reservedCoins     Int               @default(0) @map("reserved_coins")
+  status            MarketOrderStatus @default(OPEN)
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+  buyFills          MarketFill[]      @relation("BuyOrderFills")
+  sellFills         MarketFill[]      @relation("SellOrderFills")
+
+  @@index([itemId, side, status, pricePerUnit, createdAt])
+  @@index([playerId, createdAt])
+  @@map("market_orders")
+}
+
+model MarketFill {
+  id          String      @id @default(uuid()) @db.Uuid
+  itemId      String      @map("item_id") @db.VarChar(100)
+  buyOrderId  String      @map("buy_order_id") @db.Uuid
+  buyOrder    MarketOrder @relation("BuyOrderFills", fields: [buyOrderId], references: [id], onDelete: Cascade)
+  sellOrderId String      @map("sell_order_id") @db.Uuid
+  sellOrder   MarketOrder @relation("SellOrderFills", fields: [sellOrderId], references: [id], onDelete: Cascade)
+  buyerId     String      @map("buyer_id") @db.Uuid
+  sellerId    String      @map("seller_id") @db.Uuid
+  unitPrice   Int         @map("unit_price")
+  quantity    Int
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  @@index([itemId, createdAt])
+  @@index([buyerId])
+  @@index([sellerId])
+  @@map("market_fills")
+}
+
+model DirectTrade {
+  id                         String            @id @default(uuid()) @db.Uuid
+  requesterId                String            @map("requester_id") @db.Uuid
+  requester                  Player            @relation("TradeRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  receiverId                 String            @map("receiver_id") @db.Uuid
+  receiver                   Player            @relation("TradeReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  status                     DirectTradeStatus @default(REQUESTED)
+  revision                   Int               @default(0)
+  requesterConfirmedRevision Int?              @map("requester_confirmed_revision")
+  receiverConfirmedRevision  Int?              @map("receiver_confirmed_revision")
+  createdAt                  DateTime          @default(now()) @map("created_at")
+  updatedAt                  DateTime          @updatedAt @map("updated_at")
+  items                      TradeOfferItem[]
+  coins                      TradeOfferCoin[]
+
+  @@index([requesterId, status])
+  @@index([receiverId, status])
+  @@map("direct_trades")
+}
+
+model TradeOfferItem {
+  id          String      @id @default(uuid()) @db.Uuid
+  tradeId     String      @map("trade_id") @db.Uuid
+  trade       DirectTrade @relation(fields: [tradeId], references: [id], onDelete: Cascade)
+  playerId    String      @map("player_id") @db.Uuid
+  player      Player      @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  itemEntryId String      @unique @map("item_entry_id") @db.Uuid
+  itemEntry   ItemEntry   @relation(fields: [itemEntryId], references: [id], onDelete: Cascade)
+  itemId      String      @map("item_id") @db.VarChar(100)
+  quantity    Int
+
+  @@index([tradeId, playerId])
+  @@map("trade_offer_items")
+}
+
+model TradeOfferCoin {
+  id       String      @id @default(uuid()) @db.Uuid
+  tradeId  String      @map("trade_id") @db.Uuid
+  trade    DirectTrade @relation(fields: [tradeId], references: [id], onDelete: Cascade)
+  playerId String      @map("player_id") @db.Uuid
+  player   Player      @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  amount   Int
+
+  @@unique([tradeId, playerId])
+  @@map("trade_offer_coins")
+}
+
+model PartySlotReservation {
+  id          String                     @id @default(uuid()) @db.Uuid
+  roomId      String                     @map("room_id") @db.VarChar(100)
+  applicantId String                     @map("applicant_id") @db.Uuid
+  applicant   Player                     @relation("SlotApplicant", fields: [applicantId], references: [id], onDelete: Cascade)
+  leaderId    String?                    @map("leader_id") @db.Uuid
+  leader      Player?                    @relation("SlotLeader", fields: [leaderId], references: [id], onDelete: SetNull)
+  amount      Int
+  status      PartySlotReservationStatus @default(PRE_START)
+  expiresAt   DateTime                   @map("expires_at")
+  createdAt   DateTime                   @default(now()) @map("created_at")
+  updatedAt   DateTime                   @updatedAt @map("updated_at")
+
+  @@unique([roomId, applicantId])
+  @@index([applicantId, status])
+  @@index([roomId, status])
+  @@index([status, expiresAt])
+  @@map("party_slot_reservations")
+}

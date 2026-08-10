@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: first-rift-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: rift
+      POSTGRES_PASSWORD: rift_dev
+      POSTGRES_DB: first_rift
+    ports:
+      - "5434:5432"
+    volumes:
+      - first_rift_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rift -d first_rift"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  first_rift_postgres:
