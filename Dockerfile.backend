@@ -10,4 +10,4 @@ COPY . .
 RUN npm run db:generate && npm run build
 
 EXPOSE 8787
-CMD ["npm", "run", "start:server"]
+CMD ["sh", "-c", "npm run db:deploy && npm run start:server"]
