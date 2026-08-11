@@ -17,13 +17,37 @@ export function selectEnemyTarget(party: Character[], random: () => number = Mat
   return alive[Math.floor(random() * alive.length)] ?? alive[0]
 }
 
+export function selectEnemyTargetByMode(party: Character[], mode: Enemy['targeting'] = 'RANDOM', random: () => number = Math.random): Character | null {
+  const alive = party.filter((member) => member.alive && member.currentHP > 0)
+  if (!alive.length) return null
+  if (mode === 'LOWEST_HP') return [...alive].sort((a, b) => a.currentHP / a.maxHP - b.currentHP / b.maxHP)[0]
+  if (mode === 'HIGHEST_HP') return [...alive].sort((a, b) => b.currentHP - a.currentHP)[0]
+  return alive[Math.floor(random() * alive.length)] ?? alive[0]
+}
+
+export function weightedZone(weights: Record<Zone, number> | undefined, random: () => number = Math.random): Zone {
+  if (!weights) return ZONES[Math.floor(random() * ZONES.length)] ?? 'body'
+  const total = ZONES.reduce((sum, zone) => sum + Math.max(0, weights[zone]), 0)
+  let roll = random() * total
+  for (const zone of ZONES) {
+    roll -= Math.max(0, weights[zone])
+    if (roll <= 0) return zone
+  }
+  return 'body'
+}
+
 export function generateEnemyAction(enemy: Enemy, party: Character[], random: () => number = Math.random): EnemyAction {
   const attackNumber = enemy.attackCount + 1
-  const isGroupAttack = enemy.kind === 'boss' && attackNumber % 3 === 0
-  const target = isGroupAttack ? null : selectEnemyTarget(party, random)
+  const groupEvery = enemy.bossPattern?.groupAttackEvery ?? 3
+  const isGroupAttack = enemy.kind === 'boss' && attackNumber % groupEvery === 0
+  const target = isGroupAttack ? null : selectEnemyTargetByMode(party, enemy.targeting, random)
+  const patternWeights = enemy.bossPattern?.cycleWeights
+  const attackWeights = patternWeights?.length
+    ? patternWeights[Math.floor(enemy.attackCount / Math.max(1, enemy.bossPattern?.cycleLength ?? 3)) % patternWeights.length]
+    : enemy.attackZoneWeights
   return {
-    attackZone: ZONES[Math.floor(random() * ZONES.length)],
-    defendZone: ZONES[Math.floor(random() * ZONES.length)],
+    attackZone: weightedZone(attackWeights, random),
+    defendZone: weightedZone(enemy.defenseZoneWeights, random),
     targetId: target?.id ?? null,
     isGroupAttack,
   }
@@ -59,7 +83,7 @@ export function resolveRound(input: RoundInput): RoundResult {
     const action = input.actions[member.id]
     const cooldown = input.potionCooldowns?.[member.id] ?? (index === 0 ? input.potionCooldown : 0)
     if (!canCharacterAct(member) || action?.type !== 'potion' || cooldown !== 0) continue
-    const healing = Math.round(member.maxHP * POTION_HEAL_PERCENT)
+    const healing = Math.round(member.maxHP * (input.potionHealPercents?.[member.id] ?? POTION_HEAL_PERCENT))
     const healedHP = Math.min(member.maxHP, member.currentHP + healing)
     party[index] = { ...member, currentHP: healedHP }
     nextCooldowns[member.id] = POTION_COOLDOWN_ROUNDS

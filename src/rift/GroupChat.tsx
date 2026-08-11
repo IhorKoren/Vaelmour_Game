@@ -20,7 +20,7 @@ export function GroupChat({ messages, onSend }: Props) {
         ))}
       </div>
       <div className="chat-compose">
-        <input value={value} maxLength={280} placeholder="Повідомлення групі…" onChange={(event) => setValue(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && submit()} />
+        <input value={value} maxLength={300} placeholder="Повідомлення групі…" onChange={(event) => setValue(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && submit()} />
         <button onClick={submit} aria-label="Надіслати">›</button>
       </div>
     </section>

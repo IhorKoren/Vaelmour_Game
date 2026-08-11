@@ -1,6 +1,7 @@
 import type { Profession, ResourceDefinition } from './types'
+import { PHASE7_RESOURCES } from './phase7Catalog'
 
-export const RESOURCES: Record<string, ResourceDefinition> = {
+export const LEGACY_RESOURCES: Record<string, ResourceDefinition> = {
   rift_iron: { id: 'rift_iron', name: 'Rift Iron', profession: 'blacksmith', icon: '▰' },
   dark_plate_fragment: { id: 'dark_plate_fragment', name: 'Dark Plate Fragment', profession: 'blacksmith', icon: '▧' },
   core_metal: { id: 'core_metal', name: 'Core Metal', profession: 'blacksmith', icon: '⬡' },
@@ -11,6 +12,8 @@ export const RESOURCES: Record<string, ResourceDefinition> = {
   gem_fragment: { id: 'gem_fragment', name: 'Gem Fragment', profession: 'jeweler', icon: '◇' },
   core_shard: { id: 'core_shard', name: 'Core Shard', profession: 'jeweler', icon: '✦' },
 }
+
+export const RESOURCES: Record<string, ResourceDefinition> = { ...LEGACY_RESOURCES, ...PHASE7_RESOURCES }
 
 export const PROFESSION_RESOURCE_IDS: Record<Profession, string[]> = {
   blacksmith: ['rift_iron', 'dark_plate_fragment', 'core_metal'],

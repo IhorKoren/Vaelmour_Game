@@ -8,6 +8,7 @@
     "dev": "concurrently -k -n client,server -c cyan,magenta \"npm:dev:client\" \"npm:dev:server\"",
     "dev:client": "vite",
     "dev:server": "tsx watch server/index.ts",
+    "start:server": "tsx server/index.ts",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
@@ -20,6 +21,10 @@
     "test": "vitest run",
     "test:db": "tsx server/scripts/verifyPostgresPersistence.ts",
     "test:watch": "vitest",
+    "validate:content": "tsx server/scripts/validateContent.ts",
+    "simulate:balance": "tsx server/scripts/simulateBalance.ts",
+    "report:playtest": "tsx server/scripts/reportPlaytest.ts",
+    "smoke:staging": "tsx server/scripts/stagingSmoke.ts",
     "preview": "vite preview"
   },
   "dependencies": {

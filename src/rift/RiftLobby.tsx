@@ -4,6 +4,9 @@ import { ConnectionIndicator } from '../network/ConnectionIndicator'
 import type { MultiplayerClient } from '../network/useMultiplayer'
 import type { Character } from '../types/game'
 import { GroupChat } from './GroupChat'
+import { FIRST_RIFT } from '../../shared/game-data/rifts/firstRift'
+import { ENEMY_CATALOG } from '../../shared/game-data/rifts'
+import { PRODUCTION_MIN_PARTY_SIZE, RECOMMENDED_PARTY_SIZE } from '../../shared/game-data/balance'
 
 interface Props {
   character: Character
@@ -17,7 +20,8 @@ export function RiftLobby({ client, onBack }: Props) {
   const party = client.party
   const self = party?.members.find((member) => member.id === client.playerId)
   const isLeader = party?.leaderId === client.playerId
-  const canStart = Boolean(isLeader && party && party.members.length >= 2 && party.members.every((member) => member.ready))
+  const canStart = Boolean(isLeader && party && party.members.length >= PRODUCTION_MIN_PARTY_SIZE && party.members.every((member) => member.ready))
+  const progress = client.characterState?.riftProgress.first_rift ?? { highestUnlockedFloor: 1, highestCompletedFloor: 0, completionCount: {} }
 
   const apply = (partyId: string) => {
     client.send({ type: 'APPLY_TO_PARTY', payload: { partyId, slotOfferCoins: Math.max(0, Math.floor(slotOffer)), operationId: crypto.randomUUID() } })
@@ -28,11 +32,23 @@ export function RiftLobby({ client, onBack }: Props) {
     <main className="lobby-shell">
       <header className="combat-header lobby-header">
         <button className="back-button" onClick={onBack} aria-label="Повернутися до міста">‹</button>
-        <div><p>Перший Розлом</p><span>RIFT LOBBY · ПОВЕРХ 1</span></div>
+        <div><p>Перший Розлом</p><span>RIFT LOBBY · ПОВЕРХ {party?.floorNumber ?? 1}</span></div>
         <ConnectionIndicator state={client.connection} />
       </header>
 
       {client.error && <button className="network-error" onClick={client.clearError}>{client.error}<span>×</span></button>}
+
+      <section className="floor-selector">
+        {FIRST_RIFT.floors.map((floor) => {
+          const unlocked = floor.floorNumber <= progress.highestUnlockedFloor
+          return <article key={floor.floorNumber} className={`${unlocked ? 'unlocked' : 'locked'} ${party?.floorNumber === floor.floorNumber ? 'selected' : ''}`}>
+            <div><small>FLOOR {floor.floorNumber}</small><strong>{unlocked ? 'Unlocked' : 'Locked'}</strong></div>
+            <p>Recommended Level: {floor.recommendedLevel.min}–{floor.recommendedLevel.max}</p>
+            <span>{floor.encounterEnemyIds.length + 1} encounters · Boss: {unlocked ? ENEMY_CATALOG[floor.bossId].name : '???'} · Tier {floor.resourceTier} resources</span>
+            {party && isLeader && <button disabled={!unlocked || party.floorNumber === floor.floorNumber} onClick={() => client.send({ type: 'SELECT_RIFT_FLOOR', payload: { floorNumber: floor.floorNumber } })}>Select</button>}
+          </article>
+        })}
+      </section>
 
       {!party ? (
         <>
@@ -50,7 +66,7 @@ export function RiftLobby({ client, onBack }: Props) {
               {client.parties.map((item) => (
                 <article key={item.id} className="party-listing">
                   <div className="leader-avatar">♛</div>
-                  <div><small>ЛІДЕР</small><strong>{item.leaderName}</strong><span>Перший Розлом · Поверх 1</span></div>
+                  <div><small>ЛІДЕР</small><strong>{item.leaderName}</strong><span>Перший Розлом · Поверх {item.floorNumber}</span></div>
                   <em>Players: {item.playerCount}/{item.maxPlayers}</em>
                   {applicationId === item.id
                     ? <button className="secondary-button" onClick={() => { client.send({ type: 'CANCEL_APPLICATION', payload: { partyId: item.id } }); setApplicationId(null) }}>Скасувати заявку</button>
@@ -63,7 +79,8 @@ export function RiftLobby({ client, onBack }: Props) {
       ) : (
         <div className="lobby-columns">
           <section className="party-room">
-            <div className="section-heading"><div><span>Група #{party.id}</span><h2>Загін експедиції</h2></div><small>Players: {party.members.length}/5</small></div>
+            <div className="section-heading"><div><span>Група #{party.id}</span><h2>Загін експедиції</h2></div><small>Recommended Party: {RECOMMENDED_PARTY_SIZE} · Players: {party.members.length}/5</small></div>
+            {party.members.length < RECOMMENDED_PARTY_SIZE && <p className="incomplete-party-warning">Неповна група — складність буде вищою.</p>}
             <div className="lobby-members">
               {party.members.map((member) => (
                 <article key={member.id} className={`lobby-member ${member.ready ? 'ready' : ''}`}>
@@ -82,7 +99,7 @@ export function RiftLobby({ client, onBack }: Props) {
               {isLeader && <button className="primary-button" disabled={!canStart} onClick={() => client.send({ type: 'START_EXPEDITION' })}>Почати експедицію <span>›</span></button>}
               <button className="text-button" onClick={() => client.send({ type: 'LEAVE_PARTY' })}>Покинути групу</button>
             </div>
-            {isLeader && !canStart && <p className="start-hint">Для старту потрібно 2–5 гравців, і кожен має натиснути READY.</p>}
+            {isLeader && !canStart && <p className="start-hint">Для старту потрібно {PRODUCTION_MIN_PARTY_SIZE}–5 гравців, і кожен має натиснути READY.</p>}
           </section>
           <GroupChat messages={party.chat} onSend={(message) => client.send({ type: 'PARTY_CHAT_MESSAGE', payload: { message } })} />
         </div>

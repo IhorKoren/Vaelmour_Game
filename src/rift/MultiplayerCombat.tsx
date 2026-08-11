@@ -22,6 +22,7 @@ export function MultiplayerCombat({ character, client, snapshot, onCharacterChan
   const [attackZone, setAttackZone] = useState<Zone | null>(null)
   const [defendZone, setDefendZone] = useState<Zone | null>(null)
   const [potionSelected, setPotionSelected] = useState(false)
+  const [potionItemId, setPotionItemId] = useState<string | undefined>()
   const [displayNow, setDisplayNow] = useState(Date.now())
   const receivedAtRef = useRef(Date.now())
   const previousRoundRef = useRef(snapshot.round)
@@ -49,10 +50,11 @@ export function MultiplayerCombat({ character, client, snapshot, onCharacterChan
   })), [snapshot.party])
 
   const submit = () => {
+    if (client.connection !== 'connected') return
     if (!defendZone || (!attackZone && !potionSelected)) return
     client.send({
       type: 'SUBMIT_ACTION',
-      payload: { round: snapshot.round, defendZone, attackZone: potionSelected ? undefined : attackZone ?? undefined, usePotion: potionSelected },
+      payload: { round: snapshot.round, defendZone, attackZone: potionSelected ? undefined : attackZone ?? undefined, usePotion: potionSelected, potionItemId },
     })
   }
 
@@ -75,7 +77,7 @@ export function MultiplayerCombat({ character, client, snapshot, onCharacterChan
         <section className="result-card">
           <div className="result-sigil">✓</div>
           <p className="eyebrow">Зустріч {snapshot.encounterIndex + 1} з {snapshot.encounterTotal} завершена</p>
-          <h1>Перемога</h1>
+          <h1>{snapshot.encounterIndex + 1 === snapshot.encounterTotal ? `Floor ${snapshot.floorNumber} Completed` : 'Перемога'}</h1>
           <p className="lead">Сервер зафіксував нагороди. Група вирішує, чи йти далі.</p>
           <div className="reward-grid">
             <div><span>✦</span><small>ДОСВІД</small><strong>+{snapshot.personalReward.xp} XP</strong></div>
@@ -102,18 +104,20 @@ export function MultiplayerCombat({ character, client, snapshot, onCharacterChan
   const enemy = snapshot.enemy
   if (!enemy) return null
   const hpPercent = Math.max(0, enemy.currentHP / enemy.maxHP * 100)
-  const isBossWarning = enemy.kind === 'boss' && (enemy.attackCount + 1) % 3 === 0
+  const groupEvery = enemy.bossPattern?.groupAttackEvery ?? 3
+  const isBossWarning = enemy.kind === 'boss' && (enemy.attackCount + 1) % groupEvery === 0
   const connectedCount = snapshot.party.filter((member) => member.connected).length
 
   return (
     <main className="combat-shell">
       <header className="combat-header">
         <div className="brand-mark compact">Ⅰ</div>
-        <div><p>Перший Розлом</p><span>ПОВЕРХ 1 · SERVER AUTHORITATIVE</span></div>
+        <div><p>Перший Розлом</p><span>ПОВЕРХ {snapshot.floorNumber} · SERVER AUTHORITATIVE</span></div>
         <ConnectionIndicator state={client.connection} />
       </header>
 
       {client.error && <button className="network-error" onClick={client.clearError}>{client.error}<span>×</span></button>}
+      {client.connection !== 'connected' && <div className="combat-network-overlay"><strong>{client.connection === 'reconnecting' ? 'RECONNECTING' : 'OFFLINE'}</strong><span>Дії тимчасово вимкнено. Очікуємо authoritative server snapshot.</span></div>}
       <section className="round-bar">
         <div><small>РАУНД</small><strong>{snapshot.round}</strong></div>
         <div className="timer"><span className={timeLeft <= 8 ? 'urgent' : ''}>◷ {String(timeLeft).padStart(2, '0')}</span><div><i style={{ width: `${timeLeft / ROUND_DURATION_SECONDS * 100}%` }} /></div></div>
@@ -123,19 +127,22 @@ export function MultiplayerCombat({ character, client, snapshot, onCharacterChan
       <section className={`enemy-panel ${enemy.kind === 'boss' ? 'boss' : ''}`}>
         <div className="enemy-art"><div className="enemy-rune">{enemy.kind === 'boss' ? '♛' : '◇'}</div><span>ПОРОДЖЕННЯ РОЗЛОМУ</span></div>
         <div className="enemy-info"><div><p>{enemy.kind === 'boss' ? 'ВОЛОДАР РОЗЛОМУ' : 'ВОРОГ'}</p><h1>{enemy.name}</h1><span>⚔ {enemy.attack} атака</span></div><div className="enemy-hp-label"><span>ЗДОРОВʼЯ</span><strong>{enemy.currentHP} / {enemy.maxHP}</strong></div><div className="enemy-hp"><span style={{ width: `${hpPercent}%` }} /></div></div>
-        {enemy.kind === 'boss' && <div className={`boss-indicator ${isBossWarning ? 'warning' : ''}`}><span>Групова атака через: <strong>{3 - enemy.attackCount % 3}</strong></span>{isBossWarning && <em>Наступна атака боса — групова</em>}</div>}
+        {enemy.kind === 'boss' && <div className={`boss-indicator ${isBossWarning ? 'warning' : ''}`}><span>Групова атака через: <strong>{groupEvery - enemy.attackCount % groupEvery}</strong></span>{isBossWarning && <em>Наступна атака боса — групова</em>}</div>}
       </section>
 
       <div className="combat-grid">
         <PartyCards party={characters} multiplayerMembers={snapshot.party} currentPlayerId={client.playerId ?? ''} />
+        <div>
+        <div className="potion-tier-picker">{Object.entries(self?.potionQuantities ?? {}).filter(([, quantity]) => quantity > 0).map(([id, quantity]) => <button key={id} className={potionItemId === id ? 'selected' : ''} onClick={() => { setPotionItemId(id); setPotionSelected(true); setAttackZone(null) }}>{ITEM_CATALOG[id]?.name ?? id} ×{quantity}</button>)}</div>
         <CombatControls
           attackZone={attackZone} defendZone={defendZone} potionSelected={potionSelected}
-          potionCooldown={self?.potionCooldown ?? 0} potionQuantity={self?.potionQuantity ?? 0} disabled={Boolean(self?.confirmed && !self.autoBattle)}
+          potionCooldown={self?.potionCooldown ?? 0} potionQuantity={self?.potionQuantity ?? 0} disabled={client.connection !== 'connected' || Boolean(self?.confirmed && !self.autoBattle)}
           playerAlive={self?.alive ?? false} autoBattle={self?.autoBattle ?? false}
           onAttack={(zone) => { setAttackZone(zone); setPotionSelected(false) }} onDefend={setDefendZone}
           onPotion={() => { setPotionSelected((value) => !value); setAttackZone(null) }} onConfirm={submit}
           onAutoChange={(enabled) => client.send({ type: 'SET_AUTO_BATTLE', payload: { enabled } })}
         />
+        </div>
       </div>
 
       <div className="combat-bottom-grid">

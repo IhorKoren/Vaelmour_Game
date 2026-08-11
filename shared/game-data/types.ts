@@ -1,6 +1,7 @@
 import type { CharacterClass } from '../../src/types/game'
 
 export type Profession = 'blacksmith' | 'alchemist' | 'jeweler'
+export type ContentTier = 1 | 2 | 3
 export type ItemCategory = 'equipment' | 'jewelry' | 'consumable' | 'resource' | 'recipe'
 export type RecipeCategory = 'equipment' | 'consumables' | 'jewelry'
 export type ItemEquipType = 'weapon' | 'head' | 'chest' | 'hands' | 'legs' | 'feet' | 'ring' | 'amulet'
@@ -17,6 +18,8 @@ export interface ItemDefinition {
   attack?: number
   hp?: number
   recipeId?: string
+  tier?: ContentTier
+  potionHealPercent?: number
 }
 
 export interface RecipeDefinition {
@@ -28,6 +31,7 @@ export interface RecipeDefinition {
   outputQuantity: number
   targetClass?: CharacterClass
   requirements: Record<string, number>
+  tier?: ContentTier
 }
 
 export interface ResourceDefinition {
@@ -35,6 +39,15 @@ export interface ResourceDefinition {
   name: string
   profession: Profession
   icon: string
+  tier?: ContentTier
+  role?: 'COMMON' | 'SECONDARY' | 'CORE'
+}
+
+export interface PlayerRiftProgress {
+  riftId: string
+  highestUnlockedFloor: number
+  highestCompletedFloor: number
+  completionCount: Record<number, number>
 }
 
 export interface InventoryEntry {

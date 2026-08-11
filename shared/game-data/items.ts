@@ -1,5 +1,6 @@
 import type { ItemDefinition } from './types'
 import { RESOURCES } from './resources'
+import { PHASE7_ITEMS, POTION_IDS } from './phase7Catalog'
 
 const equipment: ItemDefinition[] = [
   { id: 'starter_warrior_weapon', name: 'Надщерблений меч', category: 'equipment', icon: '⚔', stackable: false, equipType: 'weapon', allowedClass: 'warrior', attack: 2 },
@@ -27,7 +28,7 @@ const equipment: ItemDefinition[] = [
   { id: 'balanced_amulet', name: 'Амулет рівноваги', category: 'jewelry', icon: '◇', stackable: false, equipType: 'amulet', attack: 2, hp: 18 },
 ]
 
-export const HEALING_POTION_ID = 'healing_potion'
+export const HEALING_POTION_ID = POTION_IDS[2]
 
 const consumables: ItemDefinition[] = [
   { id: HEALING_POTION_ID, name: 'Healing Potion', category: 'consumable', icon: '✣', stackable: true },
@@ -37,4 +38,7 @@ const resources: ItemDefinition[] = Object.values(RESOURCES).map((resource) => (
   id: resource.id, name: resource.name, category: 'resource', icon: resource.icon, stackable: true,
 }))
 
-export const ITEMS: Record<string, ItemDefinition> = Object.fromEntries([...equipment, ...consumables, ...resources].map((item) => [item.id, item]))
+export const ITEMS: Record<string, ItemDefinition> = {
+  ...Object.fromEntries([...equipment, ...consumables, ...resources].map((item) => [item.id, item])),
+  ...PHASE7_ITEMS,
+}
