@@ -1,8 +1,12 @@
 import type { Character, CharacterClass, CombatAction, EncounterReward, Enemy, Zone } from '../src/types/game'
-import type { EquipmentSlot, EquipmentState, InventoryEntry, PersonalEncounterReward, PersonalLoot } from './game-data/types'
+import type { EquipmentSlot, EquipmentState, InventoryEntry, PersonalEncounterReward, PersonalLoot, PlayerRiftProgress } from './game-data/types'
 import type { MarketSnapshot, TradeSnapshot } from './economy-types'
+import type {
+  ChatChannel, ChatHistorySnapshot, FriendsSnapshot, GuildListItem, GuildRank, GuildSnapshot, GuildStorageLogView,
+  GuildStorageSnapshot, PersistentChatMessage, PresenceStatus, PrivateConversationView, SocialPlayer, UnreadSnapshot,
+} from './social-types'
 
-export const PROTOCOL_VERSION = 1
+export const PROTOCOL_VERSION = 3
 export const DEV_MIN_PARTY_SIZE = 2
 export const MAX_PARTY_SIZE = 5
 export const RECONNECT_GRACE_MS = 60_000
@@ -12,6 +16,8 @@ export type RoomPhase = 'LOBBY' | 'COMBAT' | 'POST_ENCOUNTER' | 'FINISHED' | 'FA
 export type ExpeditionVote = 'CONTINUE' | 'EXIT'
 
 export interface DevIdentity {
+  /** Production/staging WebSocket credential obtained from the HTTP auth exchange. */
+  sessionToken?: string
   /** Opaque local session credential. Server maps it to Account/Player ids. */
   devToken?: string
   /** Legacy test field; never authoritative in PostgreSQL runtime. */
@@ -35,6 +41,7 @@ export interface PublicPartyMember {
   autoBattle: boolean
   potionCooldown: number
   potionQuantity: number
+  potionQuantities: Record<string, number>
   isLeader: boolean
 }
 
@@ -54,6 +61,8 @@ export interface PartySummary {
   playerCount: number
   maxPlayers: number
   phase: RoomPhase
+  riftId: string
+  floorNumber: number
 }
 
 export interface ChatMessage {
@@ -72,10 +81,14 @@ export interface PartySnapshot {
   members: PublicPartyMember[]
   applications: PartyApplication[]
   chat: ChatMessage[]
+  riftId: string
+  floorNumber: number
 }
 
 export interface CombatSnapshot {
   roomId: string
+  riftId: string
+  floorNumber: number
   phase: RoomPhase
   leaderId: string
   encounterIndex: number
@@ -110,6 +123,7 @@ export interface CharacterState {
   storage: InventoryEntry[]
   equipment: EquipmentState
   learnedRecipes: string[]
+  riftProgress: Record<string, PlayerRiftProgress>
 }
 
 export type ClientMessage =
@@ -123,7 +137,8 @@ export type ClientMessage =
   | { type: 'LEAVE_PARTY' }
   | { type: 'SET_READY'; payload: { ready: boolean } }
   | { type: 'START_EXPEDITION' }
-  | { type: 'SUBMIT_ACTION'; payload: { round: number; attackZone?: Zone; defendZone: Zone; usePotion: boolean } }
+  | { type: 'SELECT_RIFT_FLOOR'; payload: { floorNumber: number } }
+  | { type: 'SUBMIT_ACTION'; payload: { round: number; attackZone?: Zone; defendZone: Zone; usePotion: boolean; potionItemId?: string } }
   | { type: 'SET_AUTO_BATTLE'; payload: { enabled: boolean } }
   | { type: 'POST_ENCOUNTER_VOTE'; payload: { vote: ExpeditionVote } }
   | { type: 'PARTY_CHAT_MESSAGE'; payload: { message: string } }
@@ -147,6 +162,39 @@ export type ClientMessage =
   | { type: 'UPDATE_TRADE_OFFER'; payload: { tradeId: string; items: Array<{ entryId: string; quantity: number }>; coins: number; operationId: string } }
   | { type: 'CONFIRM_TRADE'; payload: { tradeId: string; revision: number; operationId: string } }
   | { type: 'CANCEL_TRADE'; payload: { tradeId: string; operationId: string } }
+  | { type: 'GET_GUILD_STATE' }
+  | { type: 'SEARCH_GUILDS'; payload: { query?: string } }
+  | { type: 'CREATE_GUILD'; payload: { name: string; tag: string; description?: string; messageOfTheDay?: string; operationId: string } }
+  | { type: 'APPLY_TO_GUILD'; payload: { guildId: string; message?: string; operationId: string } }
+  | { type: 'CANCEL_GUILD_APPLICATION'; payload: { applicationId: string; operationId: string } }
+  | { type: 'ACCEPT_GUILD_APPLICATION'; payload: { applicationId: string; operationId: string } }
+  | { type: 'REJECT_GUILD_APPLICATION'; payload: { applicationId: string; operationId: string } }
+  | { type: 'INVITE_TO_GUILD'; payload: { playerName: string; operationId: string } }
+  | { type: 'ACCEPT_GUILD_INVITE'; payload: { inviteId: string; operationId: string } }
+  | { type: 'DECLINE_GUILD_INVITE'; payload: { inviteId: string; operationId: string } }
+  | { type: 'LEAVE_GUILD'; payload: { operationId: string } }
+  | { type: 'KICK_GUILD_MEMBER'; payload: { playerId: string; operationId: string } }
+  | { type: 'SET_GUILD_RANK'; payload: { playerId: string; rank: Exclude<GuildRank, 'LEADER'>; operationId: string } }
+  | { type: 'TRANSFER_GUILD_LEADERSHIP'; payload: { playerId: string; operationId: string } }
+  | { type: 'UPDATE_GUILD'; payload: { description?: string; messageOfTheDay?: string; operationId: string } }
+  | { type: 'UPDATE_GUILD_PERMISSIONS'; payload: { rank: Exclude<GuildRank, 'LEADER'>; canDeposit: boolean; canWithdraw: boolean; operationId: string } }
+  | { type: 'DISBAND_GUILD'; payload: { confirmed: boolean; operationId: string } }
+  | { type: 'GET_GUILD_STORAGE' }
+  | { type: 'DEPOSIT_GUILD_STORAGE'; payload: { entryId: string; quantity?: number; operationId: string } }
+  | { type: 'WITHDRAW_GUILD_STORAGE'; payload: { storageItemId: string; quantity?: number; operationId: string } }
+  | { type: 'GET_GUILD_STORAGE_HISTORY'; payload?: { limit?: number } }
+  | { type: 'SEARCH_PLAYER'; payload: { name: string } }
+  | { type: 'GET_FRIENDS_STATE' }
+  | { type: 'SEND_FRIEND_REQUEST'; payload: { playerName: string; operationId: string } }
+  | { type: 'ACCEPT_FRIEND_REQUEST'; payload: { requestId: string; operationId: string } }
+  | { type: 'DECLINE_FRIEND_REQUEST'; payload: { requestId: string; operationId: string } }
+  | { type: 'REMOVE_FRIEND'; payload: { playerId: string; operationId: string } }
+  | { type: 'BLOCK_PLAYER'; payload: { playerName: string; operationId: string } }
+  | { type: 'UNBLOCK_PLAYER'; payload: { playerId: string; operationId: string } }
+  | { type: 'SEND_CHAT_MESSAGE'; payload: { channel: Exclude<ChatChannel, 'GROUP'>; text: string; targetName?: string; conversationId?: string; operationId: string } }
+  | { type: 'GET_CHAT_HISTORY'; payload: { channel: Exclude<ChatChannel, 'GROUP'>; conversationId?: string; beforeMessageId?: string; limit?: number } }
+  | { type: 'GET_PRIVATE_CONVERSATIONS' }
+  | { type: 'INVITE_TO_PARTY'; payload: { playerId: string } }
 
 export type ServerMessage =
   | { type: 'WELCOME'; payload: { accountId: string; playerId: string; protocolVersion: number } }
@@ -171,6 +219,18 @@ export type ServerMessage =
   | { type: 'TRADE_COMPLETED'; payload: TradeSnapshot }
   | { type: 'TRADE_CANCELLED'; payload: TradeSnapshot }
   | { type: 'ECONOMY_UPDATE'; payload: CharacterState }
+  | { type: 'GUILD_STATE'; payload: GuildSnapshot }
+  | { type: 'GUILD_LIST'; payload: GuildListItem[] }
+  | { type: 'GUILD_STORAGE_UPDATE'; payload: GuildStorageSnapshot }
+  | { type: 'GUILD_STORAGE_HISTORY'; payload: GuildStorageLogView[] }
+  | { type: 'FRIENDS_STATE'; payload: FriendsSnapshot }
+  | { type: 'PLAYER_SEARCH_RESULT'; payload: SocialPlayer }
+  | { type: 'PRESENCE_UPDATE'; payload: { playerId: string; status: PresenceStatus } }
+  | { type: 'CHAT_MESSAGE'; payload: PersistentChatMessage }
+  | { type: 'CHAT_HISTORY'; payload: ChatHistorySnapshot }
+  | { type: 'PRIVATE_CONVERSATIONS'; payload: PrivateConversationView[] }
+  | { type: 'UNREAD_UPDATE'; payload: UnreadSnapshot }
+  | { type: 'PARTY_INVITE'; payload: { partyId: string; inviterId: string; inviterName: string } }
   | { type: 'ERROR'; payload: { code: string; message: string } }
 
 export function isZone(value: unknown): value is Zone {
@@ -179,6 +239,6 @@ export function isZone(value: unknown): value is Zone {
 
 export function toCombatAction(payload: Extract<ClientMessage, { type: 'SUBMIT_ACTION' }>['payload']): CombatAction {
   return payload.usePotion
-    ? { type: 'potion', defendZone: payload.defendZone }
+    ? { type: 'potion', defendZone: payload.defendZone, potionItemId: payload.potionItemId }
     : { type: 'attack', attackZone: payload.attackZone, defendZone: payload.defendZone }
 }

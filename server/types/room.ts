@@ -18,13 +18,20 @@ export interface RoomMember {
   autoBattle: boolean
   potionCooldown: number
   expeditionPotions: number
+  expeditionPotionQuantities: Record<string, number>
   disconnectedAt: number | null
 }
 
 export interface RoomState {
   id: string
+  expeditionId: string | null
+  playSessionId: string | null
+  expeditionStartedAt: number | null
+  encounterStartedAt: number | null
   phase: RoomPhase
   leaderId: string
+  riftId: string
+  floorNumber: number
   members: Map<string, RoomMember>
   applications: Map<string, Character>
   slotOffers: Map<string, number>

@@ -1,4 +1,5 @@
 import type { Profession, RecipeDefinition } from './types'
+import { PHASE7_RECIPES } from './phase7Catalog'
 
 const RECIPE_DEFINITIONS: RecipeDefinition[] = [
   { id: 'recipe_warrior_weapon', name: 'Меч із Заліза Розлому', profession: 'blacksmith', category: 'equipment', outputItemId: 'forged_warrior_weapon', outputQuantity: 1, targetClass: 'warrior', requirements: { rift_iron: 4, core_metal: 1 } },
@@ -17,7 +18,10 @@ const RECIPE_DEFINITIONS: RecipeDefinition[] = [
   { id: 'recipe_balanced_amulet', name: 'Амулет рівноваги', profession: 'jeweler', category: 'jewelry', outputItemId: 'balanced_amulet', outputQuantity: 1, requirements: { rift_crystal: 3, gem_fragment: 1, core_shard: 1 } },
 ]
 
-export const RECIPES: Record<string, RecipeDefinition> = Object.fromEntries(RECIPE_DEFINITIONS.map((recipe) => [recipe.id, recipe]))
+export const RECIPES: Record<string, RecipeDefinition> = {
+  ...Object.fromEntries(RECIPE_DEFINITIONS.map((recipe) => [recipe.id, recipe])),
+  ...PHASE7_RECIPES,
+}
 
 export const PROFESSION_RECIPE_IDS: Record<Profession, string[]> = {
   blacksmith: Object.values(RECIPES).filter((recipe) => recipe.profession === 'blacksmith').map((recipe) => recipe.id),

@@ -1,8 +1,8 @@
-import { LEVEL_ATTACK_GAIN, LEVEL_HP_GAIN } from '../data/config/balance'
+import { LEVEL_GAINS, xpRequired } from '../../shared/game-data/progression'
 import type { Character, ProgressionResult } from '../types/game'
 
 export function calculateXPRequired(level: number): number {
-  return Math.round(100 * Math.pow(level, 1.35))
+  return xpRequired(level)
 }
 
 export function applyXPAndLevelUps(character: Character, earnedXP: number): ProgressionResult {
@@ -16,9 +16,9 @@ export function applyXPAndLevelUps(character: Character, earnedXP: number): Prog
   while (currentXP >= calculateXPRequired(level)) {
     currentXP -= calculateXPRequired(level)
     level += 1
-    attack += LEVEL_ATTACK_GAIN
-    maxHP += LEVEL_HP_GAIN
-    currentHP += LEVEL_HP_GAIN
+    attack += LEVEL_GAINS.attack
+    maxHP += LEVEL_GAINS.maxHP
+    currentHP += LEVEL_GAINS.maxHP
     levelsGained += 1
   }
 

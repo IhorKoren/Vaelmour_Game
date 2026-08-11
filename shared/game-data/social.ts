@@ -1,0 +1,11 @@
+export const GUILD_CREATION_COST = 500
+export const GUILD_MAX_MEMBERS = 50
+export const MAX_CHAT_MESSAGE_LENGTH = 300
+export const CHAT_HISTORY_PAGE_SIZE = 100
+export const GLOBAL_CHAT_RETENTION = 5_000
+export const CHAT_RATE_LIMIT_MS = {
+  GLOBAL: 2_000,
+  GUILD: 1_000,
+  GROUP: 1_000,
+  PRIVATE: 1_000,
+} as const

@@ -33,12 +33,24 @@ export interface Enemy {
   maxHP: number
   currentHP: number
   attackCount: number
+  definitionId?: string
+  level?: number
+  attackZoneWeights?: Record<Zone, number>
+  defenseZoneWeights?: Record<Zone, number>
+  targeting?: 'RANDOM' | 'LOWEST_HP' | 'HIGHEST_HP'
+  bossPattern?: {
+    groupAttackEvery: number
+    cycleLength?: number
+    cycleWeights?: Array<Record<Zone, number>>
+    shiftAfterGroup?: boolean
+  }
 }
 
 export interface CombatAction {
   type: 'attack' | 'potion'
   attackZone?: Zone
   defendZone: Zone
+  potionItemId?: string
 }
 
 export interface EnemyAction {
@@ -56,6 +68,7 @@ export interface RoundInput {
   potionCooldown: number
   /** Per-character cooldowns used by authoritative multiplayer rooms. */
   potionCooldowns?: Record<string, number>
+  potionHealPercents?: Record<string, number>
   random?: () => number
 }
 

@@ -8,7 +8,7 @@ import { HEALING_POTION_ID } from '../../shared/game-data/items'
 import { RECIPES, STARTER_LEARNED_RECIPES } from '../../shared/game-data/recipes'
 import { PROFESSION_RESOURCE_IDS } from '../../shared/game-data/resources'
 import { isProfessionClass } from '../../shared/game-data/economy'
-import type { EquipmentSlot, EquipmentState, InventoryEntry, PersonalLoot } from '../../shared/game-data/types'
+import type { EquipmentSlot, EquipmentState, InventoryEntry, PersonalLoot, PlayerRiftProgress } from '../../shared/game-data/types'
 import { InMemoryPlayerRepository } from '../repositories/InMemoryPlayerRepository'
 import type { AccountSetup, CoinLedgerRecord, PlayerRepository, RepositoryOperation, StoredPlayerProfile } from '../repositories/types'
 
@@ -48,10 +48,37 @@ export class PlayerStateService {
 
   async getOrCreate(identity: DevIdentity): Promise<Character> { return (await this.authenticate(identity)).character }
 
+  async authenticateAccount(accountId: string, setup: AccountSetup | null = null): Promise<{ accountId: string; character: Character }> {
+    try {
+      const profile = await this.repository.initializeAccount(accountId, setup, (nextAccountId, playerId, initial) => this.starterProfile(nextAccountId, playerId, initial))
+      return { accountId: profile.accountId, character: this.toCharacter(profile) }
+    } catch (error) {
+      if (error instanceof Error && error.message === 'ACCOUNT_SETUP_REQUIRED') throw new EconomyError('ACCOUNT_SETUP_REQUIRED', 'Створіть персонажа для цього облікового запису.')
+      throw error
+    }
+  }
+
   async character(playerId: string): Promise<Character> { return this.toCharacter(await this.requireProfile(playerId)) }
 
   async snapshot(playerId: string): Promise<CharacterState> {
     return this.toSnapshot(await this.requireProfile(playerId))
+  }
+
+  async riftProgress(playerId: string, riftId = 'first_rift'): Promise<PlayerRiftProgress> {
+    const profile = await this.requireProfile(playerId)
+    return profile.riftProgress?.[riftId] ?? { riftId, highestUnlockedFloor: 1, highestCompletedFloor: 0, completionCount: {} }
+  }
+
+  async completeRiftFloor(playerId: string, riftId: string, floorNumber: number, operationId: string): Promise<PlayerRiftProgress> {
+    const result = await this.repository.transact(playerId, { key: `rift-progress:${playerId}:${operationId}`, type: 'RIFT_FLOOR_COMPLETE', referenceId: operationId }, (profile) => {
+      const current = profile.riftProgress?.[riftId] ?? { riftId, highestUnlockedFloor: 1, highestCompletedFloor: 0, completionCount: {} }
+      profile.riftProgress ??= {}
+      profile.riftProgress[riftId] = { riftId,
+        highestCompletedFloor: Math.max(current.highestCompletedFloor, floorNumber),
+        highestUnlockedFloor: Math.max(current.highestUnlockedFloor, Math.min(3, floorNumber + 1)),
+        completionCount: { ...current.completionCount, [floorNumber]: (current.completionCount[floorNumber] ?? 0) + 1 } }
+    })
+    return result.profile.riftProgress![riftId]
   }
 
   async calculateStats(profileOrId: StoredPlayerProfile | string): Promise<{ attack: number; maxHP: number }> {
@@ -181,6 +208,31 @@ export class PlayerStateService {
     return { entryId, itemId, quantity }
   }
 
+  async adminGrantItem(playerId: string, itemId: string, quantity: number, operationId: string): Promise<CharacterState> {
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 10_000) throw new EconomyError('INVALID_ADMIN_VALUE', 'Invalid item quantity.')
+    const profile = await this.mutate(playerId, { key: `admin-item:${playerId}:${operationId}`, type: 'ADMIN', referenceId: operationId }, (working) => { this.addItem(working.inventory, itemId, quantity) })
+    return this.toSnapshot(profile)
+  }
+
+  async adminGrantCoins(playerId: string, amount: number, operationId: string): Promise<CharacterState> {
+    if (!Number.isInteger(amount) || amount < 1 || amount > 1_000_000) throw new EconomyError('INVALID_ADMIN_VALUE', 'Invalid coin amount.')
+    const result = await this.repository.transact(playerId, { key: `admin-coins:${playerId}:${operationId}`, type: 'ADMIN', referenceId: operationId, ledger: { amount, reason: 'ADMIN', referenceId: operationId } }, (working) => { working.coins += amount })
+    return this.toSnapshot(result.profile)
+  }
+
+  async adminResetRift(playerId: string, operationId: string): Promise<CharacterState> {
+    const profile = await this.mutate(playerId, { key: `admin-rift:${playerId}:${operationId}`, type: 'ADMIN', referenceId: operationId }, (working) => {
+      working.riftProgress = { first_rift: { riftId: 'first_rift', highestUnlockedFloor: 1, highestCompletedFloor: 0, completionCount: {} } }
+    })
+    return this.toSnapshot(profile)
+  }
+
+  async adminSetLevel(playerId: string, level: number, operationId: string): Promise<CharacterState> {
+    if (!Number.isInteger(level) || level < 1 || level > 100) throw new EconomyError('INVALID_ADMIN_VALUE', 'Invalid level.')
+    const profile = await this.mutate(playerId, { key: `admin-level:${playerId}:${operationId}`, type: 'ADMIN', referenceId: operationId }, (working) => { working.level = level; working.currentXP = 0 })
+    return this.toSnapshot(profile)
+  }
+
   async ledger(playerId: string): Promise<CoinLedgerRecord[]> { return this.repository.ledger(playerId) }
   async disconnect(): Promise<void> { await this.repository.disconnect() }
   hashToken(token: string): string { return createHmac('sha256', this.authSecret).update(token).digest('hex') }
@@ -193,6 +245,7 @@ export class PlayerStateService {
       inventory: [], storage: [], equipment: emptyEquipment(),
       learnedRecipes: new Set(isProfessionClass(classId) ? STARTER_LEARNED_RECIPES[classId] ?? [] : []),
       reservedItems: [],
+      riftProgress: { first_rift: { riftId: 'first_rift', highestUnlockedFloor: 1, highestCompletedFloor: 0, completionCount: {} } },
     }
     this.addItem(profile.inventory, HEALING_POTION_ID, 5)
     profile.equipment.weapon = this.newEntry(`starter_${classId}_weapon`, 1)
@@ -240,6 +293,7 @@ export class PlayerStateService {
       inventory: profile.inventory.map((entry) => ({ ...entry })), storage: profile.storage.map((entry) => ({ ...entry })),
       equipment: Object.fromEntries(SLOTS.map((slot) => [slot, profile.equipment[slot] ? { ...profile.equipment[slot]! } : null])) as EquipmentState,
       learnedRecipes: [...profile.learnedRecipes],
+      riftProgress: Object.fromEntries(Object.entries(profile.riftProgress ?? {}).map(([id, progress]) => [id, { ...progress, completionCount: { ...progress.completionCount } }])),
     }
   }
 

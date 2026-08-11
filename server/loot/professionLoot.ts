@@ -1,6 +1,7 @@
 import { PROFESSIONS, RECIPE_DROP_CHANCE, RESOURCE_DROP_CHANCE, isProfessionClass } from '../../shared/game-data/economy'
 import { PROFESSION_RECIPE_IDS } from '../../shared/game-data/recipes'
 import { FIRST_RIFT_LOOT_POOLS, RESOURCES } from '../../shared/game-data/resources'
+import { PHASE7_RECIPES, PHASE7_RESOURCES, tierResources } from '../../shared/game-data/phase7Catalog'
 import type { PersonalLoot, Profession } from '../../shared/game-data/types'
 import type { CharacterClass, Enemy } from '../../src/types/game'
 
@@ -14,6 +15,7 @@ interface LootOptions {
   random?: () => number
   resourceChance?: { combatClass: number; correctProfession: number }
   recipeChance?: { mob: number; elite: number; boss: number }
+  tier?: 1 | 2 | 3
 }
 
 export interface ProfessionLootResult {
@@ -35,6 +37,7 @@ export function generateProfessionLoot(
   const random = options.random ?? Math.random
   const resourceChance = options.resourceChance ?? RESOURCE_DROP_CHANCE
   const recipeChance = options.recipeChance ?? RECIPE_DROP_CHANCE
+  const tier = options.tier
   const alive = participants.filter((participant) => participant.alive)
   const personal = Object.fromEntries(participants.map((participant) => [participant.id, { resources: {}, recipeIds: [] }])) as Record<string, PersonalLoot>
   const professionPoolRolls = { blacksmith: 0, alchemist: 0, jeweler: 0 }
@@ -47,19 +50,24 @@ export function generateProfessionLoot(
     professionPoolRolls[profession] += 1
     if (random() < resourceChance.correctProfession) {
       const recipient = choose(eligible, random)!
-      const resourceId = choose(pool[profession], random)
+      const resources = tier ? tierResources(profession, tier) : pool[profession].map((id) => RESOURCES[id])
+      const roleIndex = enemyKind === 'boss' ? (random() < 0.65 ? 2 : 1) : enemyKind === 'elite' ? (random() < 0.45 ? 1 : 0) : 0
+      const resourceId = resources[roleIndex]?.id ?? resources[0]?.id
       if (resourceId) personal[recipient.id].resources[resourceId] = (personal[recipient.id].resources[resourceId] ?? 0) + (enemyKind === 'boss' ? 2 : 1)
     }
 
     recipeRolls[profession] += 1
     if (random() < recipeChance[enemyKind]) {
       const recipient = choose(eligible, random)!
-      const recipeId = choose(PROFESSION_RECIPE_IDS[profession], random)
+      const recipeIds = tier
+        ? Object.values(PHASE7_RECIPES).filter((recipe) => recipe.profession === profession && recipe.tier === tier).map((recipe) => recipe.id)
+        : PROFESSION_RECIPE_IDS[profession]
+      const recipeId = choose(recipeIds, random)
       if (recipeId) personal[recipient.id].recipeIds.push(recipeId)
     }
   }
 
-  const genericResources = Object.keys(RESOURCES)
+  const genericResources = tier ? Object.values(PHASE7_RESOURCES).filter((resource) => resource.tier === tier).map((resource) => resource.id) : Object.keys(RESOURCES)
   for (const participant of alive.filter((member) => !isProfessionClass(member.classId))) {
     if (random() < resourceChance.combatClass) {
       const resourceId = choose(genericResources, random)

@@ -23,6 +23,32 @@ enum ItemLocation {
   TRADE_ESCROW
 }
 
+enum GuildRank {
+  LEADER
+  OFFICER
+  MEMBER
+  RECRUIT
+}
+
+enum SocialRequestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  CANCELLED
+}
+
+enum GuildStorageAction {
+  DEPOSIT
+  WITHDRAW
+}
+
+enum ChatChannel {
+  GLOBAL
+  GUILD
+  GROUP
+  PRIVATE
+}
+
 enum EquipmentSlot {
   weapon
   head
@@ -53,6 +79,7 @@ enum CoinLedgerReason {
   PARTY_SLOT_RESERVE
   PARTY_SLOT_REFUND
   PARTY_SLOT_PAYMENT
+  GUILD_CREATION
 }
 
 enum MarketSide {
@@ -83,42 +110,155 @@ enum PartySlotReservationStatus {
 }
 
 model Account {
-  id           String   @id @default(uuid()) @db.Uuid
-  devTokenHash String   @unique @map("dev_token_hash")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
-  player       Player?
+  id               String            @id @default(uuid()) @db.Uuid
+  devTokenHash     String?           @unique @map("dev_token_hash")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+  player           Player?
+  telegramIdentity TelegramIdentity?
+  sessions         AuthSession[]
 
   @@map("accounts")
 }
 
 model Player {
-  id               String                 @id @default(uuid()) @db.Uuid
-  accountId        String                 @unique @map("account_id") @db.Uuid
-  account          Account                @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  name             String                 @db.VarChar(18)
-  classId          CharacterClass         @map("class_id")
-  level            Int                    @default(1)
-  currentXP        Int                    @default(0) @map("current_xp")
-  coins            Int                    @default(0)
-  reservedCoins    Int                    @default(0) @map("reserved_coins")
-  version          Int                    @default(0)
-  createdAt        DateTime               @default(now()) @map("created_at")
-  updatedAt        DateTime               @updatedAt @map("updated_at")
-  items            ItemEntry[]
-  learnedRecipes   LearnedRecipe[]
-  coinLedger       CoinLedgerEntry[]
-  operations       EconomyOperation[]
-  marketOrders     MarketOrder[]
-  requestedTrades  DirectTrade[]          @relation("TradeRequester")
-  receivedTrades   DirectTrade[]          @relation("TradeReceiver")
-  tradeOfferItems  TradeOfferItem[]
-  tradeOfferCoins  TradeOfferCoin[]
-  slotReservations PartySlotReservation[] @relation("SlotApplicant")
-  slotPayments     PartySlotReservation[] @relation("SlotLeader")
+  id                     String                 @id @default(uuid()) @db.Uuid
+  accountId              String                 @unique @map("account_id") @db.Uuid
+  account                Account                @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  name                   String                 @db.VarChar(18)
+  classId                CharacterClass         @map("class_id")
+  level                  Int                    @default(1)
+  currentXP              Int                    @default(0) @map("current_xp")
+  coins                  Int                    @default(0)
+  reservedCoins          Int                    @default(0) @map("reserved_coins")
+  riftProgress           Json                   @default("{}") @map("rift_progress")
+  version                Int                    @default(0)
+  createdAt              DateTime               @default(now()) @map("created_at")
+  updatedAt              DateTime               @updatedAt @map("updated_at")
+  items                  ItemEntry[]
+  learnedRecipes         LearnedRecipe[]
+  coinLedger             CoinLedgerEntry[]
+  operations             EconomyOperation[]
+  marketOrders           MarketOrder[]
+  requestedTrades        DirectTrade[]          @relation("TradeRequester")
+  receivedTrades         DirectTrade[]          @relation("TradeReceiver")
+  tradeOfferItems        TradeOfferItem[]
+  tradeOfferCoins        TradeOfferCoin[]
+  slotReservations       PartySlotReservation[] @relation("SlotApplicant")
+  slotPayments           PartySlotReservation[] @relation("SlotLeader")
+  guildMembership        GuildMember?
+  ledGuild               Guild?                 @relation("GuildLeader")
+  guildApplications      GuildApplication[]
+  guildInvites           GuildInvite[]          @relation("GuildInviteReceiver")
+  sentGuildInvites       GuildInvite[]          @relation("GuildInviteSender")
+  guildStorageLogs       GuildStorageLog[]
+  sentFriendRequests     FriendRequest[]        @relation("FriendRequestSender")
+  receivedFriendRequests FriendRequest[]        @relation("FriendRequestReceiver")
+  friendshipsLow         Friendship[]           @relation("FriendshipLow")
+  friendshipsHigh        Friendship[]           @relation("FriendshipHigh")
+  blocksMade             PlayerBlock[]          @relation("Blocker")
+  blocksReceived         PlayerBlock[]          @relation("Blocked")
+  conversationsLow       PrivateConversation[]  @relation("ConversationLow")
+  conversationsHigh      PrivateConversation[]  @relation("ConversationHigh")
+  chatMessages           SocialChatMessage[]
+  chatReads              ChatReadState[]
+  playtestEvents         PlaytestEvent[]
+  interruptionNotices    InterruptedExpeditionNotice[]
 
   @@index([accountId])
   @@map("players")
+}
+
+model TelegramIdentity {
+  telegramUserId String   @id @map("telegram_user_id") @db.VarChar(32)
+  accountId      String   @unique @map("account_id") @db.Uuid
+  account        Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  username       String?  @db.VarChar(64)
+  firstName      String?  @map("first_name") @db.VarChar(128)
+  lastName       String?  @map("last_name") @db.VarChar(128)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@map("telegram_identities")
+}
+
+model AuthSession {
+  id          String    @id @default(uuid()) @db.Uuid
+  sessionHash String    @unique @map("session_hash") @db.Char(64)
+  accountId   String    @map("account_id") @db.Uuid
+  account     Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  expiresAt   DateTime  @map("expires_at")
+  revokedAt   DateTime? @map("revoked_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  lastUsedAt  DateTime  @default(now()) @map("last_used_at")
+
+  @@index([accountId, expiresAt])
+  @@index([expiresAt])
+  @@map("auth_sessions")
+}
+
+model PlaytestEvent {
+  id            String   @id @default(uuid()) @db.Uuid
+  eventKey      String?  @unique @map("event_key") @db.VarChar(180)
+  type          String   @db.VarChar(50)
+  playSessionId String?  @map("play_session_id") @db.Uuid
+  expeditionId  String?  @map("expedition_id") @db.Uuid
+  playerId      String?  @map("player_id") @db.Uuid
+  player        Player?  @relation(fields: [playerId], references: [id], onDelete: SetNull)
+  riftId        String?  @map("rift_id") @db.VarChar(60)
+  floor         Int?
+  encounter     Int?
+  round         Int?
+  payload       Json     @default("{}")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@index([type, createdAt])
+  @@index([expeditionId, createdAt])
+  @@index([playerId, createdAt])
+  @@index([riftId, floor, createdAt])
+  @@map("playtest_events")
+}
+
+model ActiveExpedition {
+  expeditionId  String    @id @map("expedition_id") @db.Uuid
+  playSessionId String    @map("play_session_id") @db.Uuid
+  roomId        String    @unique @map("room_id") @db.VarChar(100)
+  riftId        String    @map("rift_id") @db.VarChar(60)
+  floor         Int
+  playerIds     Json      @map("player_ids")
+  status        String    @default("ACTIVE") @db.VarChar(30)
+  startedAt     DateTime  @default(now()) @map("started_at")
+  endedAt       DateTime? @map("ended_at")
+
+  @@index([status, startedAt])
+  @@map("active_expeditions")
+}
+
+model InterruptedExpeditionNotice {
+  id           String    @id @default(uuid()) @db.Uuid
+  playerId     String    @map("player_id") @db.Uuid
+  player       Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  expeditionId String    @map("expedition_id") @db.Uuid
+  createdAt    DateTime  @default(now()) @map("created_at")
+  acknowledgedAt DateTime? @map("acknowledged_at")
+
+  @@unique([playerId, expeditionId])
+  @@index([playerId, acknowledgedAt])
+  @@map("interrupted_expedition_notices")
+}
+
+model AdminAuditLog {
+  id                  String   @id @default(uuid()) @db.Uuid
+  adminTelegramUserId String   @map("admin_telegram_user_id") @db.VarChar(32)
+  action              String   @db.VarChar(50)
+  targetPlayerId      String?  @map("target_player_id") @db.Uuid
+  reason              String   @default("ADMIN") @db.VarChar(100)
+  details             Json     @default("{}")
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  @@index([adminTelegramUserId, createdAt])
+  @@index([targetPlayerId, createdAt])
+  @@map("admin_audit_logs")
 }
 
 model ItemEntry {
@@ -287,4 +427,202 @@ model PartySlotReservation {
   @@index([roomId, status])
   @@index([status, expiresAt])
   @@map("party_slot_reservations")
+}
+
+model Guild {
+  id              String                @id @default(uuid()) @db.Uuid
+  name            String                @db.VarChar(40)
+  nameKey         String                @unique @map("name_key") @db.VarChar(40)
+  tag             String                @db.VarChar(8)
+  tagKey          String                @unique @map("tag_key") @db.VarChar(8)
+  description     String                @default("") @db.VarChar(500)
+  messageOfTheDay String                @default("") @map("message_of_the_day") @db.VarChar(300)
+  leaderPlayerId  String                @unique @map("leader_player_id") @db.Uuid
+  leader          Player                @relation("GuildLeader", fields: [leaderPlayerId], references: [id], onDelete: Cascade)
+  createdAt       DateTime              @default(now()) @map("created_at")
+  updatedAt       DateTime              @updatedAt @map("updated_at")
+  members         GuildMember[]
+  applications    GuildApplication[]
+  invites         GuildInvite[]
+  permissions     GuildRankPermission[]
+  storageItems    GuildStorageItem[]
+  storageLogs     GuildStorageLog[]
+  chatMessages    SocialChatMessage[]
+
+  @@index([createdAt])
+  @@map("guilds")
+}
+
+model GuildMember {
+  guildId  String    @map("guild_id") @db.Uuid
+  guild    Guild     @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  playerId String    @unique @map("player_id") @db.Uuid
+  player   Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  rank     GuildRank @default(RECRUIT)
+  joinedAt DateTime  @default(now()) @map("joined_at")
+
+  @@id([guildId, playerId])
+  @@index([guildId, rank])
+  @@map("guild_members")
+}
+
+model GuildApplication {
+  id        String              @id @default(uuid()) @db.Uuid
+  guildId   String              @map("guild_id") @db.Uuid
+  guild     Guild               @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  playerId  String              @map("player_id") @db.Uuid
+  player    Player              @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  message   String?             @db.VarChar(200)
+  status    SocialRequestStatus @default(PENDING)
+  createdAt DateTime            @default(now()) @map("created_at")
+
+  @@unique([guildId, playerId])
+  @@index([guildId, status, createdAt])
+  @@index([playerId, status])
+  @@map("guild_applications")
+}
+
+model GuildInvite {
+  id                String              @id @default(uuid()) @db.Uuid
+  guildId           String              @map("guild_id") @db.Uuid
+  guild             Guild               @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  playerId          String              @map("player_id") @db.Uuid
+  player            Player              @relation("GuildInviteReceiver", fields: [playerId], references: [id], onDelete: Cascade)
+  invitedByPlayerId String              @map("invited_by_player_id") @db.Uuid
+  invitedBy         Player              @relation("GuildInviteSender", fields: [invitedByPlayerId], references: [id], onDelete: Cascade)
+  status            SocialRequestStatus @default(PENDING)
+  createdAt         DateTime            @default(now()) @map("created_at")
+  expiresAt         DateTime?           @map("expires_at")
+
+  @@index([guildId, status, createdAt])
+  @@index([playerId, status, createdAt])
+  @@map("guild_invites")
+}
+
+model GuildRankPermission {
+  guildId     String    @map("guild_id") @db.Uuid
+  guild       Guild     @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  rank        GuildRank
+  canDeposit  Boolean   @default(true) @map("can_deposit")
+  canWithdraw Boolean   @default(false) @map("can_withdraw")
+
+  @@id([guildId, rank])
+  @@map("guild_rank_permissions")
+}
+
+model GuildStorageItem {
+  id        String   @id @db.Uuid
+  guildId   String   @map("guild_id") @db.Uuid
+  guild     Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  itemId    String   @map("item_id") @db.VarChar(100)
+  quantity  Int
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([guildId, itemId])
+  @@map("guild_storage_items")
+}
+
+model GuildStorageLog {
+  id          String             @id @default(uuid()) @db.Uuid
+  guildId     String             @map("guild_id") @db.Uuid
+  guild       Guild              @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  playerId    String             @map("player_id") @db.Uuid
+  player      Player             @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  action      GuildStorageAction
+  itemId      String             @map("item_id") @db.VarChar(100)
+  itemEntryId String?            @map("item_entry_id") @db.Uuid
+  quantity    Int
+  createdAt   DateTime           @default(now()) @map("created_at")
+
+  @@index([guildId, createdAt])
+  @@index([playerId, createdAt])
+  @@map("guild_storage_logs")
+}
+
+model FriendRequest {
+  id          String              @id @default(uuid()) @db.Uuid
+  requesterId String              @map("requester_id") @db.Uuid
+  requester   Player              @relation("FriendRequestSender", fields: [requesterId], references: [id], onDelete: Cascade)
+  receiverId  String              @map("receiver_id") @db.Uuid
+  receiver    Player              @relation("FriendRequestReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  status      SocialRequestStatus @default(PENDING)
+  createdAt   DateTime            @default(now()) @map("created_at")
+
+  @@index([requesterId, status])
+  @@index([receiverId, status, createdAt])
+  @@map("friend_requests")
+}
+
+model Friendship {
+  id           String   @id @default(uuid()) @db.Uuid
+  playerLowId  String   @map("player_low_id") @db.Uuid
+  playerLow    Player   @relation("FriendshipLow", fields: [playerLowId], references: [id], onDelete: Cascade)
+  playerHighId String   @map("player_high_id") @db.Uuid
+  playerHigh   Player   @relation("FriendshipHigh", fields: [playerHighId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@unique([playerLowId, playerHighId])
+  @@index([playerLowId])
+  @@index([playerHighId])
+  @@map("friendships")
+}
+
+model PlayerBlock {
+  blockerId String   @map("blocker_id") @db.Uuid
+  blocker   Player   @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blockedId String   @map("blocked_id") @db.Uuid
+  blocked   Player   @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@id([blockerId, blockedId])
+  @@index([blockedId])
+  @@map("player_blocks")
+}
+
+model PrivateConversation {
+  id           String              @id @default(uuid()) @db.Uuid
+  playerLowId  String              @map("player_low_id") @db.Uuid
+  playerLow    Player              @relation("ConversationLow", fields: [playerLowId], references: [id], onDelete: Cascade)
+  playerHighId String              @map("player_high_id") @db.Uuid
+  playerHigh   Player              @relation("ConversationHigh", fields: [playerHighId], references: [id], onDelete: Cascade)
+  createdAt    DateTime            @default(now()) @map("created_at")
+  updatedAt    DateTime            @updatedAt @map("updated_at")
+  messages     SocialChatMessage[]
+
+  @@unique([playerLowId, playerHighId])
+  @@index([playerLowId, updatedAt])
+  @@index([playerHighId, updatedAt])
+  @@map("private_conversations")
+}
+
+model SocialChatMessage {
+  id             String               @id @default(uuid()) @db.Uuid
+  channel        ChatChannel
+  senderId       String               @map("sender_id") @db.Uuid
+  sender         Player               @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  senderName     String               @map("sender_name") @db.VarChar(18)
+  text           String               @db.VarChar(300)
+  guildId        String?              @map("guild_id") @db.Uuid
+  guild          Guild?               @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  roomId         String?              @map("room_id") @db.VarChar(100)
+  conversationId String?              @map("conversation_id") @db.Uuid
+  conversation   PrivateConversation? @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime             @default(now()) @map("created_at")
+
+  @@index([channel, createdAt])
+  @@index([guildId, createdAt])
+  @@index([roomId, createdAt])
+  @@index([conversationId, createdAt])
+  @@map("social_chat_messages")
+}
+
+model ChatReadState {
+  playerId   String   @map("player_id") @db.Uuid
+  player     Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  channelKey String   @map("channel_key") @db.VarChar(120)
+  lastReadAt DateTime @map("last_read_at")
+
+  @@id([playerId, channelKey])
+  @@map("chat_read_states")
 }

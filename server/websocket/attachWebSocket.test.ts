@@ -86,4 +86,24 @@ describe('real WebSocket transport', () => {
     expect(leaderStart.payload.roomId).toBe(memberStart.payload.roomId)
     expect(leaderStart.payload.party).toHaveLength(2)
   })
+
+  it('authenticates by server session and ignores a client-supplied player id', async () => {
+    const http = createServer()
+    const wss = new WebSocketServer({ server: http })
+    const rooms = new RoomManager({ autoTimers: false })
+    const account = await rooms.playerStates.authenticateAccount('00000000-0000-4000-8000-000000000001', { name: 'Session Player', classId: 'ranger', level: 1 })
+    attachWebSocket(wss, rooms, { validateSession: async (token) => {
+      if (token !== 'valid-session') throw new Error('invalid session')
+      return { sessionId: '00000000-0000-4000-8000-000000000002', accountId: account.accountId, playerId: account.character.id, telegramUserId: '42', expiresAt: new Date(Date.now() + 60_000) }
+    } })
+    await new Promise<void>((resolve) => http.listen(0, '127.0.0.1', resolve))
+    const port = (http.address() as AddressInfo).port
+    const socket = await open(`ws://127.0.0.1:${port}`)
+    const messages = inbox(socket)
+    cleanup.push(() => { socket.close(); rooms.dispose(); wss.close(); http.close() })
+    send(socket, { type: 'HELLO', payload: { sessionToken: 'valid-session', playerId: 'spoofed-player-id' } })
+    const welcome = await messages.waitFor((message): message is Extract<ServerMessage, { type: 'WELCOME' }> => message.type === 'WELCOME')
+    expect(welcome.payload.playerId).toBe(account.character.id)
+    expect(welcome.payload.playerId).not.toBe('spoofed-player-id')
+  })
 })

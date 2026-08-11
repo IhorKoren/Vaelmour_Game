@@ -1,6 +1,6 @@
-# Перший Розлом — Phase 5
+# Перший Розлом — Phase 6
 
-Mobile-first Telegram WebApp PvE vertical slice. Phase 5 додає persistent Market, безпечний Direct Trade і Paid Party Slots поверх PostgreSQL foundation Phase 4, не змінюючи server-authoritative combat, crafting та loot flow.
+Mobile-first Telegram WebApp PvE vertical slice. Phase 6 додає persistent Guilds, Guild Storage, Friends, Block, Global/Guild/Private Chat і realtime Presence поверх систем Phase 1–5, не змінюючи server-authoritative combat, crafting, loot, Market і Trade flow.
 
 ## Локальний запуск
 
@@ -66,7 +66,7 @@ Item/recipe stats не дублюються в PostgreSQL: authoritative definit
 
 Browser зберігає лише непрозорий `first-rift-dev-token`. Під час першого `HELLO` сервер у Serializable transaction створює Account, Player, starter equipment, 5 Healing Potions, test resources і profession starter recipes. Подальші підключення і reload надсилають лише token; сервер повертає стабільні `accountId`/`playerId` і authoritative character state.
 
-Client-provided `playerId`, coins, XP, inventory, stats і rewards не використовуються як source of truth. Dev-token проходить HMAC-SHA256 із `DEV_AUTH_SECRET`; цей adapter можна пізніше замінити Telegram auth без зміни економічних таблиць.
+Client-provided `playerId`, accountId, Telegram ID, coins, XP, inventory, stats і rewards не використовуються як source of truth. Production WebSocket визначає Player лише через validated opaque session; dev-token adapter доступний тільки в явно ввімкненому local development mode.
 
 ## Transaction model
 
@@ -142,16 +142,69 @@ Client intents: `GET_MARKET` (з опційним `itemId`), `GET_MY_ORDERS`, `C
 
 Server events: `MARKET_SNAPSHOT`, `TRADE_REQUEST`, `TRADE_STATE`, `TRADE_COMPLETED`, `TRADE_CANCELLED`, `ECONOMY_UPDATE`, а наявні `PARTY_STATE` та `ERROR` розширені Phase 5 даними/validation.
 
+## Phase 6 social layer
+
+### Database schema
+
+- `guilds` — case-insensitive unique name/tag keys, description, Message of the Day та єдиний leader reference.
+- `guild_members`, `guild_applications`, `guild_invites`, `guild_rank_permissions` — normalized membership, join workflow і fixed rank permissions.
+- `guild_storage_items`, `guild_storage_logs` — guild-owned item instances та останні audit actions.
+- `friend_requests`, `friendships`, `player_blocks` — persistent requests, одна canonical symmetric friendship row і directional block.
+- `private_conversations`, `social_chat_messages`, `chat_read_states` — persistent channel scopes, cursor history і unread foundation.
+
+Migration: `prisma/migrations/20260811210000_phase6_social/migration.sql`.
+
+### Guild state і permissions
+
+Fixed ranks: `LEADER`, `OFFICER`, `MEMBER`, `RECRUIT`. Тільки Leader редагує Guild, ranks, permissions, leadership і disband. Officer може запрошувати, приймати заявки та виключати Member/Recruit. Default storage permissions: Leader/Officer/Member можуть deposit і withdraw; Recruit може deposit, але не withdraw. `GUILD_CREATION_COST = 500`, `GUILD_MAX_MEMBERS = 50` зберігаються у shared config.
+
+Leadership transfer є однією Serializable transaction: старий Leader стає Officer, target стає Leader, `guild.leaderPlayerId` змінюється разом із ranks. Disband потребує explicit confirmation і порожнього Guild Storage.
+
+### Guild Storage ownership
+
+Guild Storage не використовує nullable player ownership. `GuildStorageItem.id` є identity guild-owned asset. Full deposit переносить той самий instance ID з personal Inventory; partial stack deposit створює окремий guild stack identity. Full equipment withdraw повертає оригінальний ID іншому authorized player. Операції під одним advisory lock перевіряють membership, rank permission, quantity, inventory location та `operationId`.
+
+Equipped, Market escrow, Trade escrow, expedition і вже reserved items не можна deposit. Guild asset не можна напряму передати в Market/Trade/Craft: спочатку потрібен audited withdraw до personal Inventory.
+
+### Friends і Block
+
+Friend request persistent. Accepted friendship зберігається одним canonical `(playerLowId, playerHighId)` relation і тому симетрична за визначенням. Block directional: блокує friend requests, Private Chat delivery і notifications, але не Guild interactions та не видаляє стару Global history.
+
+### Chat architecture
+
+`ChatService` є спільним validation/persistence boundary для `GLOBAL`, `GUILD`, `PRIVATE`; existing `GROUP` проходить через той самий message validation/rate limiter, але залишається lightweight room-scoped in-memory chat для combat.
+
+- plain text, server sender/timestamp, максимум 300 characters;
+- Global rate limit 1/2s, Guild/Private/Group 1/s;
+- Global history retention 5000, client page до 100;
+- Guild history доступна лише поточним members;
+- Private conversation canonical для двох players, із conversation list та unread counts;
+- cursor foundation: `beforeMessageId` і `nextCursor`.
+
+### Presence
+
+`PresenceService` зберігає ephemeral `OFFLINE`, `CITY`, `PARTY_LOBBY`, `RIFT`. Connect/disconnect та Room lifecycle оновлюють status; Guild roster і Friends snapshots поєднують persistent profiles із realtime presence. PostgreSQL не є source of truth для online status.
+
+### Phase 6 protocol
+
+Guild intents: `GET_GUILD_STATE`, `SEARCH_GUILDS`, `CREATE_GUILD`, applications, invites, leave/kick/rank/leadership/update/permissions/disband, storage deposit/withdraw/history.
+
+Friends intents: `SEARCH_PLAYER`, `GET_FRIENDS_STATE`, friend request/accept/decline/remove, block/unblock. Chat intents: `SEND_CHAT_MESSAGE`, `GET_CHAT_HISTORY`, `GET_PRIVATE_CONVERSATIONS`. Party integration: `INVITE_TO_PARTY`.
+
+Server events: `GUILD_STATE`, `GUILD_LIST`, `GUILD_STORAGE_UPDATE`, `GUILD_STORAGE_HISTORY`, `FRIENDS_STATE`, `PLAYER_SEARCH_RESULT`, `PRESENCE_UPDATE`, `CHAT_MESSAGE`, `CHAT_HISTORY`, `PRIVATE_CONVERSATIONS`, `UNREAD_UPDATE`, `PARTY_INVITE`.
+
 ## Перевірки
 
 ```powershell
 npm test
 npm run test:db       # real PostgreSQL restart/persistence smoke test
+npm run validate:content
+npm run simulate:balance
 npm run lint
 npm run build
 ```
 
-Збережено всі 70 тестів Phase 1–4 і додано 51 Phase 5 test (усього 121):
+Збережено всі 191 тести Phase 1–6 і додано 47 Phase 7 tests (усього 238):
 
 - restart/reload для player, inventory, storage, equipment, recipes, coins та XP/level;
 - atomic/duplicate starter initialization;
@@ -167,17 +220,87 @@ npm run build
 - Direct Trade request/accept, restrictions, revision reset, stale confirmation, atomic item/coin swap, rollback, disconnect та duplicate final confirm;
 - Paid Slot reserve/refund/accept/START, multi-member atomic settlement, duplicate START, orphan cleanup та RoomManager integration;
 - усі cross-system coin/item reservation conflicts.
+- Guild creation cost/uniqueness/membership, applications, invites, rank permissions, leadership, leave/disband і max members;
+- Guild Storage permissions, partial stacks, instance identity, escrow/equipment conflicts, idempotency, concurrency та audit log;
+- Friends request/accept/reject/remove symmetry, duplicate/self protection і Block;
+- Global/Guild/Group/Private Chat routing, limits, rate limiting, pagination, persistence, idempotency та combat lightweight isolation;
+- connect/disconnect, City/Party/Rift presence, Friends updates і Guild roster online state.
+- 3 data-driven floors із 6/8/10 encounter та валідні enemy/boss/loot/recipe references;
+- persistent Floor 1 → 2 → 3 unlock, replay і all-party floor access;
+- uncapped XP curve, усі penalty brackets, dead-player XP exclusion і multiple level-ups;
+- Tier I–III class gear, jewelry, profession resources та potion healing;
+- deterministic production-engine simulator, Auto/no-potion behavior і generated reports.
+
+## Phase 7 — First Rift
+
+Static content розташовано в `shared/game-data/rifts`, `enemies`, `bosses` і generated catalog helpers. `first_rift` має Floor 1/2/3; Floor access зберігається у `players.rift_progress` JSONB і перевіряється для кожного party member перед START. Completed floors можна проходити повторно без lockout, keys чи energy.
+
+Tier catalog генерує 27 profession resources, 90 class equipment pieces, 18 jewelry pieces, 3 healing potions і 111 Phase 7 recipes зі стабільними IDs. Generic Inventory/Storage/Guild Storage/Market/Trade flow не має tier-specific special cases.
+
+Balance/progression артефакти:
+
+- `reports/balance-report.md` — 1 260 000 seeded expeditions, 126 scenarios, 10 000 runs/scenario;
+- `reports/progression-report.md` — XP curve, cumulative XP, XP/run, runs/level і penalty;
+- `npm run simulate:balance` — генерує Phase 7.1 BEFORE/AFTER звіт через production combat engine; baseline Phase 7 не перезаписується.
+
+## Phase 7.1 — Balance Pass
+
+Party-size difficulty використовує єдиний production factory для server і simulator: 5 players = 100% HP/Attack, 4 players = 85%/91%, 3 players = 68%/84%. Scaling фіксується кількістю учасників на START і не читає class, gear, level чи profession composition. Production minimum — 3; 2-player режим лишився test/dev option.
+
+BASIC_SMART координує potion decisions без доступу до майбутнього enemy RNG. Auto лишився random, без potions і hidden bonuses. Central recipe chances знижено до 0.25% normal / 1% elite / 4% boss після long-run supply simulation.
+
+Повний BEFORE/AFTER, party-size, strong gear, potion, Auto, hourly economy і recipe population analysis: `reports/phase7-1-balance-report.md`. Phase 7 baseline `reports/balance-report.md` не перезаписується.
+
+Збережено всі 238 попередніх тестів і додано 17 regression/balance tests Phase 7.1 (усього 255).
 
 Phase 4 tests використовують той самий repository transaction contract зі shared in-memory test database, щоб швидко й детерміновано моделювати service restart та concurrency. Prisma schema/client/migration додатково перевіряються generation і TypeScript build.
 
 `npm run test:db` виконує окремий real-PostgreSQL smoke test: створює та змінює player, закриває connection, створює новий Prisma client/service, перевіряє inventory/storage/equipment/recipes/coins/XP/ledger і видаляє тимчасовий account.
 
+## Phase 8 — Telegram staging і playtest telemetry
+
+Phase 8 не змінює gameplay balance або First Rift content. Telegram Mini App передає raw `initData` у HTTPS `/auth/telegram`; backend перевіряє official Telegram HMAC та freshness, зв’язує numeric Telegram user ID з persistent Account і видає opaque PostgreSQL-backed session. WebSocket `/ws` приймає тільки session token і сам визначає Account/Player. Browser dev auth працює лише за явного `ALLOW_DEV_AUTH=true`; production із dev auth не запускається.
+
+Production/staging boot виконує Trade і paid-slot reconciliation, перевіряє PostgreSQL для `/ready` та відновлює незавершені in-memory expeditions як `SERVER_INTERRUPTED` без extraction. Structured gameplay telemetry не містить Telegram initData, credentials або private chat. Реальний звіт створюється командою:
+
+Збережено всі 255 тестів Phase 1–7.1 і додано 16 Phase 8 auth/session/origin/admin/telemetry/recovery/WebSocket tests (усього 271).
+
+```powershell
+npm run report:playtest
+```
+
+Local development:
+
+```powershell
+Copy-Item .env.example .env
+docker compose up -d
+npm ci
+npm run db:deploy
+npm run dev
+```
+
+Production/staging використовує лише forward migrations:
+
+```powershell
+npm ci
+npm run db:generate
+npm run db:deploy
+npm run build
+npm run smoke:staging
+```
+
+Повний topology, Telegram/BotFather setup, environment variables, health/WSS checks, rollback і backup/restore checklist: `docs/STAGING.md`. Ручна narrow-width та restart перевірка: `docs/STAGING_SMOKE_CHECKLIST.md`.
+
+Production PostgreSQL повинен мати регулярні encrypted backups і перевірені test restores. Secrets зберігаються лише в provider secret manager; `VITE_*` variables ніколи не містять bot token, session secret або database URL.
+
 ## Відомі обмеження
 
-- Active expedition rooms не persistent: restart Node process завершує активну експедицію, але вже committed player/economy data зберігаються.
-- Dev-token — development authentication, не production security і не Telegram auth.
+- Active expedition rooms не persistent: restart Node process завершує активну експедицію, позначає її `SERVER_INTERRUPTED`, не видає temporary loot і повертає гравців у City; уже committed player/economy data зберігаються.
+- Dev-token доступний лише з `ALLOW_DEV_AUTH=true` у non-production; production boot із dev auth відхиляється.
 - Inventory/Storage поки не мають capacity/weight limits.
 - PostgreSQL integration потребує локального Docker; без запущеної БД server не може обслуговувати sessions.
-- Phase 5 використовує один PostgreSQL advisory economy lock для максимально надійної взаємодії Market/Trade/Party/Phase 4 mutations; це безпечний foundation, але не фінальна high-throughput auction architecture.
+- Phase 5–6 використовують один PostgreSQL advisory economy/social lock для максимально надійної взаємодії Market/Trade/Party/Guild Storage mutations; це безпечний foundation, але не фінальна high-throughput architecture.
 - Active trades є persistent лише для recovery/audit; після server restart незавершені trades скасовуються, бо online presence та UI sessions in-memory.
-- Phase 6 systems (Guilds, Redis scaling, persistent combat rooms тощо) навмисно не реалізовані.
+- Presence і chat rate limiting є per-process; multi-instance fan-out/Redis навмисно відкладені.
+- Guild levels, XP, buffs, buildings, treasury, territories, wars, PvP та automatic guild crafting не реалізовані.
+- 3–4 player recommended groups та pure-random Auto Battle на Floor 2–3 мають низькі clear rates; це чесно зафіксовано у balance report і потребує окремого tuning рішення, а не прихованої переваги Auto.
