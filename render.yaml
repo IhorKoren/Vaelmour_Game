@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: vaelmour-api-ihorkoren-2026
+    name: vaelmour-api-ihorkoren
     runtime: docker
     plan: free
     region: frankfurt
@@ -8,7 +8,6 @@ services:
     branch: main
     dockerfilePath: ./Dockerfile.backend
     dockerContext: .
-    dockerCommand: sh -c "npm run db:deploy && npm run start:server"
     healthCheckPath: /ready
     autoDeployTrigger: commit
     envVars:
@@ -17,7 +16,9 @@ services:
       - key: HOST
         value: 0.0.0.0
       - key: DATABASE_URL
-        sync: false
+        fromDatabase:
+          name: vaelmour-postgres
+          property: connectionString
       - key: TELEGRAM_BOT_TOKEN
         sync: false
       - key: SESSION_SECRET
