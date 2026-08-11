@@ -24,7 +24,9 @@ export function validateTelegramInitData(rawInitData: string, botToken: string, 
   const authDate = Number(params.get('auth_date'))
   const userJson = params.get('user')
   const dataCheckString = [...params.entries()]
-    .filter(([key]) => key !== 'hash' && key !== 'signature')
+    // Telegram's HMAC data-check-string excludes only `hash`. Newer clients
+    // also send `signature`, and it must remain covered by the bot-token hash.
+    .filter(([key]) => key !== 'hash')
     .sort(([left], [right]) => left.localeCompare(right))
     .map(([key, value]) => `${key}=${value}`)
     .join('\n')
