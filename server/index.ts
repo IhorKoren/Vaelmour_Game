@@ -49,9 +49,13 @@ httpServer.on('upgrade', (request, socket, head) => {
 })
 
 await prisma.$connect()
-const [cancelledTrades, refundedSlots, interruptedRifts, expiredSessions] = await Promise.all([
-  economy.cleanupOrphanedTrades(), economy.cleanupOrphanedPartySlots(), telemetry.recoverInterruptedExpeditions(), auth.cleanupExpiredSessions(),
-])
+log('info', 'startup_database_connected')
+// These recovery jobs can touch overlapping economy rows. Run them in order so
+// a cold start cannot deadlock before the HTTP server begins listening.
+const cancelledTrades = await economy.cleanupOrphanedTrades()
+const refundedSlots = await economy.cleanupOrphanedPartySlots()
+const interruptedRifts = await telemetry.recoverInterruptedExpeditions()
+const expiredSessions = await auth.cleanupExpiredSessions()
 initialized = true
 httpServer.listen(SERVER_PORT, SERVER_HOST, () => log('info', 'server_ready', { host: SERVER_HOST, port: SERVER_PORT, cancelledTrades, refundedSlots, interruptedRifts, expiredSessions, nodeEnv: config.nodeEnv }))
 
