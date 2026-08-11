@@ -4,7 +4,7 @@ import { TelegramAuthError, validateTelegramInitData } from './telegramAuth'
 
 const BOT_TOKEN = '123456:test-bot-token'
 function signedInitData(user: Record<string, unknown>, authDate = 1_000): string {
-  const params = new URLSearchParams({ auth_date: String(authDate), query_id: 'AA-test', user: JSON.stringify(user) })
+  const params = new URLSearchParams({ auth_date: String(authDate), query_id: 'AA-test', signature: 'telegram-ed25519-signature', user: JSON.stringify(user) })
   const check = [...params.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([key, value]) => `${key}=${value}`).join('\n')
   const secret = createHmac('sha256', 'WebAppData').update(BOT_TOKEN).digest()
   params.set('hash', createHmac('sha256', secret).update(check).digest('hex'))
