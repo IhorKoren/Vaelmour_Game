@@ -62,6 +62,25 @@ describe('gameplay-only playtest telemetry', () => {
     expect(telemetry.finished).toContain(room.expeditionId)
   })
 
+  it('marks an Auto potion with authoritative HP, cooldown, and inventory telemetry', async () => {
+    let clock = 10_000
+    const telemetry = new RecordingTelemetry()
+    const manager = new RoomManager({ telemetry, now: () => clock, random: () => 0.5, autoTimers: false, minPartySize: 1 })
+    managers.push(manager); await connect(manager, 'leader')
+    const room = manager.createParty('leader')!; manager.setReady('leader', true); await manager.startExpedition('leader')
+    room.members.get('leader')!.character.currentHP = 1
+    await manager.setAutoBattle('leader', true)
+    clock += 30_000; await manager.resolveDueRounds(clock)
+
+    expect(telemetry.events.find((event) => event.type === 'PLAYER_ACTION_SUBMITTED' && event.payload?.auto)).toMatchObject({
+      riftId: 'first_rift', floor: 1, encounter: 0, round: 1,
+      payload: { auto: true, usePotion: true, potionItemId: 'healing_potion', hpBefore: 1, remainingPotionCount: 4, cooldownBefore: 0, cooldownAfter: 2 },
+    })
+    expect(telemetry.events.find((event) => event.type === 'POTION_USED')).toMatchObject({
+      payload: { auto: true, potionItemId: 'healing_potion', hpBefore: 1, remainingPotionCount: 4, cooldownBefore: 0, cooldownAfter: 2 },
+    })
+  })
+
   it('strips credentials and private content recursively', () => {
     expect(sanitizeTelemetryPayload({ telegramInitData: 'secret', sessionToken: 'secret', privateChat: 'text', safe: { phone: 'x', floor: 2 } })).toEqual({ safe: { floor: 2 } })
   })

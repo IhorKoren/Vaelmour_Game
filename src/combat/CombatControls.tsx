@@ -47,7 +47,7 @@ export function CombatControls(props: Props) {
       </button>
 
       <label className="auto-toggle">
-        <div><strong>Auto Battle</strong><small>Випадкові дії · без зілля · повний таймер</small></div>
+        <div><strong>Auto Battle</strong><small>Випадкові дії · розумне зілля · повний таймер</small></div>
         <input type="checkbox" checked={props.autoBattle} onChange={(event) => props.onAutoChange(event.target.checked)} />
         <span className="switch" />
       </label>

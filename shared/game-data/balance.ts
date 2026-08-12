@@ -1,3 +1,5 @@
+import { AUTO_POTION_THRESHOLD_BY_TIER } from './autoBattle'
+
 export interface PartySizeScaling {
   hp: number
   attack: number
@@ -20,8 +22,8 @@ export const LOW_PARTY_FLOOR_MODIFIERS: Record<1 | 2, Record<1 | 2 | 3, PartySiz
 
 /** Independently verified undersized-party tuning for the Second Rift. */
 export const SECOND_RIFT_LOW_PARTY_MODIFIERS: Record<1 | 2, Record<1 | 2 | 3, PartySizeScaling>> = {
-  1: { 1: { hp: 0.97, attack: 0.925 }, 2: { hp: 0.98, attack: 0.92 }, 3: { hp: 1.00, attack: 0.90 } },
-  2: { 1: { hp: 0.99, attack: 0.97 }, 2: { hp: 1.00, attack: 0.98 }, 3: { hp: 1.00, attack: 0.97 } },
+  1: { 1: { hp: 0.97, attack: 0.925 }, 2: { hp: 0.96, attack: 0.88 }, 3: { hp: 0.96, attack: 0.84 } },
+  2: { 1: { hp: 0.99, attack: 0.97 }, 2: { hp: 1.00, attack: 0.98 }, 3: { hp: 0.98, attack: 0.92 } },
 }
 
 export const RIFT_PARTY_SIZE_SCALING: Record<string, Record<number, PartySizeScaling>> = {
@@ -44,6 +46,9 @@ export const PHASE7_BASELINE_RECIPE_DROP_CHANCE = { mob: 0.005, elite: 0.02, bos
 export const RECIPE_DROP_CHANCE = { mob: 0.0025, elite: 0.01, boss: 0.04 } as const
 
 export const SIMULATION_BALANCE_CONFIG = {
+  autoPotionThresholdByTier: AUTO_POTION_THRESHOLD_BY_TIER,
+  manualSmartPotionThresholdByTier: { 1: 0.37, 2: 0.30, 3: 0.30, 4: 0.29, 5: 0.28, 6: 0.27 },
+  /** Legacy report alias; manual policy only. */
   basicSmartPotionThresholdByTier: { 1: 0.37, 2: 0.30, 3: 0.30, 4: 0.29, 5: 0.28, 6: 0.27 },
   basicSmartMaxPotionUsersPerRound: 1,
   potionsPerPlayer: 4,

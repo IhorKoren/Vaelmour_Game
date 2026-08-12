@@ -2,12 +2,13 @@ import { resolveRound, generateEnemyAction, weightedZone } from '../../src/comba
 import { CLASSES, ZONES } from '../../src/data/config/balance'
 import type { Character, CharacterClass, CombatAction, Enemy, Zone } from '../../src/types/game'
 import { COIN_MULTIPLIER, FAILED_EXPEDITION_LOOT_LOSS } from '../../shared/game-data/economy'
-import { PHASE7_ITEMS, POTION_HEAL_PERCENT } from '../../shared/game-data/phase7Catalog'
+import { PHASE7_ITEMS, POTION_HEAL_PERCENT, POTION_IDS } from '../../shared/game-data/phase7Catalog'
 import { floorDefinition, floorEncounters } from '../../shared/game-data/rifts'
 import { adjustedEnemyXP } from '../../shared/game-data/progression'
 import { generateProfessionLoot } from '../loot/professionLoot'
 import type { ContentTier, Profession } from '../../shared/game-data/types'
 import { SIMULATION_BALANCE_CONFIG } from '../../shared/game-data/balance'
+import { selectAutoPotion } from '../../shared/game-data/autoBattle'
 import { createRiftEnemy } from '../combat/firstRiftEnemyFactory'
 
 export type BehaviorProfile = 'RANDOM' | 'BASIC_SMART'
@@ -46,6 +47,8 @@ export interface SimulationMetrics {
   deathsWithPotionsRemaining: number
   potionExhaustionFailureRate: number
   lowValuePotionRate: number
+  averagePotionOverheal: number
+  potionTierUsage: Record<string, number>
   retainedResourcesPerRun: number
   retainedRecipesPerRun: number
   manualMinutesPerRun: number
@@ -99,10 +102,14 @@ function createParty(scenario: SimulationScenario): Character[] {
   })
 }
 
-export function createSimulationAction(member: Character, enemy: Enemy, behavior: BehaviorProfile, potions: number, random: () => number, potionTier: ContentTier = 1): CombatAction {
-  if (behavior === 'BASIC_SMART' && potions > 0 && member.currentHP / member.maxHP < SIMULATION_BALANCE_CONFIG.basicSmartPotionThresholdByTier[potionTier]) {
-    return { type: 'potion', defendZone: weightedZone(enemy.attackZoneWeights, random) }
-  }
+export function createSimulationAction(member: Character, enemy: Enemy, behavior: BehaviorProfile, potions: number, random: () => number, potionTier: ContentTier = 1, contentTier: ContentTier = potionTier): CombatAction {
+  const potion = behavior === 'RANDOM'
+    ? selectAutoPotion({ currentHP: member.currentHP, maxHP: member.maxHP, potionCooldown: 0, contentTier,
+      potions: [{ itemId: POTION_IDS[potionTier], quantity: potions, healPercent: POTION_HEAL_PERCENT[potionTier] }] })
+    : potions > 0 && member.currentHP / member.maxHP <= SIMULATION_BALANCE_CONFIG.manualSmartPotionThresholdByTier[contentTier]
+      ? { potionItemId: POTION_IDS[potionTier] }
+      : null
+  if (potion) return { type: 'potion', potionItemId: potion.potionItemId, defendZone: behavior === 'BASIC_SMART' ? weightedZone(enemy.attackZoneWeights, random) : ZONES[Math.floor(random() * ZONES.length)] }
   const attackZone: Zone = behavior === 'BASIC_SMART'
     ? [...ZONES].sort((a, b) => (enemy.defenseZoneWeights?.[a] ?? 1) - (enemy.defenseZoneWeights?.[b] ?? 1))[Math.floor(random() * 2)]
     : ZONES[Math.floor(random() * ZONES.length)]
@@ -115,14 +122,15 @@ export function simulateScenario(scenario: SimulationScenario): SimulationMetric
   const random = seededRandom(scenario.seed)
   let clears = 0, deaths = 0, totalRounds = 0, completedEncounters = 0, totalPotions = 0
   let totalXP = 0, totalCoins = 0, totalResources = 0, totalRecipes = 0, beforeExtraction = 0, afterExtraction = 0
-  let clearPotions = 0, deathsWithPotions = 0, potionExhaustionFailures = 0, lowValuePotions = 0
+  let clearPotions = 0, deathsWithPotions = 0, potionExhaustionFailures = 0, lowValuePotions = 0, potionOverheal = 0
+  const potionTierUses: Record<string, number> = {}
   let retainedResources = 0, retainedRecipes = 0
   const resourcesByProfession: Record<Profession, number> = { blacksmith: 0, alchemist: 0, jeweler: 0 }
   for (let run = 0; run < scenario.runs; run += 1) {
     let party = createParty(scenario)
     // Keep the consumable loadout fixed across gear profiles so the gear comparison isolates equipment power.
     const potionTier = Math.max(1, targetTier(riftId, scenario.floorNumber) - 1) as ContentTier
-    const potions: Record<string, number> = Object.fromEntries(party.map((member) => [member.id, scenario.behavior === 'BASIC_SMART' ? SIMULATION_BALANCE_CONFIG.potionsPerPlayer : 0]))
+    const potions: Record<string, number> = Object.fromEntries(party.map((member) => [member.id, SIMULATION_BALANCE_CONFIG.potionsPerPlayer]))
     const cooldowns: Record<string, number> = Object.fromEntries(party.map((member) => [member.id, 0]))
     let runResources = 0, runRecipes = 0, runFailed = false, runPotions = 0
     const encounters = floorEncounters(riftId, scenario.floorNumber)
@@ -133,16 +141,18 @@ export function simulateScenario(scenario: SimulationScenario): SimulationMetric
         const actions: Record<string, CombatAction> = {}
         const acting = party.filter((value) => value.alive)
         for (const member of acting) {
-          actions[member.id] = createSimulationAction(member, enemy, scenario.behavior, cooldowns[member.id] === 0 ? potions[member.id] : 0, random, potionTier)
+          actions[member.id] = createSimulationAction(member, enemy, scenario.behavior, cooldowns[member.id] === 0 ? potions[member.id] : 0, random, potionTier, targetTier(riftId, scenario.floorNumber))
         }
         const potionUsers = acting.filter((member) => actions[member.id].type === 'potion').sort((a, b) => a.currentHP / a.maxHP - b.currentHP / b.maxHP)
-        for (const member of potionUsers.slice(SIMULATION_BALANCE_CONFIG.basicSmartMaxPotionUsersPerRound)) {
-          actions[member.id] = createSimulationAction(member, enemy, scenario.behavior, 0, random, potionTier)
+        if (scenario.behavior === 'BASIC_SMART') for (const member of potionUsers.slice(SIMULATION_BALANCE_CONFIG.basicSmartMaxPotionUsersPerRound)) {
+          actions[member.id] = createSimulationAction(member, enemy, scenario.behavior, 0, random, potionTier, targetTier(riftId, scenario.floorNumber))
         }
         for (const member of acting) {
           if (actions[member.id].type === 'potion') {
             const heal = Math.round(member.maxHP * POTION_HEAL_PERCENT[potionTier])
             if (member.maxHP - member.currentHP < heal * 0.5) lowValuePotions += 1
+            potionOverheal += Math.max(0, heal - (member.maxHP - member.currentHP))
+            potionTierUses[String(potionTier)] = (potionTierUses[String(potionTier)] ?? 0) + 1
             potions[member.id] -= 1; totalPotions += 1; runPotions += 1
           }
         }
@@ -194,6 +204,8 @@ export function simulateScenario(scenario: SimulationScenario): SimulationMetric
     p90RunsPerRecipe: recipeChance ? Math.ceil(Math.log(0.1) / Math.log(noDrop)) : Number.POSITIVE_INFINITY,
     averagePotionsPerClear: clears ? clearPotions / clears : 0, deathsWithPotionsRemaining: deathsWithPotions / scenario.runs,
     potionExhaustionFailureRate: potionExhaustionFailures / scenario.runs, lowValuePotionRate: totalPotions ? lowValuePotions / totalPotions : 0,
+    averagePotionOverheal: totalPotions ? potionOverheal / totalPotions : 0,
+    potionTierUsage: Object.fromEntries(Object.entries(potionTierUses).map(([tier, count]) => [tier, count / Math.max(1, totalPotions)])),
     retainedResourcesPerRun: retainedResources / scenario.runs, retainedRecipesPerRun: retainedRecipes / scenario.runs,
     manualMinutesPerRun: manualMinutes, autoMinutesPerRun: autoMinutes,
     coinsPerHour: behaviorMinutes ? totalCoins / scenario.runs * 60 / behaviorMinutes : 0,
