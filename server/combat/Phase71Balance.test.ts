@@ -13,7 +13,7 @@ const enemy: Enemy = createFirstRiftEnemy(1, 0, 5)
 
 describe('Phase 7.1 production party scaling', () => {
   it('5-player enemy scaling is the 1.0 baseline', () => expect(partyScaling(5)).toEqual({ hp: 1, attack: 1 }))
-  it('production minimum remains three while two-player stays a test option', () => expect(PRODUCTION_MIN_PARTY_SIZE).toBe(3))
+  it('production permits solo expeditions', () => expect(PRODUCTION_MIN_PARTY_SIZE).toBe(1))
   it('4-player scaling applies configured HP', () => expect(scaleEnemyDefinition(base, 4).maxHP).toBe(Math.round(base.maxHP * PARTY_SIZE_SCALING[4].hp)))
   it('4-player scaling applies configured Attack', () => expect(scaleEnemyDefinition(base, 4).attack).toBe(Math.round(base.attack * PARTY_SIZE_SCALING[4].attack)))
   it('3-player scaling applies configured HP', () => expect(scaleEnemyDefinition(base, 3).maxHP).toBe(Math.round(base.maxHP * PARTY_SIZE_SCALING[3].hp)))

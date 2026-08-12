@@ -11,6 +11,7 @@ export interface StoredPlayerProfile {
   accountId: string
   playerId: string
   name: string
+  nameKey: string
   classId: CharacterClass
   level: number
   currentXP: number
@@ -55,6 +56,14 @@ export interface RepositoryTransactionResult {
   applied: boolean
 }
 
+export interface AdminAuditWrite {
+  adminTelegramUserId: string
+  action: string
+  targetPlayerId: string
+  reason: string
+  details: Record<string, unknown>
+}
+
 export interface CoinLedgerRecord extends LedgerWrite {
   id: string
   playerId: string
@@ -67,6 +76,7 @@ export interface PlayerRepository {
   initializeAccount(accountId: string, setup: AccountSetup | null, starter: (accountId: string, playerId: string, setup: AccountSetup) => StoredPlayerProfile): Promise<StoredPlayerProfile>
   read(playerId: string): Promise<StoredPlayerProfile | null>
   transact(playerId: string, operation: RepositoryOperation, mutate: (profile: StoredPlayerProfile) => void): Promise<RepositoryTransactionResult>
+  adminTransact?(playerId: string, operation: RepositoryOperation, audit: AdminAuditWrite, mutate: (profile: StoredPlayerProfile) => void): Promise<RepositoryTransactionResult>
   ledger(playerId: string): Promise<CoinLedgerRecord[]>
   resetByDevTokenHash(devTokenHash: string): Promise<boolean>
   disconnect(): Promise<void>
@@ -81,11 +91,21 @@ export interface EconomyState {
   ledger: CoinLedgerRecord[]
 }
 
-export interface EconomyTransactionResult<T> { value: T; applied: boolean }
+export interface EconomyTransactionResult<T> { value: T; applied: boolean; referenceId?: string }
+
+export interface DurableExpeditionStart {
+  expeditionId: string
+  playSessionId: string
+  roomId: string
+  riftId: string
+  floor: number
+  playerIds: string[]
+}
 
 export interface EconomyRepository extends PlayerRepository {
   economyRead<T>(read: (state: EconomyState) => T): Promise<T>
-  economyTransact<T>(playerId: string, operationKey: string, operationType: string, mutate: (state: EconomyState) => T): Promise<EconomyTransactionResult<T>>
+  economyTransact<T>(playerId: string, operationKey: string, operationType: string, mutate: (state: EconomyState) => T, resultReference?: (value: T) => string | undefined): Promise<EconomyTransactionResult<T>>
+  startExpeditionTransact(playerId: string, operationKey: string, marker: DurableExpeditionStart, mutate: (state: EconomyState) => void): Promise<{ applied: boolean; marker: DurableExpeditionStart }>
 }
 
 export interface SocialState {

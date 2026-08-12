@@ -11,6 +11,9 @@ import { TradePanel } from './TradePanel'
 import { GuildPanel } from './GuildPanel'
 import { FriendsPanel } from './FriendsPanel'
 import { ChatPanel } from './ChatPanel'
+import { FIRST_RIFT } from '../../shared/game-data/rifts/firstRift'
+import { POTION_IDS } from '../../shared/game-data/phase7Catalog'
+import { telegramWebApp } from '../auth/authClient'
 
 interface Props { character: Character; client: MultiplayerClient; onEnterRift: () => void; onReset: () => void }
 type CityTab = 'character' | 'inventory' | 'storage' | 'craft' | 'market' | 'trade' | 'guild' | 'friends' | 'chat'
@@ -43,9 +46,9 @@ export function CityScreen({ character, client, onEnterRift, onReset }: Props) {
       {tab === 'friends' && <FriendsPanel client={client} />}
       {tab === 'chat' && <ChatPanel client={client} />}
     </>}
-    {!tab && <section className="rift-callout"><div className="rift-symbol"><span>◇</span></div><div className="rift-copy"><p className="eyebrow">Multiplayer expedition</p><h2>Перший Розлом</h2><p>Поверх 1 · 4 зустрічі · Персональний лут</p></div><div className="rift-danger"><span>НЕСТАБІЛЬНО</span><small>Potions: {state?.inventory.find((item) => item.itemId === 'healing_potion')?.quantity ?? 0}</small></div><button className="primary-button" onClick={onEnterRift}>Увійти в Lobby <span>›</span></button></section>}
+    {!tab && <section className="rift-callout"><div className="rift-symbol"><span>◇</span></div><div className="rift-copy"><p className="eyebrow">Multiplayer expedition · 1–5 players</p><h2>{FIRST_RIFT.name}</h2><p>Поверх 1 · {FIRST_RIFT.floors[0].encounterEnemyIds.length + 1} зустрічі · Персональний лут</p></div><div className="rift-danger"><span>НЕСТАБІЛЬНО</span><small>Potions: {state?.inventory.filter((item) => Object.values(POTION_IDS).includes(item.itemId as never)).reduce((sum, item) => sum + item.quantity, 0) ?? 0}</small></div><button className="primary-button" onClick={onEnterRift}>Увійти в Lobby <span>›</span></button></section>}
     {tab && <button className="secondary-button city-back" onClick={() => setTab(null)}>← Повернутися на площу</button>}
-    <button className="text-button reset-button" onClick={onReset}>Створити іншого персонажа</button>
-    <footer className="city-footer"><span>◀ Server-authoritative economy & social</span><span>Phase 6 · PostgreSQL</span></footer>
+    {!telegramWebApp() && <button className="text-button reset-button" onClick={onReset}>Скинути development-персонажа</button>}
+    <footer className="city-footer"><span>◀ Server-authoritative economy & social</span><span>Phase 8.2 · PostgreSQL</span></footer>
   </main>
 }

@@ -5,7 +5,7 @@ import type { RuntimeConfig } from '../config'
 import { isAllowedOrigin } from '../config'
 import type { PlayerStateService } from '../players/PlayerStateService'
 import { EconomyError } from '../players/PlayerStateService'
-import type { PlaytestTelemetry } from '../telemetry/PlaytestTelemetry'
+import type { TelemetrySink } from '../telemetry/PlaytestTelemetry'
 import type { AdminAction, AdminService } from '../admin/AdminService'
 import type { CharacterClass } from '../../src/types/game'
 import { log } from '../logging/logger'
@@ -13,7 +13,7 @@ import { log } from '../logging/logger'
 interface HandlerDependencies {
   auth: AuthService
   players: PlayerStateService
-  telemetry: PlaytestTelemetry
+  telemetry: TelemetrySink
   admin: AdminService
   config: RuntimeConfig
   isInitialized: () => boolean
@@ -47,7 +47,26 @@ function bearer(request: IncomingMessage): string {
 
 const CLASSES = new Set<CharacterClass>(['warrior', 'ranger', 'blacksmith', 'alchemist', 'jeweler'])
 
+export class RequestRateLimiter {
+  private readonly attempts = new Map<string, number[]>()
+  constructor(private readonly limit: number, private readonly windowMs: number, private readonly now: () => number = Date.now) {}
+
+  consume(key: string): boolean {
+    const cutoff = this.now() - this.windowMs
+    const recent = (this.attempts.get(key) ?? []).filter((timestamp) => timestamp > cutoff)
+    if (recent.length >= this.limit) { this.attempts.set(key, recent); return false }
+    recent.push(this.now()); this.attempts.set(key, recent)
+    return true
+  }
+}
+
+function requestClientKey(request: IncomingMessage): string {
+  const forwarded = request.headers['x-forwarded-for']?.toString().split(',')[0]?.trim()
+  return `${request.socket.remoteAddress ?? 'unknown'}:${forwarded ?? 'direct'}`.slice(0, 200)
+}
+
 export function createRequestHandler(deps: HandlerDependencies): (request: IncomingMessage, response: ServerResponse) => void {
+  const authLimiter = new RequestRateLimiter(30, 10 * 60_000)
   return (request, response) => { void (async () => {
     const requestId = request.headers['x-request-id']?.toString().slice(0, 100) || crypto.randomUUID()
     const url = new URL(request.url ?? '/', 'http://server.local')
@@ -71,6 +90,7 @@ export function createRequestHandler(deps: HandlerDependencies): (request: Incom
     if (!isAllowedOrigin(origin, deps.config)) return send(response, 403, { ok: false, code: 'ORIGIN_FORBIDDEN' })
 
     if (request.method === 'POST' && (url.pathname === '/auth/telegram' || url.pathname === '/auth/dev')) {
+      if (!authLimiter.consume(requestClientKey(request))) throw new AuthenticationError('AUTH_RATE_LIMITED', 'Too many authentication attempts. Try again later.')
       const body = await jsonBody(request)
       const login = url.pathname === '/auth/telegram'
         ? await deps.auth.authenticateTelegram(String(body.initData ?? ''))
@@ -109,7 +129,7 @@ export function createRequestHandler(deps: HandlerDependencies): (request: Incom
     return send(response, 404, { ok: false, code: 'NOT_FOUND' })
   })().catch((error) => {
     const code = error instanceof AuthenticationError || error instanceof EconomyError ? error.code : 'INTERNAL_ERROR'
-    const status = code === 'INTERNAL_ERROR' ? 500 : code.includes('FORBIDDEN') || code === 'ORIGIN_FORBIDDEN' ? 403 : code.includes('DISABLED') ? 403 : 400
+    const status = code === 'INTERNAL_ERROR' ? 500 : code === 'AUTH_RATE_LIMITED' ? 429 : code.includes('FORBIDDEN') || code === 'ORIGIN_FORBIDDEN' ? 403 : code.includes('DISABLED') ? 403 : 400
     log(status === 500 ? 'error' : 'warn', 'http_request_failed', { path: request.url, code }, error)
     if (!response.headersSent) send(response, status, { ok: false, code, message: status === 500 ? 'Internal server error.' : error instanceof Error ? error.message : 'Request failed.' })
     else response.end()

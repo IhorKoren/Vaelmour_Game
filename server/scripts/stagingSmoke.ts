@@ -35,11 +35,13 @@ console.log('PASS frontend')
 const token = await sessionToken()
 const socket = new WebSocket(wsUrl, { origin: appOrigin })
 const expected = new Set(['WELCOME', 'CHARACTER_STATE', 'MARKET_SNAPSHOT', 'GUILD_STATE', 'PARTY_LIST'])
+const received: Array<{ type: string; payload?: any }> = []
 await new Promise<void>((resolve, reject) => {
   const timer = setTimeout(() => reject(new Error(`WebSocket smoke timeout; missing: ${[...expected].join(', ')}`)), 10_000)
   socket.on('open', () => socket.send(JSON.stringify({ type: 'HELLO', payload: { sessionToken: token, playerId: 'ignored-spoof' } })))
   socket.on('message', (raw) => {
     const message = JSON.parse(raw.toString()) as { type: string; payload?: unknown }
+    received.push(message)
     if (message.type === 'WELCOME') {
       socket.send(JSON.stringify({ type: 'GET_MARKET' }))
       socket.send(JSON.stringify({ type: 'GET_GUILD_STATE' }))
@@ -50,5 +52,45 @@ await new Promise<void>((resolve, reject) => {
   })
   socket.on('error', reject)
 })
-socket.close()
 console.log('PASS authenticated WebSocket, character, Market, Guild, and Rift Lobby state')
+
+async function waitFor(type: string, after: number): Promise<{ type: string; payload?: any }> {
+  return new Promise((resolve, reject) => {
+    const started = Date.now()
+    const poll = () => {
+      const match = received.slice(after).find((message) => message.type === type)
+      if (match) resolve(match)
+      else if (Date.now() - started > 10_000) reject(new Error(`Timed out waiting for ${type}`))
+      else setTimeout(poll, 20)
+    }
+    poll()
+  })
+}
+
+if (process.env.SMOKE_MUTATIONS === 'true') {
+  let cursor = received.length
+  socket.send(JSON.stringify({ type: 'CREATE_PARTY' }))
+  await waitFor('PARTY_STATE', cursor)
+  cursor = received.length
+  socket.send(JSON.stringify({ type: 'SET_READY', payload: { ready: true } }))
+  await waitFor('PARTY_STATE', cursor)
+  cursor = received.length
+  socket.send(JSON.stringify({ type: 'START_EXPEDITION' }))
+  const started = await waitFor('EXPEDITION_STARTED', cursor)
+  cursor = received.length
+  socket.send(JSON.stringify({ type: 'SUBMIT_ACTION', payload: { round: started.payload.round, attackZone: 'body', defendZone: 'body', usePotion: false } }))
+  await waitFor('ROUND_RESOLVED', cursor)
+  console.log('PASS solo START and one authoritative combat round')
+
+  socket.close()
+  const reconnect = new WebSocket(wsUrl, { origin: appOrigin })
+  const restored = await new Promise<boolean>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('Reconnect smoke timeout')), 10_000)
+    reconnect.on('open', () => reconnect.send(JSON.stringify({ type: 'HELLO', payload: { sessionToken: token } })))
+    reconnect.on('message', (raw) => { const message = JSON.parse(raw.toString()) as { type: string }; if (message.type === 'COMBAT_SNAPSHOT') { clearTimeout(timer); resolve(true) } })
+    reconnect.on('error', reject)
+  })
+  if (!restored) throw new Error('Combat state was not restored')
+  reconnect.close()
+  console.log('PASS reconnect within grace and combat state restore')
+} else socket.close()

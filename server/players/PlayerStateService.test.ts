@@ -8,6 +8,15 @@ async function create(service: PlayerStateService, id: string, classId: 'warrior
 }
 
 describe('authoritative items, equipment and crafting', () => {
+  it('enforces normalized unique names under concurrent creation', async () => {
+    const service = new PlayerStateService()
+    const results = await Promise.allSettled([
+      service.getOrCreate({ playerId: 'one', character: { name: ' Éowyn ', classId: 'warrior', level: 1 } }),
+      service.getOrCreate({ playerId: 'two', character: { name: 'E\u0301OWYN', classId: 'ranger', level: 1 } }),
+    ])
+    expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1)
+    expect(results.filter((result) => result.status === 'rejected')).toHaveLength(1)
+  })
   it('wrong class cannot equip item', async () => {
     const service = new PlayerStateService(); await create(service, 'warrior')
     const item = await service.addItemForTesting('warrior', 'forged_ranger_weapon')

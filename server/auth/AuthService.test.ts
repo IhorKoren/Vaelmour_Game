@@ -13,8 +13,8 @@ function initData(id: number, username: string, authDate = 1_000): string {
   return params.toString()
 }
 
-function config(allowDevAuth = false): RuntimeConfig {
-  return { nodeEnv: 'test', isProduction: false, allowDevAuth, adminMode: false, telegramBotToken: BOT_TOKEN, sessionSecret: 'test-session-secret-at-least-32-characters', sessionTtlSeconds: 60, telegramMaxAgeSeconds: 300, appOrigin: null, allowedOrigins: new Set(), adminTelegramUserIds: new Set() }
+function config(allowDevAuth = false, maxSessionsPerAccount = 8): RuntimeConfig {
+  return { nodeEnv: 'test', isProduction: false, allowDevAuth, adminMode: false, telegramBotToken: BOT_TOKEN, sessionSecret: 'test-session-secret-at-least-32-characters', sessionTtlSeconds: 60, maxSessionsPerAccount, telegramMaxAgeSeconds: 300, appOrigin: null, allowedOrigins: new Set(), adminTelegramUserIds: new Set() }
 }
 
 class FakePrisma {
@@ -54,6 +54,13 @@ class FakePrisma {
       const session = { id: randomUUID(), ...data, revokedAt: null, lastUsedAt: new Date() }
       this.sessions.set(session.sessionHash, session); return session
     }
+    this.authSession.deleteMany = async ({ where }: any) => {
+      let count = 0
+      const cutoff = where.OR?.[0]?.expiresAt?.lte ?? new Date(1_000_000)
+      for (const [hash, session] of this.sessions) if ((!where.accountId || session.accountId === where.accountId) && (session.expiresAt <= cutoff || session.revokedAt)) { this.sessions.delete(hash); count += 1 }
+      return { count }
+    }
+    this.authSession.findMany = async ({ where }: any) => [...this.sessions.values()].filter((session) => session.accountId === where.accountId && !session.revokedAt && session.expiresAt > where.expiresAt.gt).map(({ id }) => ({ id }))
     this.authSession.findUnique = async ({ where }: any) => {
       const session = this.sessions.get(where.sessionHash)
       if (!session) return null
@@ -66,6 +73,7 @@ class FakePrisma {
       Object.assign(session, data); return session
     }
     this.authSession.updateMany = async ({ where, data }: any) => {
+      if (where.id?.in) { let count = 0; for (const session of this.sessions.values()) if (where.id.in.includes(session.id)) { Object.assign(session, data); count += 1 } return { count } }
       const session = this.sessions.get(where.sessionHash)
       if (session && !session.revokedAt) Object.assign(session, data)
       return { count: session ? 1 : 0 }
@@ -104,5 +112,14 @@ describe('account linking and opaque sessions', () => {
     await expect(new AuthService(fake as unknown as PrismaClient, config()).authenticateDev('developer-token')).rejects.toMatchObject({ code: 'DEV_AUTH_DISABLED' })
     const enabled = await new AuthService(fake as unknown as PrismaClient, config(true)).authenticateDev('developer-token')
     expect(enabled.accountId).toBeTruthy()
+  })
+
+  it('revokes the oldest session when the per-account limit is exceeded', async () => {
+    const fake = new FakePrisma(); const auth = new AuthService(fake as unknown as PrismaClient, config(false, 2), () => 1_000_000)
+    const first = await auth.authenticateTelegram(initData(99, 'limited'))
+    await auth.authenticateTelegram(initData(99, 'limited'))
+    await auth.authenticateTelegram(initData(99, 'limited'))
+    await expect(auth.validateSession(first.sessionToken)).rejects.toMatchObject({ code: 'AUTH_SESSION_EXPIRED' })
+    expect([...fake.sessions.values()].filter((session) => !session.revokedAt)).toHaveLength(2)
   })
 })

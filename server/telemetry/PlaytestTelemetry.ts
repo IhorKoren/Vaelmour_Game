@@ -1,4 +1,6 @@
 import type { Prisma, PrismaClient } from '../generated/prisma/client'
+import { randomUUID } from 'node:crypto'
+import { log } from '../logging/logger'
 
 export const PLAYTEST_EVENT_TYPES = [
   'CHARACTER_CREATED', 'PARTY_CREATED', 'PARTY_STARTED', 'RIFT_STARTED', 'ENCOUNTER_STARTED', 'ENCOUNTER_COMPLETED',
@@ -54,6 +56,58 @@ export class NoopTelemetry implements TelemetrySink {
   async beginExpedition(): Promise<void> {}
   async finishExpedition(): Promise<void> {}
   async consumeInterruption(): Promise<boolean> { return false }
+}
+
+/**
+ * Keeps observational writes outside gameplay correctness. Failed event writes
+ * are retried with the same idempotency key; durable expedition creation still
+ * fails closed because it is part of the START boundary.
+ */
+export class SafeTelemetrySink implements TelemetrySink {
+  private readonly retries = new Map<string, { event: TelemetryEvent; attempts: number }>()
+
+  constructor(private readonly inner: TelemetrySink, private readonly retryDelayMs = 1_000, private readonly maxAttempts = 5) {}
+
+  async record(input: TelemetryEvent): Promise<void> {
+    const event = input.eventKey ? input : { ...input, eventKey: `telemetry:${input.type}:${randomUUID()}` }
+    try {
+      await this.inner.record(event)
+      this.retries.delete(event.eventKey!)
+    } catch (error) {
+      const attempts = (this.retries.get(event.eventKey!)?.attempts ?? 0) + 1
+      this.retries.set(event.eventKey!, { event, attempts })
+      log('error', 'telemetry_record_failed', { eventType: event.type, eventKey: event.eventKey, attempts }, error)
+      if (attempts < this.maxAttempts) {
+        const timer = setTimeout(() => { void this.record(event) }, this.retryDelayMs * attempts)
+        timer.unref?.()
+      }
+    }
+  }
+
+  beginExpedition(marker: ExpeditionMarker): Promise<void> { return this.inner.beginExpedition(marker) }
+
+  async finishExpedition(expeditionId: string, status: 'COMPLETED' | 'FAILED' | 'EXITED'): Promise<void> {
+    await this.finishWithRetry(expeditionId, status, 1)
+  }
+
+  async consumeInterruption(playerId: string): Promise<boolean> {
+    try { return await this.inner.consumeInterruption(playerId) }
+    catch (error) {
+      log('error', 'telemetry_consume_interruption_failed', { playerId }, error)
+      return false
+    }
+  }
+
+  private async finishWithRetry(expeditionId: string, status: 'COMPLETED' | 'FAILED' | 'EXITED', attempt: number): Promise<void> {
+    try { await this.inner.finishExpedition(expeditionId, status) }
+    catch (error) {
+      log('error', 'telemetry_finish_expedition_failed', { expeditionId, status, attempt }, error)
+      if (attempt < this.maxAttempts) {
+        const timer = setTimeout(() => { void this.finishWithRetry(expeditionId, status, attempt + 1) }, this.retryDelayMs * attempt)
+        timer.unref?.()
+      }
+    }
+  }
 }
 
 export class PlaytestTelemetry implements TelemetrySink {

@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import type { DirectTrade, MarketFill, MarketOrder, PartySlotReservation } from '../../shared/economy-types'
 import type { ChatReadRecord, FriendRequestRecord, FriendshipRecord, GuildApplicationRecord, GuildInviteRecord, GuildMemberRecord, GuildPermissionRecord, GuildRecord, GuildStorageItem, GuildStorageLogRecord, PersistentChatMessage, PlayerBlockRecord, PrivateConversationRecord } from '../../shared/social-types'
-import type { AccountSetup, CoinLedgerRecord, EconomyState, EconomyTransactionResult, RepositoryOperation, RepositoryTransactionResult, SocialRepository, SocialState, StoredPlayerProfile } from './types'
+import type { AccountSetup, CoinLedgerRecord, DurableExpeditionStart, EconomyState, EconomyTransactionResult, RepositoryOperation, RepositoryTransactionResult, SocialRepository, SocialState, StoredPlayerProfile } from './types'
 import { cloneEconomyState, cloneProfile, cloneSocialState } from './types'
 
 export interface MemoryDatabase {
@@ -9,11 +9,13 @@ export interface MemoryDatabase {
   accountToPlayer: Map<string, string>
   players: Map<string, StoredPlayerProfile>
   operations: Set<string>
+  operationReferences: Map<string, string>
   ledger: CoinLedgerRecord[]
   marketOrders: Map<string, MarketOrder>
   marketFills: MarketFill[]
   trades: Map<string, DirectTrade>
   partySlotReservations: Map<string, PartySlotReservation>
+  activeExpeditions: Map<string, DurableExpeditionStart>
   guilds: Map<string, GuildRecord>
   guildMembers: Map<string, GuildMemberRecord>
   guildApplications: Map<string, GuildApplicationRecord>
@@ -31,8 +33,8 @@ export interface MemoryDatabase {
 
 export function createMemoryDatabase(): MemoryDatabase {
   return {
-    tokenToAccount: new Map(), accountToPlayer: new Map(), players: new Map(), operations: new Set(), ledger: [],
-    marketOrders: new Map(), marketFills: [], trades: new Map(), partySlotReservations: new Map(),
+    tokenToAccount: new Map(), accountToPlayer: new Map(), players: new Map(), operations: new Set(), operationReferences: new Map(), ledger: [],
+    marketOrders: new Map(), marketFills: [], trades: new Map(), partySlotReservations: new Map(), activeExpeditions: new Map(),
     guilds: new Map(), guildMembers: new Map(), guildApplications: new Map(), guildInvites: new Map(), guildPermissions: new Map(),
     guildStorageItems: new Map(), guildStorageLogs: [], friendRequests: new Map(), friendships: new Map(), blocks: new Map(),
     conversations: new Map(), chatMessages: [], chatReads: new Map(),
@@ -55,6 +57,7 @@ export class InMemoryPlayerRepository implements SocialRepository {
       const nextAccountId = randomUUID()
       const nextPlayerId = this.preserveSetupPlayerId && 'legacyPlayerId' in setup ? String(setup.legacyPlayerId) : randomUUID()
       const profile = starter(nextAccountId, nextPlayerId, setup)
+      if ([...this.database.players.values()].some((player) => player.nameKey === profile.nameKey)) throw new Error('PLAYER_NAME_TAKEN')
       this.database.tokenToAccount.set(devTokenHash, nextAccountId)
       this.database.accountToPlayer.set(nextAccountId, nextPlayerId)
       this.database.players.set(nextPlayerId, cloneProfile(profile))
@@ -69,6 +72,7 @@ export class InMemoryPlayerRepository implements SocialRepository {
       if (!setup) throw new Error('ACCOUNT_SETUP_REQUIRED')
       const playerId = this.preserveSetupPlayerId && setup.legacyPlayerId ? setup.legacyPlayerId : randomUUID()
       const profile = starter(accountId, playerId, setup)
+      if ([...this.database.players.values()].some((player) => player.nameKey === profile.nameKey)) throw new Error('PLAYER_NAME_TAKEN')
       this.database.accountToPlayer.set(accountId, playerId)
       this.database.players.set(playerId, cloneProfile(profile))
       return cloneProfile(profile)
@@ -104,10 +108,10 @@ export class InMemoryPlayerRepository implements SocialRepository {
     return read(cloneEconomyState(this.economyState()))
   }
 
-  async economyTransact<T>(playerId: string, operationKey: string, operationType: string, mutate: (state: EconomyState) => T): Promise<EconomyTransactionResult<T>> {
+  async economyTransact<T>(playerId: string, operationKey: string, operationType: string, mutate: (state: EconomyState) => T, resultReference?: (value: T) => string | undefined): Promise<EconomyTransactionResult<T>> {
     return this.exclusive(async () => {
       const current = this.economyState()
-      if (this.database.operations.has(operationKey)) return { value: undefined as T, applied: false }
+      if (this.database.operations.has(operationKey)) return { value: undefined as T, applied: false, referenceId: this.database.operationReferences.get(operationKey) }
       const working = cloneEconomyState(current)
       const value = mutate(working)
       this.database.players = working.players
@@ -117,8 +121,31 @@ export class InMemoryPlayerRepository implements SocialRepository {
       this.database.partySlotReservations = working.partySlotReservations
       this.database.ledger = working.ledger
       this.database.operations.add(operationKey)
+      const referenceId = resultReference?.(value)
+      if (referenceId) this.database.operationReferences.set(operationKey, referenceId)
       void playerId; void operationType
-      return { value, applied: true }
+      return { value, applied: true, referenceId }
+    })
+  }
+
+  async startExpeditionTransact(_playerId: string, operationKey: string, marker: DurableExpeditionStart, mutate: (state: EconomyState) => void): Promise<{ applied: boolean; marker: DurableExpeditionStart }> {
+    return this.exclusive(async () => {
+      if (this.database.operations.has(operationKey)) {
+        const existing = [...this.database.activeExpeditions.values()].find((item) => item.roomId === marker.roomId)
+        if (!existing) throw new Error('DURABLE_EXPEDITION_MARKER_MISSING')
+        return { applied: false, marker: { ...existing, playerIds: [...existing.playerIds] } }
+      }
+      const working = cloneEconomyState(this.economyState())
+      mutate(working)
+      this.database.players = working.players
+      this.database.marketOrders = working.marketOrders
+      this.database.marketFills = working.marketFills
+      this.database.trades = working.trades
+      this.database.partySlotReservations = working.partySlotReservations
+      this.database.ledger = working.ledger
+      this.database.activeExpeditions.set(marker.expeditionId, { ...marker, playerIds: [...marker.playerIds] })
+      this.database.operations.add(operationKey)
+      return { applied: true, marker: { ...marker, playerIds: [...marker.playerIds] } }
     })
   }
 

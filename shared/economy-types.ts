@@ -88,6 +88,8 @@ export interface MarketItemSummary {
 }
 
 export interface MarketSnapshot {
+  /** Exact order created by the current mutation, when applicable. */
+  createdOrderId?: string
   items: MarketItemSummary[]
   selectedItemId: string | null
   sellOrders: MarketBookOrder[]

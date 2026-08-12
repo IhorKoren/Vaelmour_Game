@@ -1,11 +1,12 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import type { CharacterClass } from '../../src/types/game'
-import { PARTY_SIZE_SCALING, PHASE7_BASELINE_RECIPE_DROP_CHANCE, RECIPE_DROP_CHANCE, SIMULATION_BALANCE_CONFIG } from '../../shared/game-data/balance'
+import { LOW_PARTY_FLOOR_MODIFIERS, PARTY_SIZE_SCALING, PHASE7_BASELINE_RECIPE_DROP_CHANCE, RECIPE_DROP_CHANCE, SIMULATION_BALANCE_CONFIG } from '../../shared/game-data/balance'
 import { ATTACK_BUDGET, HP_BUDGET } from '../../shared/game-data/phase7Catalog'
 import { simulateScenario, type BehaviorProfile, type GearProfile, type SimulationMetrics } from '../simulation/balanceSimulator'
 import { simulateRecipeAcquisition } from '../simulation/recipeAcquisition'
 
-const runs = Math.max(1, Number(process.env.SIMULATION_RUNS ?? 10_000))
+const smoke = process.argv.includes('--smoke')
+const runs = Math.max(1, Number(process.env.SIMULATION_RUNS ?? (smoke ? 100 : 10_000)))
 const compositions: Record<string, CharacterClass[]> = {
   A_5_COMBAT: ['warrior', 'warrior', 'warrior', 'ranger', 'ranger'],
   B_BALANCED: ['warrior', 'ranger', 'blacksmith', 'alchemist', 'jeweler'],
@@ -14,10 +15,15 @@ const compositions: Record<string, CharacterClass[]> = {
   E_3_PLAYERS: ['warrior', 'ranger', 'alchemist'],
   F_4_PLAYERS: ['warrior', 'ranger', 'alchemist', 'jeweler'],
   G_5_PLAYERS: ['warrior', 'ranger', 'blacksmith', 'alchemist', 'jeweler'],
+  H_SOLO_COMBAT: ['warrior'],
+  I_SOLO_PROFESSION: ['alchemist'],
+  J_DUO_COMBAT: ['warrior', 'ranger'],
+  K_DUO_MIXED: ['warrior', 'alchemist'],
 }
 const labels: Record<string, string> = {
   A_5_COMBAT: '5 combat', B_BALANCED: '5 balanced', C_3_COMBAT_2_PROF: '3 combat + 2 professions',
   D_DUPLICATE_PROF: 'Duplicate profession', E_3_PLAYERS: '3 players', F_4_PLAYERS: '4 players', G_5_PLAYERS: '5 balanced (size comparison)',
+  H_SOLO_COMBAT: '1 player (combat)', I_SOLO_PROFESSION: '1 player (profession)', J_DUO_COMBAT: '2 players (combat)', K_DUO_MIXED: '2 players (mixed)',
 }
 const gears: GearProfile[] = ['UNDERGEARED', 'RECOMMENDED', 'STRONG']
 const behaviors: BehaviorProfile[] = ['BASIC_SMART', 'RANDOM']
@@ -55,10 +61,10 @@ const autoRows = [1, 2, 3].flatMap((floor) => (['RECOMMENDED', 'STRONG'] as Gear
   return `| ${floor} | ${gear} | ${pct(smart.clearRate)} | ${pct(auto.clearRate)} | ${(100 * (smart.clearRate - auto.clearRate)).toFixed(1)} pp | ${num(smart.manualMinutesPerRun)} | ${num(auto.autoMinutesPerRun)} |`
 })).join('\n')
 
-const partySizeRows = ['E_3_PLAYERS', 'F_4_PLAYERS', 'G_5_PLAYERS'].flatMap((id) => [1, 2, 3].map((floor) => {
-  const metric = find(id, floor, 'RECOMMENDED', 'BASIC_SMART')
-  return `| ${labels[id]} | ${floor} | ${pct(metric.clearRate)} | ${num(metric.averageTotalRounds)} | ${num(metric.manualMinutesPerRun)} | ${num(metric.resourcesPerHour)} | ${num(metric.recipesPerHour)} | ${num(metric.coinsPerHour)} |`
-})).join('\n')
+const partySizeRows = ['H_SOLO_COMBAT', 'K_DUO_MIXED', 'E_3_PLAYERS', 'F_4_PLAYERS', 'G_5_PLAYERS'].flatMap((id) => [1, 2, 3].flatMap((floor) => (['RECOMMENDED', 'STRONG'] as GearProfile[]).flatMap((gear) => (['BASIC_SMART', 'RANDOM'] as BehaviorProfile[]).map((behavior) => {
+  const metric = find(id, floor, gear, behavior)
+  return `| ${labels[id]} | ${floor} | ${gear} | ${behavior === 'BASIC_SMART' ? 'Manual/Smart' : 'Auto'} | ${pct(metric.clearRate)} | ${pct(metric.deathRate)} | ${num(metric.averageTotalRounds)} | ${num(behavior === 'BASIC_SMART' ? metric.manualMinutesPerRun : metric.autoMinutesPerRun)} | ${num(metric.averagePotions)} | ${pct(metric.potionExhaustionFailureRate)} | ${num(metric.resourcesPerHour)} | ${num(metric.recipesPerHour)} | ${num(metric.coinsPerHour)} |`
+})))).join('\n')
 
 const detailedRecipe = [1, 2, 3].flatMap((floor) => simulateRecipeAcquisition(floor, 1_000, 10, 810_000 + floor))
 const recipeRows = detailedRecipe.map((metric) => `| ${metric.floorNumber} | ${metric.profession} | ${num(metric.dropsPer100Runs)} | ${num(metric.averageRunsToAny)} | ${num(metric.medianRunsToAny)} | ${num(metric.p90RunsToAny)} | ${num(metric.expectedAfter10Runs)} | ${num(metric.expectedAfter50Runs)} | ${metric.newRecipes} | ${metric.duplicateRecipes} | ${pct(metric.duplicateShare)} |`).join('\n')
@@ -70,5 +76,13 @@ const populationRows = [100, 1_000].flatMap((horizon) => [1, 10, 100].flatMap((p
 const report = `# Phase 7.1 Balance Pass — Before / After\n\nGenerated from the production combat engine and production party-size enemy factory. **${runs.toLocaleString()} runs/scenario**, ${metrics.length} combat scenarios. Phase 7 baseline remains in \`reports/balance-report.md\`. RANDOM Auto uses random attack/defense, no potion, no pattern reading, and no hidden bonus.\n\n## Changed centralized values\n\n| Config | Before | After |\n|---|---:|---:|\n| 5-player HP / Attack | 100% / 100% | 100% / 100% |\n| 4-player HP / Attack | 100% / 100% | ${PARTY_SIZE_SCALING[4].hp * 100}% / ${PARTY_SIZE_SCALING[4].attack * 100}% |\n| 3-player HP / Attack | 100% / 100% | ${PARTY_SIZE_SCALING[3].hp * 100}% / ${PARTY_SIZE_SCALING[3].attack * 100}% |\n| BASIC_SMART potion threshold | 42% | tier I ${(SIMULATION_BALANCE_CONFIG.basicSmartPotionThresholdByTier[1] * 100).toFixed(0)}%, tier II/III ${(SIMULATION_BALANCE_CONFIG.basicSmartPotionThresholdByTier[2] * 100).toFixed(0)}% |\n| Coordinated potion users/round | unlimited | ${SIMULATION_BALANCE_CONFIG.basicSmartMaxPotionUsersPerRound} |\n| Gear Attack budget T1/T2/T3 | 10 / 22 / 38 | ${ATTACK_BUDGET[1]} / ${ATTACK_BUDGET[2]} / ${ATTACK_BUDGET[3]} |\n| Gear HP budget T1/T2/T3 | 65 / 145 / 250 | ${HP_BUDGET[1]} / ${HP_BUDGET[2]} / ${HP_BUDGET[3]} |\n| Recipe normal / elite / boss | ${PHASE7_BASELINE_RECIPE_DROP_CHANCE.mob * 100}% / ${PHASE7_BASELINE_RECIPE_DROP_CHANCE.elite * 100}% / ${PHASE7_BASELINE_RECIPE_DROP_CHANCE.boss * 100}% | ${RECIPE_DROP_CHANCE.mob * 100}% / ${RECIPE_DROP_CHANCE.elite * 100}% / ${RECIPE_DROP_CHANCE.boss * 100}% |\n\nEnemy content attack tuning was isolated after the policy/gear passes: Floor scales 4.00/1.95/1.50 → 3.60/1.68/1.08; Floor 2 boss 277→265, Floor 3 boss 297→280. Boss mechanics, group intervals, weights, XP, coins, and loot tables are unchanged.\n\n## Iteration record\n\n1. Party scaling alone moved 3-player to roughly 64/42/17% and 4-player to 79/54/51%, while 5-player stayed unchanged.\n2. A global 10% damage reduction was rejected because it pushed 5-player clears to 94–96% without solving potion exhaustion.\n3. Tier II heal 35→40% was rejected because it pushed Floor 3 clear above 96% while saving only about one potion/run. Final heals remain 25/35/45%.\n4. Potion instrumentation found 0% low-value/overheal uses; coordinated BASIC_SMART policy was used instead of nerfing all enemies.\n5. Gear and consumable tiers were separated in simulation, then equipment budgets were tuned centrally.\n6. Recipe rates were halved only after raw supply confirmed 28–40 recipes/100 baseline runs.\n\n## Clear rates — recommended gear\n\n${clearTable('RECOMMENDED')}\n\n## Clear rates — strong/current-tier gear\n\n${clearTable('STRONG')}\n\n## Potion report — 5-player balanced, recommended\n\n| Floor | Before potions/run | After potions/run | Potions/successful clear | Dead players with potion remaining/run | Exhaustion failures | Low-value uses |\n|---:|---:|---:|---:|---:|---:|---:|\n${potionRows}\n\n## Party-size efficiency\n\n| Party | Floor | Clear | Rounds/run | Manual min/run | Retained resources/hour | Recipes/hour | Coins/hour |\n|---|---:|---:|---:|---:|---:|---:|---:|\n${partySizeRows}\n\n## Manual vs RANDOM Auto\n\n| Floor | Gear | BASIC_SMART clear | Auto clear | Difference | Manual min/run | Auto min/run |\n|---:|---|---:|---:|---:|---:|---:|\n${autoRows}\n\n## Economy after failure retention\n\nFailure runs retain 50%; time from failed runs is included.\n\n| Composition | Floor | Coins/run | Coins/hour | Retained resources/run | Resources/hour | Recipes/100 runs | Recipes/hour | Retained loot value/run |\n|---|---:|---:|---:|---:|---:|---:|---:|---:|\n${economyRows}\n\n## Recipe acquisition — 1,000 completed runs, population 10\n\n| Floor | Profession | Recipes/100 | Avg runs to any | Median | p90 | Expected after 10 | Expected after 50 | New | Duplicate | Duplicate share |\n|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|\n${recipeRows}\n\n## Recipe population/horizon supply\n\n| Completed runs | Population | Floor | New recipes | Duplicates | Total recipes/100 |\n|---:|---:|---:|---:|---:|---:|\n${populationRows}\n\n## Known remaining issues\n\n- Floor 3 5-player balanced potion use remains above the 10–14 soft target in some seeds; it is reported rather than hidden.\n- Full current-tier 5-combat gear can still exceed the 95–97% soft ceiling on easier Floors 1–2. Floor 3 is the primary strong-gear guardrail.\n- Some 3/4-player floor results may sit just outside soft target bands; reliability and hourly output remain below a full party.\n- Recommended RANDOM Auto on Floor 3 can remain 0%; this is intentional and does not trigger a global difficulty nerf.\n- Recipe duplicate share grows sharply for small mature populations, confirming that market supply should be watched after launch. No pity or NPC price was added.\n`
 
 await mkdir('reports', { recursive: true })
-await writeFile('reports/phase7-1-balance-report.md', report, 'utf8')
-console.log(`Generated reports/phase7-1-balance-report.md from ${metrics.length * runs} expeditions plus recipe population simulations.`)
+const phase82Report = report
+  .replace('# Phase 7.1 Balance Pass — Before / After', '# Phase 8.2 First Rift Balance — Party Sizes 1–5')
+  .replace('| 5-player HP / Attack | 100% / 100% | 100% / 100% |', `| 5-player HP / Attack | 100% / 100% | 100% / 100% |\n| 2-player base HP / Attack | unsupported | ${PARTY_SIZE_SCALING[2].hp * 100}% / ${PARTY_SIZE_SCALING[2].attack * 100}% |\n| 1-player base HP / Attack | unsupported | ${PARTY_SIZE_SCALING[1].hp * 100}% / ${PARTY_SIZE_SCALING[1].attack * 100}% |\n${([1, 2] as const).flatMap((size) => ([1, 2, 3] as const).map((floor) => `| ${size}P Floor ${floor} effective HP / Attack | unsupported | ${(PARTY_SIZE_SCALING[size].hp * LOW_PARTY_FLOOR_MODIFIERS[size][floor].hp * 100).toFixed(2)}% / ${(PARTY_SIZE_SCALING[size].attack * LOW_PARTY_FLOOR_MODIFIERS[size][floor].attack * 100).toFixed(2)}% |`)).join('\n')}`)
+  .replace('| Party | Floor | Clear | Rounds/run | Manual min/run | Retained resources/hour | Recipes/hour | Coins/hour |\n|---|---:|---:|---:|---:|---:|---:|---:|', '| Party | Floor | Gear | Mode | Clear | Deaths | Rounds/run | Minutes/run | Potions/run | Potion exhaustion | Retained resources/hour | Recipes/hour | Coins/hour |\n|---|---:|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|')
+if (smoke) {
+  console.log(`Balance smoke passed for ${metrics.length * runs} expeditions plus recipe population simulations.`)
+} else {
+  await writeFile('reports/phase8-2-balance-report.md', phase82Report, 'utf8')
+  console.log(`Generated reports/phase8-2-balance-report.md from ${metrics.length * runs} expeditions plus recipe population simulations.`)
+}

@@ -128,7 +128,7 @@ export function useMultiplayer(character: Character | null, sessionToken: string
             setFriends((current) => current ? { ...current, friends: current.friends.map((friend) => friend.playerId === message.payload.playerId ? { ...friend, status: message.payload.status, online: message.payload.status !== 'OFFLINE' } : friend) } : current)
             break
           case 'ERROR':
-            if (message.payload.code === 'SESSION_EXPIRED') { clearSessionToken(); window.location.reload(); return }
+            if (message.payload.code === 'AUTH_SESSION_EXPIRED' || message.payload.code === 'SESSION_EXPIRED') { clearSessionToken(); window.location.reload(); return }
             setError(message.payload.message); break
         }
       })
