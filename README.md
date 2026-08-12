@@ -90,6 +90,7 @@ Deployment and Telegram verification steps are in [docs/STAGING.md](docs/STAGING
 ## Reports
 
 - [Phase 9 Second Rift balance](reports/phase9-balance-report.md)
+- [Phase 9.1 Auto Battle and solo/duo balance](reports/phase9-1-auto-balance-report.md)
 - [Phase 8.2 party balance](reports/phase8-2-balance-report.md)
 - [Economy supply model](reports/economy-supply-report.md)
 - [Playtest report](reports/playtest-report.md)

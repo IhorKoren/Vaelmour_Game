@@ -163,6 +163,75 @@ describe('multiplayer room authority', () => {
     expect(room.round).toBe(2)
   })
 
+  it('Auto attacks at healthy HP after waiting for the full timer', async () => {
+    const room = await createTwoPlayerRoom(); await manager.startExpedition('leader')
+    await manager.setAutoBattle('member', true)
+    room.enemy!.defenseZoneWeights = { head: 0, body: 0, legs: 1 }
+    const enemyHP = room.enemy!.currentHP
+    clock += 29_999; await manager.resolveDueRounds(clock)
+    expect(room.round).toBe(1)
+    clock += 1; await manager.resolveDueRounds(clock)
+    expect(room.enemy!.currentHP).toBeLessThan(enemyHP)
+    expect(await manager.playerStates.countItem('member', 'healing_potion')).toBe(5)
+  })
+
+  it('Auto potion replaces its attack below the shared threshold', async () => {
+    const room = await createTwoPlayerRoom(); await manager.startExpedition('leader')
+    const member = room.members.get('member')!
+    member.character.currentHP = Math.floor(member.character.maxHP * 0.2)
+    await manager.setAutoBattle('member', true)
+    const enemyHP = room.enemy!.currentHP
+    clock += 30_000; await manager.resolveDueRounds(clock)
+    expect(member.potionCooldown).toBe(2)
+    expect(await manager.playerStates.countItem('member', 'healing_potion')).toBe(4)
+    expect(room.enemy!.currentHP).toBe(enemyHP)
+  })
+
+  it('Auto attacks instead of potioning on cooldown or with no potions', async () => {
+    const room = await createTwoPlayerRoom(); await manager.startExpedition('leader')
+    const member = room.members.get('member')!
+    member.character.currentHP = 1; member.potionCooldown = 1
+    await manager.setAutoBattle('member', true)
+    room.enemy!.defenseZoneWeights = { head: 0, body: 0, legs: 1 }
+    let enemyHP = room.enemy!.currentHP
+    clock += 30_000; await manager.resolveDueRounds(clock)
+    expect(room.enemy!.currentHP).toBeLessThan(enemyHP)
+    member.character.currentHP = Math.floor(member.character.maxHP * 0.2); member.character.alive = true; member.potionCooldown = 0; member.expeditionPotionQuantities = {}; member.expeditionPotions = 0
+    enemyHP = room.enemy!.currentHP
+    clock += 30_000; await manager.resolveDueRounds(clock)
+    expect(room.enemy!.currentHP).toBeLessThan(enemyHP)
+  })
+
+  it('a manual action overrides Auto without double potion or attack', async () => {
+    const room = await createTwoPlayerRoom(); await manager.startExpedition('leader')
+    const member = room.members.get('member')!
+    member.character.currentHP = 1
+    await manager.setAutoBattle('member', true)
+    room.enemy!.defenseZoneWeights = { head: 0, body: 1, legs: 0 }
+    await manager.submitAction('member', normalAction())
+    const enemyHP = room.enemy!.currentHP
+    clock += 30_000; await manager.resolveDueRounds(clock)
+    expect(room.enemy!.currentHP).toBeLessThan(enemyHP)
+    expect(await manager.playerStates.countItem('member', 'healing_potion')).toBe(5)
+  })
+
+  it('duplicate round resolution cannot consume a second Auto potion', async () => {
+    const room = await createTwoPlayerRoom(); await manager.startExpedition('leader')
+    room.members.get('member')!.character.currentHP = 1
+    await manager.setAutoBattle('member', true)
+    clock += 30_000; await Promise.all([manager.resolveDueRounds(clock), manager.resolveDueRounds(clock)])
+    expect(await manager.playerStates.countItem('member', 'healing_potion')).toBe(4)
+  })
+
+  it('reconnect before Auto resolution does not duplicate potion consumption', async () => {
+    const room = await createTwoPlayerRoom(); await manager.startExpedition('leader')
+    room.members.get('member')!.character.currentHP = 1
+    await manager.setAutoBattle('member', true)
+    manager.disconnect('member', 'connection-member'); await connect('member', 'replacement-connection')
+    clock += 30_000; await manager.resolveDueRounds(clock); await manager.resolveDueRounds(clock)
+    expect(await manager.playerStates.countItem('member', 'healing_potion')).toBe(4)
+  })
+
   it('timeout produces no player attack and a random defense', async () => {
     const room = await createTwoPlayerRoom()
     await manager.startExpedition('leader')

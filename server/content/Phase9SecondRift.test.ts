@@ -35,6 +35,16 @@ describe('Phase 9 Second Rift content', () => {
     if (partySize > 1) expect(enemy.maxHP).toBeGreaterThan(createRiftEnemy('second_rift', 1, 0, partySize - 1).maxHP)
   })
 
+  it('Phase 9.1 tuning changes only Second Rift solo/duo scaling', () => {
+    const baseline3 = createRiftEnemy('second_rift', 3, 0, 3)
+    const baseline4 = createRiftEnemy('second_rift', 3, 0, 4)
+    const baseline5 = createRiftEnemy('second_rift', 3, 0, 5)
+    expect([baseline3.maxHP, baseline4.maxHP, baseline5.maxHP]).toEqual([2856, 3570, 4200])
+    expect([baseline3.attack, baseline4.attack, baseline5.attack]).toEqual([202, 218, 240])
+    expect(createRiftEnemy('second_rift', 2, 0, 1).attack).toBeLessThan(220 * 0.4)
+    expect(createRiftEnemy('second_rift', 3, 0, 2).attack).toBeLessThan(240 * 0.62)
+  })
+
   it.each([4, 5, 6])('Tier %i has resources, all class gear, jewelry, potion, and recipes', (tier) => {
     expect(Object.values(PHASE7_RESOURCES).filter((resource) => resource.tier === tier)).toHaveLength(9)
     expect(Object.values(PHASE7_ITEMS).filter((item) => item.tier === tier && item.category === 'equipment')).toHaveLength(30)

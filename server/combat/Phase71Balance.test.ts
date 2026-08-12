@@ -37,7 +37,7 @@ describe('Phase 7.1 production party scaling', () => {
     const scenario = { id: 'scaled', floorNumber: 1, classes: ['warrior', 'ranger', 'alchemist'] as const, gear: 'RECOMMENDED' as const, behavior: 'BASIC_SMART' as const, runs: 20, seed: 44 }
     expect(simulateScenario({ ...scenario, classes: [...scenario.classes] })).toEqual(simulateScenario({ ...scenario, classes: [...scenario.classes] }))
   })
-  it('Auto still never uses a potion', () => expect(createSimulationAction(member, enemy, 'RANDOM', 4, seededRandom(1)).type).toBe('attack'))
+  it('Auto uses the shared potion policy when HP is low', () => expect(createSimulationAction(member, enemy, 'RANDOM', 4, seededRandom(1)).type).toBe('potion'))
   it('BASIC_SMART action uses current state and deterministic RNG only', () => {
     expect(createSimulationAction(member, enemy, 'BASIC_SMART', 4, seededRandom(9))).toEqual(createSimulationAction(member, enemy, 'BASIC_SMART', 4, seededRandom(9)))
   })

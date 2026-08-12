@@ -32,8 +32,9 @@ for (const [composition, classes] of Object.entries(compositions)) for (const fl
   metrics.push(simulateScenario({ id: composition, floorNumber, classes, gear, behavior, runs, seed: 710_000 + metrics.length * 97 }))
 }
 const secondPartyIds = ['H_SOLO_COMBAT', 'K_DUO_MIXED', 'E_3_PLAYERS', 'F_4_PLAYERS', 'G_5_PLAYERS']
+const secondCompositionIds = Object.keys(compositions)
 const secondMetrics: SimulationMetrics[] = []
-for (const id of secondPartyIds) for (const floorNumber of [1, 2, 3]) for (const gear of gears) for (const behavior of behaviors) {
+for (const id of secondCompositionIds) for (const floorNumber of [1, 2, 3]) for (const gear of gears) for (const behavior of behaviors) {
   secondMetrics.push(simulateScenario({ id, riftId: 'second_rift', floorNumber, classes: compositions[id], gear, behavior, runs, seed: 910_000 + secondMetrics.length * 131 }))
 }
 
@@ -83,6 +84,7 @@ const report = `# Phase 7.1 Balance Pass — Before / After\n\nGenerated from th
 
 await mkdir('reports', { recursive: true })
 const phase82Report = report
+  .replace('RANDOM Auto uses random attack/defense, no potion, no pattern reading, and no hidden bonus.', 'RANDOM Auto uses random attack/defense, the shared smart-potion policy, no pattern reading, and no hidden bonus.')
   .replace('# Phase 7.1 Balance Pass — Before / After', '# Phase 8.2 First Rift Balance — Party Sizes 1–5')
   .replace('| 5-player HP / Attack | 100% / 100% | 100% / 100% |', `| 5-player HP / Attack | 100% / 100% | 100% / 100% |\n| 2-player base HP / Attack | unsupported | ${PARTY_SIZE_SCALING[2].hp * 100}% / ${PARTY_SIZE_SCALING[2].attack * 100}% |\n| 1-player base HP / Attack | unsupported | ${PARTY_SIZE_SCALING[1].hp * 100}% / ${PARTY_SIZE_SCALING[1].attack * 100}% |\n${([1, 2] as const).flatMap((size) => ([1, 2, 3] as const).map((floor) => `| ${size}P Floor ${floor} effective HP / Attack | unsupported | ${(PARTY_SIZE_SCALING[size].hp * LOW_PARTY_FLOOR_MODIFIERS[size][floor].hp * 100).toFixed(2)}% / ${(PARTY_SIZE_SCALING[size].attack * LOW_PARTY_FLOOR_MODIFIERS[size][floor].attack * 100).toFixed(2)}% |`)).join('\n')}`)
   .replace('| Party | Floor | Clear | Rounds/run | Manual min/run | Retained resources/hour | Recipes/hour | Coins/hour |\n|---|---:|---:|---:|---:|---:|---:|---:|', '| Party | Floor | Gear | Mode | Clear | Deaths | Rounds/run | Minutes/run | Potions/run | Potion exhaustion | Retained resources/hour | Recipes/hour | Coins/hour |\n|---|---:|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|')
@@ -130,10 +132,94 @@ ${secondRecipeRows}
 - Failed runs retain configured partial non-coin loot, so difficult solo/duo attempts still progress without matching prepared groups.
 - Floor 3 intentionally remains the hardest current content. Low Auto/Random results are reported, not normalized toward 100%.
 `
+const phase91BeforeManual: Record<string, number[]> = {
+  H_SOLO_COMBAT: [39.1, 5.2, 0.7], K_DUO_MIXED: [77.3, 37.7, 6.8], E_3_PLAYERS: [86.1, 74.2, 24.3],
+  F_4_PLAYERS: [96.2, 94.9, 66.9], G_5_PLAYERS: [98.6, 96.3, 84.3],
+}
+const phase91ComparisonRows = secondPartyIds.flatMap((id) => [1, 2, 3].map((floor) => {
+  const auto = findSecond(id, floor, 'RECOMMENDED', 'RANDOM')
+  const manual = findSecond(id, floor, 'RECOMMENDED', 'BASIC_SMART')
+  return `| ${compositions[id].length} | ${floor} | 0.0% | ${pct(auto.clearRate)} | ${pct(manual.clearRate)} |`
+})).join('\n')
+const phase91SoloDuoRows = ['H_SOLO_COMBAT', 'K_DUO_MIXED'].flatMap((id) => [1, 2, 3].map((floor) =>
+  `| ${compositions[id].length} | ${floor} | ${phase91BeforeManual[id][floor - 1].toFixed(1)}% | ${pct(findSecond(id, floor, 'RECOMMENDED', 'BASIC_SMART').clearRate)} |`,
+)).join('\n')
+const phase91PotionRows = ['E_3_PLAYERS', 'F_4_PLAYERS', 'G_5_PLAYERS'].flatMap((id) => [1, 2, 3].map((floor) => {
+  const metric = findSecond(id, floor, 'RECOMMENDED', 'RANDOM')
+  const tierDistribution = Object.entries(metric.potionTierUsage).map(([tier, share]) => `T${tier} ${pct(share)}`).join(', ') || 'none'
+  return `| ${compositions[id].length} | ${floor} | ${num(metric.averagePotions)} | ${num(metric.averagePotionsPerClear)} | ${pct(metric.potionExhaustionFailureRate)} | ${num(metric.averagePotionOverheal)} | ${tierDistribution} |`
+})).join('\n')
+const phase91FirstRiftRows = [1, 2, 3].map((floor) => {
+  const manual = find('B_BALANCED', floor, 'RECOMMENDED', 'BASIC_SMART')
+  const auto = find('B_BALANCED', floor, 'RECOMMENDED', 'RANDOM')
+  return `| ${floor} | ${pct(manual.clearRate)} | ${pct(auto.clearRate)} | ${num(auto.averagePotions)} | ${pct(auto.potionExhaustionFailureRate)} |`
+}).join('\n')
+const phase91StrongRows = secondPartyIds.flatMap((id) => [1, 2, 3].map((floor) => {
+  const manual = findSecond(id, floor, 'STRONG', 'BASIC_SMART')
+  const auto = findSecond(id, floor, 'STRONG', 'RANDOM')
+  return `| ${compositions[id].length} | ${floor} | ${pct(manual.clearRate)} | ${pct(auto.clearRate)} |`
+})).join('\n')
+const phase91CompositionRows = secondCompositionIds.flatMap((id) => [1, 2, 3].map((floor) =>
+  `| ${labels[id]} | ${floor} | ${pct(findSecond(id, floor, 'RECOMMENDED', 'RANDOM').clearRate)} | ${pct(findSecond(id, floor, 'RECOMMENDED', 'BASIC_SMART').clearRate)} |`,
+)).join('\n')
+const phase91Report = `# Phase 9.1 Auto Battle + Solo/Duo Balance Pass
+
+Generated with the production combat engine, generic Rift factory, and shared production/simulator Auto potion policy. **${runs.toLocaleString()} runs/scenario**. Auto keeps random attack/defense zones, waits the full 30-second round, receives no stat or enemy-scaling bonus, and has the same four-potion-per-player simulation loadout as Manual.
+
+## Before / After Auto — Second Rift recommended gear
+
+| Party | Floor | Before Auto | After Auto | Manual |
+|---:|---:|---:|---:|---:|
+${phase91ComparisonRows}
+
+## Solo/Duo recommended Manual — before / after local modifiers
+
+| Party | Floor | Before | After |
+|---:|---:|---:|---:|
+${phase91SoloDuoRows}
+
+## Auto potion usage — Second Rift recommended gear
+
+| Party | Floor | Potions/run | Potions/clear | Exhaustion failures | Avg overheal HP | Tier distribution |
+|---:|---:|---:|---:|---:|---:|---|
+${phase91PotionRows}
+
+## First Rift regression — balanced 5-player recommended gear
+
+| Floor | Manual | Auto | Auto potions/run | Auto exhaustion failures |
+|---:|---:|---:|---:|---:|
+${phase91FirstRiftRows}
+
+## Second Rift strong/current-tier gear
+
+| Party | Floor | Manual | Auto |
+|---:|---:|---:|---:|
+${phase91StrongRows}
+
+## Composition sensitivity — Second Rift recommended gear
+
+| Composition | Floor | Auto | Manual |
+|---|---:|---:|---:|
+${phase91CompositionRows}
+
+## Economy implications
+
+- Auto now consumes crafted potions instead of receiving free consumables, increasing legitimate Alchemist and Market demand.
+- Full 30-second Auto rounds keep coins/resources per hour below faster prepared Manual groups even when clear rates are close.
+- Existing fees, recipe rates, inventory rules, and potion quantities are unchanged; no economy rebalance was required.
+- Potion exhaustion and overheal are reported above rather than hidden. The deterministic selector preserves stronger potions when a weaker available tier adequately covers missing HP.
+
+## Conclusions
+
+- Manual remains the most effective and fastest mode. Auto is a slower convenience mode with random zones and no combat bonuses.
+- Second Rift solo/duo changes are isolated to their existing data-driven modifiers; party sizes 3–5 are unchanged.
+- Floor 3 remains the hardest content, while solo/duo are difficult rather than mathematically dead under Manual play.
+`
 if (smoke) {
   console.log(`Balance smoke passed for ${(metrics.length + secondMetrics.length) * runs} expeditions plus First/Second Rift recipe population simulations.`)
 } else {
   await writeFile('reports/phase8-2-balance-report.md', phase82Report, 'utf8')
   await writeFile('reports/phase9-balance-report.md', phase9Report, 'utf8')
+  await writeFile('reports/phase9-1-auto-balance-report.md', phase91Report, 'utf8')
   console.log(`Generated First Rift and reports/phase9-balance-report.md from ${(metrics.length + secondMetrics.length) * runs} expeditions plus recipe population simulations.`)
 }
