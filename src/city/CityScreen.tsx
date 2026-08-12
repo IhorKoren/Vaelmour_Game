@@ -14,10 +14,12 @@ import { ChatPanel } from './ChatPanel'
 import { FIRST_RIFT } from '../../shared/game-data/rifts/firstRift'
 import { POTION_IDS } from '../../shared/game-data/phase7Catalog'
 import { telegramWebApp } from '../auth/authClient'
+import { ProfessionPanel } from './ProfessionPanel'
 
 interface Props { character: Character; client: MultiplayerClient; onEnterRift: () => void; onReset: () => void }
-type CityTab = 'character' | 'inventory' | 'storage' | 'craft' | 'market' | 'trade' | 'guild' | 'friends' | 'chat'
+type CityTab = 'profession' | 'character' | 'inventory' | 'storage' | 'craft' | 'market' | 'trade' | 'guild' | 'friends' | 'chat'
 const NAV_ITEMS: Array<{ id: CityTab | 'rifts'; icon: string; label: string }> = [
+  { id: 'profession', icon: '⚒', label: 'Profession' },
   { id: 'character', icon: '♟', label: 'Персонаж' }, { id: 'inventory', icon: '▧', label: 'Інвентар' },
   { id: 'storage', icon: '▣', label: 'Сховище' }, { id: 'craft', icon: '⚒', label: 'Крафт' },
   { id: 'rifts', icon: '◇', label: 'Розломи' }, { id: 'market', icon: '⌁', label: 'Market' },
@@ -37,6 +39,7 @@ export function CityScreen({ character, client, onEnterRift, onReset }: Props) {
     <nav className="city-nav" aria-label="Міські розділи">{NAV_ITEMS.map((item) => <button key={item.id} className={tab === item.id ? 'active' : ''} onClick={() => navigate(item.id)}><span>{item.icon}</span><strong>{item.label}{item.id === 'chat' && client.unread.private + client.unread.guild > 0 ? ` · ${client.unread.private + client.unread.guild}` : ''}</strong><small>Відкрити</small></button>)}</nav>
     {!state ? <section className="city-content-panel loading-panel"><span>◇</span><p>Отримуємо server character state…</p></section> : <>
       {tab === 'character' && <CharacterPanel state={state} send={client.send} />}
+      {tab === 'profession' && <ProfessionPanel client={client} />}
       {tab === 'inventory' && <InventoryPanel state={state} send={client.send} />}
       {tab === 'storage' && <StoragePanel state={state} send={client.send} />}
       {tab === 'craft' && <CraftPanel state={state} send={client.send} />}

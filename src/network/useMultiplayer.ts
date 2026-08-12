@@ -7,6 +7,7 @@ import type {
 import type { MarketSnapshot, TradeSnapshot } from '../../shared/economy-types'
 import type { ChatHistorySnapshot, FriendsSnapshot, GuildListItem, GuildSnapshot, GuildStorageLogView, GuildStorageSnapshot, PrivateConversationView, SocialPlayer, UnreadSnapshot } from '../../shared/social-types'
 import { clearSessionToken } from '../auth/authClient'
+import type { ProfessionState } from '../../shared/professions'
 
 const WS_URL = import.meta.env.VITE_WS_URL ?? `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.hostname}:8787/ws`
 
@@ -17,6 +18,7 @@ export interface MultiplayerClient {
   combat: CombatSnapshot | null
   error: string | null
   characterState: CharacterState | null
+  professionState: ProfessionState | null
   accountId: string | null
   playerId: string | null
   market: MarketSnapshot | null
@@ -42,6 +44,7 @@ export function useMultiplayer(character: Character | null, sessionToken: string
   const [combat, setCombat] = useState<CombatSnapshot | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [characterState, setCharacterState] = useState<CharacterState | null>(null)
+  const [professionState, setProfessionState] = useState<ProfessionState | null>(null)
   const [accountId, setAccountId] = useState<string | null>(null)
   const [playerId, setPlayerId] = useState<string | null>(null)
   const [market, setMarket] = useState<MarketSnapshot | null>(null)
@@ -102,6 +105,7 @@ export function useMultiplayer(character: Character | null, sessionToken: string
           case 'INVENTORY_UPDATE':
           case 'EQUIPMENT_UPDATE':
           case 'STORAGE_UPDATE': setCharacterState(message.payload); break
+          case 'PROFESSION_STATE': setProfessionState(message.payload); break
           case 'CRAFT_RESULT': setCharacterState(message.payload.state); break
           case 'LOOT_UPDATE': setCharacterState(message.payload.state); break
           case 'MARKET_SNAPSHOT': setMarket(message.payload); break
@@ -158,5 +162,5 @@ export function useMultiplayer(character: Character | null, sessionToken: string
     socketRef.current.send(JSON.stringify(message))
   }, [])
 
-  return { connection, parties, party, combat, error, characterState, accountId, playerId, market, trade, guild, guildList, guildStorage, guildStorageHistory, friends, playerSearch, chatHistory, privateConversations, unread, partyInvite, send, clearError: () => setError(null) }
+  return { connection, parties, party, combat, error, characterState, professionState, accountId, playerId, market, trade, guild, guildList, guildStorage, guildStorageHistory, friends, playerSearch, chatHistory, privateConversations, unread, partyInvite, send, clearError: () => setError(null) }
 }

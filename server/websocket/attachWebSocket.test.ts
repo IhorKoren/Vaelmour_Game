@@ -47,6 +47,8 @@ describe('real WebSocket transport', () => {
     expect(validateClientMessage({ type: 'SELECT_RIFT_FLOOR', payload: { riftId: 'second_rift', floorNumber: 1 } })).toBeTruthy()
     expect(validateClientMessage({ type: 'SELECT_RIFT_FLOOR', payload: { floorNumber: 1 } })).toBeNull()
     expect(validateClientMessage({ type: 'SELECT_RIFT_FLOOR', payload: { riftId: 'second_rift', floorNumber: 4 } })).toBeNull()
+    expect(validateClientMessage({ type: 'START_PROFESSION_JOB', payload: { activityId: 'gather_rift_iron', durationMinutes: 60, operationId: 'op' } })).toBeTruthy()
+    expect(validateClientMessage({ type: 'START_PROFESSION_JOB', payload: { activityId: 'gather_rift_iron', durationMinutes: 30, operationId: 'op' } })).toBeNull()
   })
   const cleanup: Array<() => void> = []
   afterEach(() => cleanup.splice(0).forEach((close) => close()))

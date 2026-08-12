@@ -44,3 +44,4 @@ jobs:
       - run: npm run test:db
       - run: npm run simulate:balance:smoke
       - run: npm run simulate:economy
+      - run: npm run simulate:professions

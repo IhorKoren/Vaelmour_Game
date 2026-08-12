@@ -1,12 +1,13 @@
 import type { Character, CharacterClass, CombatAction, EncounterReward, Enemy, Zone } from '../src/types/game'
 import type { EquipmentSlot, EquipmentState, InventoryEntry, PersonalEncounterReward, PersonalLoot, PlayerRiftProgress } from './game-data/types'
+import type { ProfessionState } from './professions'
 import type { MarketSnapshot, TradeSnapshot } from './economy-types'
 import type {
   ChatChannel, ChatHistorySnapshot, FriendsSnapshot, GuildListItem, GuildRank, GuildSnapshot, GuildStorageLogView,
   GuildStorageSnapshot, PersistentChatMessage, PresenceStatus, PrivateConversationView, SocialPlayer, UnreadSnapshot,
 } from './social-types'
 
-export const PROTOCOL_VERSION = 3
+export const PROTOCOL_VERSION = 4
 export const DEV_MIN_PARTY_SIZE = 2
 export const MAX_PARTY_SIZE = 5
 export const RECONNECT_GRACE_MS = 60_000
@@ -143,6 +144,10 @@ export type ClientMessage =
   | { type: 'POST_ENCOUNTER_VOTE'; payload: { vote: ExpeditionVote } }
   | { type: 'PARTY_CHAT_MESSAGE'; payload: { message: string } }
   | { type: 'GET_CHARACTER_STATE' }
+  | { type: 'GET_PROFESSION_STATE' }
+  | { type: 'START_PROFESSION_JOB'; payload: { activityId: string; durationMinutes: number; operationId: string } }
+  | { type: 'CANCEL_PROFESSION_JOB'; payload: { operationId: string } }
+  | { type: 'COLLECT_PROFESSION_JOB'; payload: { operationId: string } }
   | { type: 'EQUIP_ITEM'; payload: { entryId: string; slot?: EquipmentSlot; operationId: string } }
   | { type: 'UNEQUIP_ITEM'; payload: { slot: EquipmentSlot; operationId: string } }
   | { type: 'MOVE_TO_STORAGE'; payload: { entryId: string; quantity?: number; operationId: string } }
@@ -208,6 +213,7 @@ export type ServerMessage =
   | { type: 'EXPEDITION_RESULT'; payload: CombatSnapshot }
   | { type: 'PARTY_CHAT_MESSAGE'; payload: ChatMessage }
   | { type: 'CHARACTER_STATE'; payload: CharacterState }
+  | { type: 'PROFESSION_STATE'; payload: ProfessionState }
   | { type: 'INVENTORY_UPDATE'; payload: CharacterState }
   | { type: 'EQUIPMENT_UPDATE'; payload: CharacterState }
   | { type: 'STORAGE_UPDATE'; payload: CharacterState }

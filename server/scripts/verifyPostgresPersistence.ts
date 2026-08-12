@@ -9,6 +9,8 @@ import { PresenceService } from '../social/PresenceService'
 import { GuildService } from '../guilds/GuildService'
 import { ChatService } from '../chat/ChatService'
 import { EconomyService } from '../economy/EconomyService'
+import { ProfessionService } from '../professions/ProfessionService'
+import { PROFESSION_ACTIVITIES } from '../../shared/professions'
 
 const authSecret = process.env.DEV_AUTH_SECRET
 if (!authSecret) throw new Error('DEV_AUTH_SECRET is required')
@@ -62,6 +64,11 @@ try {
   const originalTrade = await economy.requestTrade(playerId, peer.character.name, 'db-smoke-trade')
   await economy.declineTrade(peer.character.id, originalTrade.id, 'db-smoke-trade-decline')
   assert.equal((await economy.requestTrade(playerId, peer.character.name, 'db-smoke-trade')).id, originalTrade.id)
+  const professionStartedAt = Date.now()
+  const firstProfession = new ProfessionService(firstRepository, () => professionStartedAt, () => 0.5)
+  const herbActivity = PROFESSION_ACTIVITIES.find((activity) => activity.profession === 'alchemist' && activity.tier === 1)!
+  const herbBefore = (await firstService.snapshot(playerId)).inventory.find((entry) => entry.itemId === herbActivity.resourceId)?.quantity ?? 0
+  const professionStarted = await firstProfession.start(playerId, herbActivity.id, 10, 'db-smoke-profession-start')
   await firstService.disconnect()
 
   const secondRepository = new PrismaPlayerRepository(createPrismaClient())
@@ -73,6 +80,7 @@ try {
   const secondPresence = new PresenceService(); secondPresence.set(playerId, 'CITY')
   const secondGuilds = new GuildService(secondRepository, secondPresence)
   const secondChat = new ChatService(secondRepository, secondPresence)
+  const secondProfession = new ProfessionService(secondRepository, () => professionStartedAt + 600_000, () => 0.5)
 
   assert.equal(reloaded.character.id, playerId)
   assert.equal(state.level, 2)
@@ -88,6 +96,9 @@ try {
   assert.equal((await secondGuilds.storage(playerId)).items.find((item) => item.itemId === 'rift_iron')?.quantity, 3)
   assert.equal((await secondGuilds.history(playerId))[0].action, 'DEPOSIT')
   assert.equal((await secondChat.history(playerId, { channel: 'GLOBAL' })).messages.at(-1)?.text, 'Persistence smoke')
+  assert.equal((await secondProfession.state(playerId)).activeJob?.viewStatus, 'COMPLETED')
+  await Promise.all([secondProfession.collect(playerId, 'db-smoke-profession-collect'), secondProfession.collect(playerId, 'db-smoke-profession-collect')])
+  assert.equal((await secondService.snapshot(playerId)).inventory.find((entry) => entry.itemId === herbActivity.resourceId)?.quantity, herbBefore + professionStarted.activeJob!.plannedQuantity)
   const persistedEconomy = await secondRepository.economyRead((value) => value)
   assert.equal(persistedEconomy.marketOrders.get(sell.createdOrderId!)?.status, 'CANCELLED')
   assert.equal(persistedEconomy.trades.get(originalTrade.id)?.status, 'DECLINED')

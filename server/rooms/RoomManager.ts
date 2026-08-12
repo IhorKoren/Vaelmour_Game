@@ -33,6 +33,7 @@ import { createRiftEnemy } from '../combat/firstRiftEnemyFactory'
 import { NoopTelemetry, type TelemetrySink } from '../telemetry/PlaytestTelemetry'
 import { SafeTelemetrySink } from '../telemetry/PlaytestTelemetry'
 import { log } from '../logging/logger'
+import { ProfessionService } from '../professions/ProfessionService'
 
 interface ManagerOptions {
   roundDurationMs?: number
@@ -48,6 +49,7 @@ interface ManagerOptions {
   chatService?: ChatService
   minPartySize?: number
   telemetry?: TelemetrySink
+  professions?: ProfessionService
 }
 
 const ECONOMY_MUTATIONS = new Set<ClientMessage['type']>([
@@ -59,6 +61,7 @@ const ECONOMY_MUTATIONS = new Set<ClientMessage['type']>([
   'TRANSFER_GUILD_LEADERSHIP', 'UPDATE_GUILD', 'UPDATE_GUILD_PERMISSIONS', 'DISBAND_GUILD', 'DEPOSIT_GUILD_STORAGE',
   'WITHDRAW_GUILD_STORAGE', 'SEND_FRIEND_REQUEST', 'ACCEPT_FRIEND_REQUEST', 'DECLINE_FRIEND_REQUEST', 'REMOVE_FRIEND',
   'BLOCK_PLAYER', 'UNBLOCK_PLAYER', 'SEND_CHAT_MESSAGE',
+  'START_PROFESSION_JOB', 'CANCEL_PROFESSION_JOB', 'COLLECT_PROFESSION_JOB',
 ])
 
 function randomZone(random: () => number): Zone {
@@ -84,6 +87,7 @@ export class RoomManager {
   readonly guilds: GuildService
   readonly chatService: ChatService
   readonly telemetry: TelemetrySink
+  readonly professions: ProfessionService
 
   constructor(options: ManagerOptions = {}) {
     this.roundDurationMs = options.roundDurationMs ?? 30_000
@@ -100,6 +104,7 @@ export class RoomManager {
     this.friends = options.friends ?? new FriendsService(socialRepository, this.presence, this.now)
     this.guilds = options.guilds ?? new GuildService(socialRepository, this.presence, this.now)
     this.chatService = options.chatService ?? new ChatService(socialRepository, this.presence, this.now)
+    this.professions = options.professions ?? new ProfessionService(this.playerStates.repository, this.now, this.random, this.telemetry)
   }
 
   async connect(identity: DevIdentity, peer: ClientPeer): Promise<string | null> {
@@ -149,6 +154,7 @@ export class RoomManager {
 
     peer.send({ type: 'WELCOME', payload: { accountId: authenticated.accountId, playerId, protocolVersion: PROTOCOL_VERSION } })
     peer.send({ type: 'CHARACTER_STATE', payload: await this.playerStates.snapshot(playerId) })
+    peer.send({ type: 'PROFESSION_STATE', payload: await this.professions.state(playerId) })
     this.sendPartyList(playerId)
     if (existingRoom) {
       this.sendPartyState(existingRoom, playerId)
@@ -215,6 +221,10 @@ export class RoomManager {
       case 'POST_ENCOUNTER_VOTE': await this.vote(playerId, message.payload.vote); break
       case 'PARTY_CHAT_MESSAGE': this.chat(playerId, message.payload.message); break
       case 'GET_CHARACTER_STATE': await this.sendCharacterState(playerId); break
+      case 'GET_PROFESSION_STATE': await this.professionAction(playerId, () => this.professions.state(playerId), false); break
+      case 'START_PROFESSION_JOB': await this.professionAction(playerId, () => this.professions.start(playerId, message.payload.activityId, message.payload.durationMinutes, message.payload.operationId)); break
+      case 'CANCEL_PROFESSION_JOB': await this.professionAction(playerId, () => this.professions.cancel(playerId, message.payload.operationId)); break
+      case 'COLLECT_PROFESSION_JOB': await this.professionAction(playerId, () => this.professions.collect(playerId, message.payload.operationId), true); break
       case 'EQUIP_ITEM': await this.economyAction(playerId, 'EQUIPMENT_UPDATE', () => this.playerStates.equip(playerId, message.payload.entryId, message.payload.slot, message.payload.operationId)); break
       case 'UNEQUIP_ITEM': await this.economyAction(playerId, 'EQUIPMENT_UPDATE', () => this.playerStates.unequip(playerId, message.payload.slot, message.payload.operationId)); break
       case 'MOVE_TO_STORAGE': await this.economyAction(playerId, 'STORAGE_UPDATE', () => this.playerStates.move(playerId, message.payload.entryId, true, message.payload.quantity, message.payload.operationId)); break
@@ -902,6 +912,16 @@ export class RoomManager {
 
   private async sendCharacterState(playerId: string): Promise<void> {
     try { this.send(playerId, { type: 'CHARACTER_STATE', payload: await this.playerStates.snapshot(playerId) }) } catch { /* disconnected or unknown player */ }
+  }
+
+  private async professionAction(playerId: string, action: () => Promise<import('../../shared/professions').ProfessionState>, inventoryChanged = false): Promise<void> {
+    try {
+      this.send(playerId, { type: 'PROFESSION_STATE', payload: await action() })
+      if (inventoryChanged) this.send(playerId, { type: 'INVENTORY_UPDATE', payload: await this.playerStates.snapshot(playerId) })
+    } catch (error) {
+      if (error instanceof EconomyError) this.fail(playerId, error.code, error.message)
+      else throw error
+    }
   }
 
   private async economyAction(
