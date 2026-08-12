@@ -5,10 +5,17 @@ export interface PartySizeScaling {
 
 /** Applied once at expedition START. Depends only on the locked party size. */
 export const PARTY_SIZE_SCALING: Record<number, PartySizeScaling> = {
-  2: { hp: 0.55, attack: 0.70 }, // Development/testing only; no balance target.
+  1: { hp: 0.32, attack: 0.40 },
+  2: { hp: 0.52, attack: 0.62 },
   3: { hp: 0.68, attack: 0.84 },
   4: { hp: 0.85, attack: 0.91 },
   5: { hp: 1.00, attack: 1.00 },
+}
+
+/** Extra high-floor survivability tuning for undersized parties only. */
+export const LOW_PARTY_FLOOR_MODIFIERS: Record<1 | 2, Record<1 | 2 | 3, PartySizeScaling>> = {
+  1: { 1: { hp: 1.04, attack: 1.04 }, 2: { hp: 0.97, attack: 0.92 }, 3: { hp: 0.93, attack: 0.88 } },
+  2: { 1: { hp: 1, attack: 1 }, 2: { hp: 0.98, attack: 0.97 }, 3: { hp: 0.97, attack: 0.94 } },
 }
 
 export const FIRST_RIFT_ENEMY_ATTACK_SCALE: Record<1 | 2 | 3, number> = {
@@ -28,5 +35,6 @@ export const SIMULATION_BALANCE_CONFIG = {
   autoSecondsPerRound: 30,
 } as const
 
-export const PRODUCTION_MIN_PARTY_SIZE = 3
-export const RECOMMENDED_PARTY_SIZE = 5
+/** Gameplay hard limits. Recommendation is advisory and never gates START. */
+export const PRODUCTION_MIN_PARTY_SIZE = 1
+export const RECOMMENDED_PARTY_SIZE = { min: 3, max: 5 } as const

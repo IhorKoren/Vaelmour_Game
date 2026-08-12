@@ -3,14 +3,14 @@ import type { FriendsSnapshot, SocialPlayer } from '../../shared/social-types'
 import { EconomyError } from '../players/PlayerStateService'
 import type { SocialRepository, SocialState } from '../repositories/types'
 import type { PresenceService } from './PresenceService'
-import { canonicalPair, isBlocked, publicPlayer } from './social-utils'
+import { canonicalPair, exactPlayer, isBlocked, publicPlayer } from './social-utils'
 
 export class FriendsService {
   constructor(private readonly repository: SocialRepository, private readonly presence: PresenceService, private readonly now: () => number = Date.now) {}
 
   async searchExact(viewerId: string, name: string): Promise<SocialPlayer> {
     return this.repository.socialRead((state) => {
-      this.player(state, viewerId); const target = this.exactPlayer(state, name)
+      this.player(state, viewerId); const target = exactPlayer(state, name)
       return publicPlayer(state, target.playerId, this.presence)
     })
   }
@@ -19,7 +19,7 @@ export class FriendsService {
 
   async sendRequest(playerId: string, targetName: string, operationId: string): Promise<FriendsSnapshot> {
     await this.repository.socialTransact(playerId, `friend-request:${playerId}:${operationId}`, 'SEND_FRIEND_REQUEST', (state) => {
-      this.player(state, playerId); const target = this.exactPlayer(state, targetName)
+      this.player(state, playerId); const target = exactPlayer(state, targetName)
       if (target.playerId === playerId) throw new EconomyError('CANNOT_FRIEND_SELF', 'You cannot friend yourself.')
       if (isBlocked(state, playerId, target.playerId)) throw new EconomyError('PLAYER_BLOCKED', 'Friend request is blocked.')
       if (this.friendship(state, playerId, target.playerId)) throw new EconomyError('ALREADY_FRIENDS', 'Players are already friends.')
@@ -53,7 +53,7 @@ export class FriendsService {
 
   async block(playerId: string, targetName: string, operationId: string): Promise<FriendsSnapshot> {
     await this.repository.socialTransact(playerId, `player-block:${playerId}:${operationId}`, 'BLOCK_PLAYER', (state) => {
-      const target = this.exactPlayer(state, targetName)
+      const target = exactPlayer(state, targetName)
       if (target.playerId === playerId) throw new EconomyError('CANNOT_BLOCK_SELF', 'You cannot block yourself.')
       state.blocks.set(`${playerId}:${target.playerId}`, { blockerId: playerId, blockedId: target.playerId, createdAt: this.now() })
       const friendship = this.friendship(state, playerId, target.playerId); if (friendship) state.friendships.delete(friendship.id)
@@ -83,5 +83,4 @@ export class FriendsService {
 
   private friendship(state: SocialState, a: string, b: string) { const [low, high] = canonicalPair(a, b); return [...state.friendships.values()].find((value) => value.playerLowId === low && value.playerHighId === high) }
   private player(state: SocialState, id: string) { const value = state.players.get(id); if (!value) throw new EconomyError('PLAYER_NOT_FOUND', 'Player not found.'); return value }
-  private exactPlayer(state: SocialState, name: string) { const key = name.trim().toLocaleLowerCase(); const values = [...state.players.values()].filter((value) => value.name.toLocaleLowerCase() === key); if (values.length !== 1) throw new EconomyError(values.length ? 'AMBIGUOUS_PLAYER_NAME' : 'PLAYER_NOT_FOUND', 'Exact player name was not found.'); return values[0] }
 }

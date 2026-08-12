@@ -4,6 +4,7 @@ import type { RuntimeConfig } from '../config'
 import { AuthenticationError, type AuthenticatedSession } from '../auth/AuthService'
 import { PlayerStateService } from '../players/PlayerStateService'
 import { EconomyError } from '../players/PlayerStateService'
+import { normalizePlayerName } from '../players/playerName'
 
 export type AdminAction =
   | { action: 'RESET_RIFT_PROGRESS'; targetPlayerId: string }
@@ -21,7 +22,7 @@ export class AdminService {
 
   async findExact(session: AuthenticatedSession, name: string): Promise<unknown> {
     this.authorize(session)
-    const row = await this.prisma.player.findFirst({ where: { name }, select: { id: true } })
+    const row = await this.prisma.player.findUnique({ where: { nameKey: normalizePlayerName(name) }, select: { id: true } })
     if (!row) return null
     const [state, ledger] = await Promise.all([this.players.snapshot(row.id), this.players.ledger(row.id)])
     return { state, recentLedger: ledger.slice(-25) }
@@ -30,6 +31,11 @@ export class AdminService {
   async mutate(session: AuthenticatedSession, input: AdminAction): Promise<unknown> {
     const adminTelegramUserId = this.authorize(session)
     const operationId = randomUUID()
+    const details = { operationId, ...input }
+    if (this.players.repository.adminTransact) {
+      const value = input.action === 'GRANT_COINS' ? { amount: input.amount } : input.action === 'GRANT_ITEM' ? { itemId: input.itemId, quantity: input.quantity } : input.action === 'SET_LEVEL' ? { level: input.level } : {}
+      return this.players.adminMutateAtomic(input.targetPlayerId, input.action, value, operationId, { adminTelegramUserId, action: input.action, targetPlayerId: input.targetPlayerId, reason: 'ADMIN', details })
+    }
     let state
     switch (input.action) {
       case 'RESET_RIFT_PROGRESS': state = await this.players.adminResetRift(input.targetPlayerId, operationId); break

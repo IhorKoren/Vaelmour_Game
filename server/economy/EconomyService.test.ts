@@ -21,7 +21,7 @@ describe('Phase 5 Market', () => {
   it('create sell order reserves item', async () => { const c = await setup(); const e = await item(c.players, 'alice', 'rift_essence', 10); await c.economy.createSellOrder('alice', e.entryId, 4, 5, 'sell'); expect(await c.players.countItem('alice', 'rift_essence')).toBe(14); expect((await profile(c.repository, 'alice')).reservedItems[0].quantity).toBe(4) })
   it('cannot sell equipped item', async () => { const c = await setup(); const e = await item(c.players, 'alice', 'crafted_alchemist_weapon'); await c.players.equip('alice', e.entryId); await expect(c.economy.createSellOrder('alice', e.entryId, 1, 5, 'sell')).rejects.toThrow() })
   it('cannot sell more than owned stack', async () => { const c = await setup(); const e = await item(c.players, 'alice', 'rift_essence', 2); await expect(c.economy.createSellOrder('alice', e.entryId, 99, 5, 'sell')).rejects.toThrow() })
-  it('cancel sell order returns remaining item', async () => { const c = await setup(); const e = await item(c.players, 'alice', 'rift_essence', 4); const snap = await c.economy.createSellOrder('alice', e.entryId, 4, 5, 'sell'); const order = snap.myOrders[0]; await c.economy.cancelMarketOrder('alice', order.id, 'cancel'); expect((await profile(c.repository, 'alice')).reservedItems).toHaveLength(0); expect(await c.players.countItem('alice', 'rift_essence')).toBe(12) })
+  it('cancel sell order returns remaining item and releases the escrow reference', async () => { const c = await setup(); const e = await item(c.players, 'alice', 'rift_essence', 4); const snap = await c.economy.createSellOrder('alice', e.entryId, 4, 5, 'sell'); const order = snap.myOrders[0]; await c.economy.cancelMarketOrder('alice', order.id, 'cancel'); expect((await profile(c.repository, 'alice')).reservedItems).toHaveLength(0); expect(await c.players.countItem('alice', 'rift_essence')).toBe(12); expect((await c.repository.economyRead((state) => state.marketOrders.get(order.id)))?.escrowItemId).toBeUndefined() })
   it('create buy order reserves coins', async () => { const c = await setup(); await fund(c.players, 'bob', 1000); await c.economy.createBuyOrder('bob', 'rift_iron', 10, 10, 'buy'); expect(await c.economy.wallet('bob')).toEqual({ coins: 999, reservedCoins: 100, availableCoins: 899 }) })
   it('buy order fee is deducted', async () => { const c = await setup(); await fund(c.players, 'bob', 100); await c.economy.createBuyOrder('bob', 'rift_iron', 10, 5, 'buy'); expect((await c.economy.wallet('bob')).coins).toBe(99); expect((await c.players.ledger('bob')).some((entry) => entry.reason === 'MARKET_BUY_ORDER_FEE' && entry.amount === -1)).toBe(true) })
   it('cancel buy order refunds reserve but not fee', async () => { const c = await setup(); await fund(c.players, 'bob', 100); const snap = await c.economy.createBuyOrder('bob', 'rift_iron', 10, 5, 'buy'); await c.economy.cancelMarketOrder('bob', snap.myOrders[0].id, 'cancel'); expect(await c.economy.wallet('bob')).toEqual({ coins: 99, reservedCoins: 0, availableCoins: 99 }) })
@@ -36,6 +36,54 @@ describe('Phase 5 Market', () => {
   it('concurrent buyers cannot buy same equipment', async () => { const c = await setup(); const e = await item(c.players, 'alice', 'crafted_alchemist_weapon'); await c.economy.createSellOrder('alice', e.entryId, 1, 50, 'sell'); await fund(c.players, 'bob', 100); await fund(c.players, 'cara', 100); await Promise.all([c.economy.createBuyOrder('bob', e.itemId, 1, 50, 'b'), c.economy.createBuyOrder('cara', e.itemId, 1, 50, 'c')]); const owners = await Promise.all(['bob', 'cara'].map(async (id) => (await c.players.snapshot(id)).inventory.some((x) => x.entryId === e.entryId))); expect(owners.filter(Boolean)).toHaveLength(1) })
   it('buy-now crosses sell book correctly', async () => { const c = await setup(); const e = await item(c.players, 'alice', 'rift_iron', 2); await c.economy.createSellOrder('alice', e.entryId, 2, 7, 'sell'); await fund(c.players, 'bob', 100); await c.economy.buyNow('bob', 'rift_iron', 2, 'now'); expect(await c.players.countItem('bob', 'rift_iron')).toBe(2) })
   it('sell-now crosses buy book correctly', async () => { const c = await setup(); await fund(c.players, 'bob', 100); await c.economy.createBuyOrder('bob', 'rift_iron', 2, 7, 'buy'); const e = await item(c.players, 'alice', 'rift_iron', 2); await c.economy.sellNow('alice', e.entryId, 2, 'now'); expect((await c.repository.economyRead((s) => s.marketFills))).toHaveLength(1) })
+  it('BUY_NOW never cancels an older buy order for the same item', async () => {
+    const c = await setup(); await fund(c.players, 'bob', 1_000)
+    const old = await c.economy.createBuyOrder('bob', 'rift_iron', 2, 3, 'old-buy')
+    const oldId = old.createdOrderId!
+    const sell = await item(c.players, 'alice', 'rift_iron', 1)
+    await c.economy.createSellOrder('alice', sell.entryId, 1, 7, 'liquidity')
+    await c.economy.buyNow('bob', 'rift_iron', 1, 'instant-buy')
+    const state = await c.repository.economyRead((s) => s)
+    expect(state.marketOrders.get(oldId)?.status).toBe('OPEN')
+    expect(state.marketOrders.get(oldId)?.remainingQuantity).toBe(2)
+  })
+  it('SELL_NOW never cancels an older sell order for the same item', async () => {
+    const c = await setup(); await fund(c.players, 'bob', 1_000)
+    const oldEntry = await item(c.players, 'alice', 'rift_iron', 2)
+    const old = await c.economy.createSellOrder('alice', oldEntry.entryId, 1, 20, 'old-sell')
+    const oldId = old.createdOrderId!
+    await c.economy.createBuyOrder('bob', 'rift_iron', 1, 7, 'liquidity')
+    const instantEntry = (await c.players.snapshot('alice')).inventory.find((entry) => entry.itemId === 'rift_iron')!
+    await c.economy.sellNow('alice', instantEntry.entryId, 1, 'instant-sell')
+    const state = await c.repository.economyRead((s) => s)
+    expect(state.marketOrders.get(oldId)?.status).toBe('OPEN')
+    expect(state.marketOrders.get(oldId)?.remainingQuantity).toBe(1)
+  })
+})
+
+describe('Phase 8 idempotent transaction identity', () => {
+  it('returns the original trade for an old retried operationId', async () => {
+    const c = await setup()
+    const original = await c.economy.requestTrade('alice', 'Bob', 'request-one')
+    await c.economy.declineTrade('bob', original.id, 'decline-one')
+    const newer = await c.economy.requestTrade('alice', 'Cara', 'request-two')
+    const retried = await c.economy.requestTrade('alice', 'Bob', 'request-one')
+    expect(retried.id).toBe(original.id)
+    expect(retried.id).not.toBe(newer.id)
+  })
+
+  it('settles paid slots and creates the durable marker exactly once', async () => {
+    const c = await setup(); await fund(c.players, 'bob', 100)
+    await c.economy.reservePartySlot('atomic-room', 'bob', 'alice', 100, 'reserve')
+    await c.economy.acceptPartySlot('atomic-room', 'bob', 'alice', 'accept')
+    const marker = { expeditionId: crypto.randomUUID(), playSessionId: crypto.randomUUID(), roomId: 'atomic-room', riftId: 'first_rift', floor: 1, playerIds: ['alice', 'bob'] }
+    expect((await c.economy.startExpedition(marker, 'alice', marker.playerIds)).applied).toBe(true)
+    const retried = await c.economy.startExpedition({ ...marker, expeditionId: crypto.randomUUID(), playSessionId: crypto.randomUUID() }, 'alice', marker.playerIds)
+    expect(retried.applied).toBe(false)
+    expect(retried.marker.expeditionId).toBe(marker.expeditionId)
+    expect(c.database.activeExpeditions).toHaveLength(1)
+    expect((await c.economy.wallet('alice')).coins).toBe(100)
+  })
 })
 
 describe('Phase 5 Direct Trade', () => {

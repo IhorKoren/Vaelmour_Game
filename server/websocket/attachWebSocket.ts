@@ -1,9 +1,11 @@
 import { randomUUID } from 'node:crypto'
 import type { WebSocketServer, WebSocket } from 'ws'
-import type { ClientMessage, ServerMessage } from '../../shared/protocol'
+import type { ServerMessage } from '../../shared/protocol'
 import { EconomyError } from '../players/PlayerStateService'
 import { RoomManager } from '../rooms/RoomManager'
 import { AuthenticationError, type AuthenticatedSession } from '../auth/AuthService'
+import { validateClientMessage } from './validateClientMessage'
+import { log } from '../logging/logger'
 
 function send(socket: WebSocket, message: ServerMessage): void {
   if (socket.readyState === socket.OPEN) socket.send(JSON.stringify(message))
@@ -11,21 +13,45 @@ function send(socket: WebSocket, message: ServerMessage): void {
 
 interface WebSocketAuthOptions {
   validateSession?: (token: string) => Promise<AuthenticatedSession>
+  helloTimeoutMs?: number
+  heartbeatIntervalMs?: number
+  maxPayloadBytes?: number
+  maxMessagesPer10Seconds?: number
 }
 
 export function attachWebSocket(wss: WebSocketServer, rooms: RoomManager, options: WebSocketAuthOptions = {}): void {
   wss.on('connection', (socket) => {
     const connectionId = randomUUID()
     let playerId: string | null = null
+    let alive = true
+    let messageCount = 0
+    let windowStartedAt = Date.now()
+    let processing = Promise.resolve()
+    const helloTimer = setTimeout(() => { if (!playerId) socket.close(4008, 'HELLO timeout') }, options.helloTimeoutMs ?? 8_000)
+    const heartbeat = setInterval(() => {
+      if (!alive) { socket.terminate(); return }
+      alive = false
+      socket.ping()
+    }, options.heartbeatIntervalMs ?? 30_000)
+    helloTimer.unref?.(); heartbeat.unref?.()
+    socket.on('pong', () => { alive = true })
 
-    socket.on('message', (raw) => { void (async () => {
-      let message: ClientMessage
+    socket.on('message', (raw) => { processing = processing.then(async () => {
+      const rawText = raw.toString()
+      if (Buffer.byteLength(rawText, 'utf8') > (options.maxPayloadBytes ?? 64 * 1024)) { send(socket, { type: 'ERROR', payload: { code: 'INVALID_MESSAGE', message: 'Повідомлення завелике.' } }); socket.close(1009, 'Payload too large'); return }
+      const now = Date.now()
+      if (now - windowStartedAt >= 10_000) { windowStartedAt = now; messageCount = 0 }
+      messageCount += 1
+      if (messageCount > (options.maxMessagesPer10Seconds ?? 120)) { send(socket, { type: 'ERROR', payload: { code: 'RATE_LIMITED', message: 'Забагато повідомлень.' } }); socket.close(1008, 'Rate limit exceeded'); return }
+      let parsed: unknown
       try {
-        message = JSON.parse(raw.toString()) as ClientMessage
+        parsed = JSON.parse(rawText)
       } catch {
         send(socket, { type: 'ERROR', payload: { code: 'INVALID_JSON', message: 'Некоректне повідомлення.' } })
         return
       }
+      const message = validateClientMessage(parsed)
+      if (!message) { send(socket, { type: 'ERROR', payload: { code: 'INVALID_MESSAGE', message: 'Повідомлення не відповідає protocol schema.' } }); return }
 
       try {
         if (!message || typeof message !== 'object' || typeof message.type !== 'string') throw new Error('Invalid message shape')
@@ -46,6 +72,8 @@ export function attachWebSocket(wss: WebSocketServer, rooms: RoomManager, option
             authenticatedPlayerId = await rooms.connectAuthenticated(session.accountId, peer, session.sessionId)
           } else authenticatedPlayerId = await rooms.connect(message.payload, peer)
           playerId = authenticatedPlayerId
+          if (playerId) clearTimeout(helloTimer)
+          else socket.close(4009, 'Rift reconnect expired')
           return
         }
 
@@ -59,11 +87,13 @@ export function attachWebSocket(wss: WebSocketServer, rooms: RoomManager, option
           send(socket, { type: 'ERROR', payload: { code: error.code, message: error.message } })
           return
         }
-        send(socket, { type: 'ERROR', payload: { code: 'INVALID_MESSAGE', message: 'Повідомлення не відповідає protocol schema.' } })
+        log('error', 'websocket_message_failed', { playerId, messageType: message.type }, error)
+        send(socket, { type: 'ERROR', payload: { code: 'INTERNAL_ERROR', message: 'Не вдалося обробити повідомлення.' } })
       }
-    })() })
+    }).catch((error) => { log('error', 'websocket_queue_failed', { playerId }, error); send(socket, { type: 'ERROR', payload: { code: 'INTERNAL_ERROR', message: 'Не вдалося обробити повідомлення.' } }) }) })
 
     socket.on('close', () => {
+      clearTimeout(helloTimer); clearInterval(heartbeat)
       if (playerId) rooms.disconnect(playerId, connectionId)
     })
   })

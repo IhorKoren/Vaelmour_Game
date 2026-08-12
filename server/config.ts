@@ -19,6 +19,8 @@ export interface RuntimeConfig {
   telegramBotToken: string | null
   sessionSecret: string
   sessionTtlSeconds: number
+  maxSessionsPerAccount?: number
+  sessionCleanupIntervalMs?: number
   telegramMaxAgeSeconds: number
   appOrigin: string | null
   allowedOrigins: Set<string>
@@ -43,6 +45,8 @@ export function loadRuntimeConfig(): RuntimeConfig {
     nodeEnv, isProduction, allowDevAuth, telegramBotToken, sessionSecret,
     adminMode: enabled('ADMIN_MODE', false),
     sessionTtlSeconds: Math.max(300, Number(process.env.SESSION_TTL_SECONDS ?? 86_400)),
+    maxSessionsPerAccount: Math.max(2, Math.min(20, Number(process.env.MAX_SESSIONS_PER_ACCOUNT ?? 8))),
+    sessionCleanupIntervalMs: Math.max(60_000, Number(process.env.SESSION_CLEANUP_INTERVAL_MS ?? 15 * 60_000)),
     telegramMaxAgeSeconds: Math.max(60, Number(process.env.TELEGRAM_AUTH_MAX_AGE_SECONDS ?? 3600)),
     appOrigin,
     allowedOrigins: new Set(allowed),

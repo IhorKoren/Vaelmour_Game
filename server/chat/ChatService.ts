@@ -4,7 +4,7 @@ import type { ChatChannel, ChatHistorySnapshot, PersistentChatMessage, PrivateCo
 import { EconomyError } from '../players/PlayerStateService'
 import type { SocialRepository, SocialState } from '../repositories/types'
 import type { PresenceService } from '../social/PresenceService'
-import { canonicalPair, isBlocked, memberGuildId, publicPlayer } from '../social/social-utils'
+import { canonicalPair, exactPlayer, isBlocked, memberGuildId, publicPlayer } from '../social/social-utils'
 import { ChatRateLimiter } from './ChatRateLimiter'
 
 export class ChatService {
@@ -28,7 +28,7 @@ export class ChatService {
           if (conversation.playerLowId !== playerId && conversation.playerHighId !== playerId) throw new EconomyError('PRIVATE_CHAT_FORBIDDEN', 'Conversation does not belong to player.')
           otherId = conversation.playerLowId === playerId ? conversation.playerHighId : conversation.playerLowId
         } else {
-          const target = this.exactPlayer(state, input.targetName ?? ''); otherId = target.playerId
+          const target = exactPlayer(state, input.targetName ?? ''); otherId = target.playerId
           if (otherId === playerId) throw new EconomyError('CANNOT_MESSAGE_SELF', 'You cannot privately message yourself.')
         }
         if (isBlocked(state, playerId, otherId)) throw new EconomyError('PLAYER_BLOCKED', 'Private message is blocked.')
@@ -106,5 +106,4 @@ export class ChatService {
   private validate(input: string): string { const text = input.trim(); if (!text) throw new EconomyError('EMPTY_CHAT_MESSAGE', 'Message cannot be empty.'); if (text.length > MAX_CHAT_MESSAGE_LENGTH) throw new EconomyError('CHAT_MESSAGE_TOO_LONG', `Message cannot exceed ${MAX_CHAT_MESSAGE_LENGTH} characters.`); return text }
   private operationUuid(value: string): string { const hash = createHash('sha256').update(value).digest('hex').slice(0, 32).split(''); hash[12] = '4'; hash[16] = '8'; const raw = hash.join(''); return `${raw.slice(0, 8)}-${raw.slice(8, 12)}-${raw.slice(12, 16)}-${raw.slice(16, 20)}-${raw.slice(20)}` }
   private player(state: SocialState, id: string) { const player = state.players.get(id); if (!player) throw new EconomyError('PLAYER_NOT_FOUND', 'Player not found.'); return player }
-  private exactPlayer(state: SocialState, name: string) { const key = name.trim().toLocaleLowerCase(); const values = [...state.players.values()].filter((value) => value.name.toLocaleLowerCase() === key); if (values.length !== 1) throw new EconomyError(values.length ? 'AMBIGUOUS_PLAYER_NAME' : 'PLAYER_NOT_FOUND', 'Exact player name was not found.'); return values[0] }
 }

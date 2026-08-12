@@ -3,8 +3,9 @@ import { ITEM_CATALOG } from '../../shared/game-data/catalog'
 import { MARKET_FEES } from '../../shared/game-data/economy'
 import type { InventoryEntry } from '../../shared/game-data/types'
 import type { DirectTrade, MarketFill, MarketOrder, MarketSnapshot, PartySlotReservation, TradeSnapshot } from '../../shared/economy-types'
-import type { CoinLedgerRecord, EconomyRepository, EconomyState, LedgerReason, StoredPlayerProfile } from '../repositories/types'
+import type { CoinLedgerRecord, DurableExpeditionStart, EconomyRepository, EconomyState, LedgerReason, StoredPlayerProfile } from '../repositories/types'
 import { EconomyError } from '../players/PlayerStateService'
+import { findPlayerByName } from '../players/playerName'
 
 export interface TradeOfferInput { items: Array<{ entryId: string; quantity: number }>; coins: number }
 
@@ -52,9 +53,11 @@ export class EconomyService {
       }
       state.marketOrders.set(order.id, order)
       this.match(state, order.itemId)
-      return order.itemId
+      return { itemId: order.itemId, orderId: order.id }
     })
-    return this.market(playerId, result.applied ? result.value : null)
+    const snapshot = await this.market(playerId, result.applied ? result.value.itemId : null)
+    if (result.applied) snapshot.createdOrderId = result.value.orderId
+    return snapshot
   }
 
   async createBuyOrder(playerId: string, itemId: string, quantity: number, pricePerUnit: number, operationId: string): Promise<MarketSnapshot> {
@@ -76,9 +79,11 @@ export class EconomyService {
       this.ledger(state, player, -reserve, 'MARKET_BUY_RESERVE', order.id)
       if (fee) this.ledger(state, player, -fee, 'MARKET_BUY_ORDER_FEE', order.id)
       this.match(state, itemId)
-      return itemId
+      return { itemId, orderId: order.id }
     })
-    return this.market(playerId, result.applied ? result.value : null)
+    const snapshot = await this.market(playerId, result.applied ? result.value.itemId : null)
+    if (result.applied) snapshot.createdOrderId = result.value.orderId
+    return snapshot
   }
 
   async cancelMarketOrder(playerId: string, orderId: string, operationId: string): Promise<MarketSnapshot> {
@@ -92,6 +97,7 @@ export class EconomyService {
         if (!escrow || escrow.quantity !== order.remainingQuantity) throw new EconomyError('ESCROW_MISMATCH', 'Sell escrow is invalid.')
         this.removeReserved(player, escrow.entryId)
         this.addInventory(player, escrow.itemId, escrow.quantity, escrow.entryId)
+        order.escrowItemId = undefined
       } else {
         player.reservedCoins -= order.reservedCoins; player.coins += order.reservedCoins
         this.ledger(state, player, order.reservedCoins, 'MARKET_BUY_RELEASE', order.id)
@@ -110,7 +116,7 @@ export class EconomyService {
     for (const order of eligible) { const used = Math.min(remaining, order.remainingQuantity); if (used) limit = order.pricePerUnit; remaining -= used; if (!remaining) break }
     if (remaining > 0 || limit <= 0) throw new EconomyError('INSUFFICIENT_MARKET_LIQUIDITY', 'Not enough sell liquidity.')
     const snapshot = await this.createBuyOrder(playerId, itemId, quantity, limit, `buy-now:${operationId}`)
-    const open = snapshot.myOrders.find((order) => order.side === 'BUY' && order.itemId === itemId && (order.status === 'OPEN' || order.status === 'PARTIALLY_FILLED'))
+    const open = snapshot.myOrders.find((order) => order.id === snapshot.createdOrderId && (order.status === 'OPEN' || order.status === 'PARTIALLY_FILLED'))
     return open ? this.cancelMarketOrder(playerId, open.id, `buy-now-cancel:${operationId}`) : snapshot
   }
 
@@ -123,16 +129,15 @@ export class EconomyService {
     for (const order of eligible) { const used = Math.min(remaining, order.remainingQuantity); if (used) limit = order.pricePerUnit; remaining -= used; if (!remaining) break }
     if (remaining > 0 || limit <= 0) throw new EconomyError('INSUFFICIENT_MARKET_LIQUIDITY', 'Not enough buy liquidity.')
     const snapshot = await this.createSellOrder(playerId, entryId, quantity, limit, `sell-now:${operationId}`)
-    const open = snapshot.myOrders.find((order) => order.side === 'SELL' && order.itemId === itemId && (order.status === 'OPEN' || order.status === 'PARTIALLY_FILLED'))
+    const open = snapshot.myOrders.find((order) => order.id === snapshot.createdOrderId && (order.status === 'OPEN' || order.status === 'PARTIALLY_FILLED'))
     return open ? this.cancelMarketOrder(playerId, open.id, `sell-now-cancel:${operationId}`) : snapshot
   }
 
   async requestTrade(requesterId: string, receiverName: string, operationId: string): Promise<TradeSnapshot> {
     return this.tradeMutation(requesterId, `trade:request:${requesterId}:${operationId}`, 'REQUEST_TRADE', (state) => {
       this.player(state, requesterId)
-      const matches = [...state.players.values()].filter((profile) => profile.name === receiverName)
-      if (matches.length !== 1) throw new EconomyError(matches.length ? 'AMBIGUOUS_PLAYER_NAME' : 'PLAYER_NOT_FOUND', matches.length ? 'Player name is not unique.' : 'Online player not found.')
-      const receiver = matches[0]
+      const receiver = findPlayerByName(state.players.values(), receiverName)
+      if (!receiver) throw new EconomyError('PLAYER_NOT_FOUND', 'Online player not found.')
       if (receiver.playerId === requesterId) throw new EconomyError('SELF_TRADE', 'Cannot trade with yourself.')
       this.assertTradeAvailable(state, requesterId); this.assertTradeAvailable(state, receiver.playerId)
       const now = this.now()
@@ -247,19 +252,13 @@ export class EconomyService {
 
   async settlePartySlots(roomId: string, leaderId: string, memberIds: string[], operationId: string): Promise<void> {
     await this.repository.economyTransact(leaderId, `slot:settle:${roomId}:${operationId}`, 'PARTY_SLOT_PAYMENT', (state) => {
-      const reservations = [...state.partySlotReservations.values()].filter((item) => item.roomId === roomId && item.status === 'ACCEPTED' && memberIds.includes(item.applicantId))
-      const leader = this.player(state, leaderId)
-      for (const reservation of reservations) {
-        const applicant = this.player(state, reservation.applicantId)
-        if (reservation.leaderId !== leaderId || applicant.reservedCoins < reservation.amount) throw new EconomyError('SLOT_SETTLEMENT_FAILED', 'Paid slot settlement failed.')
-      }
-      for (const reservation of reservations) {
-        const applicant = this.player(state, reservation.applicantId)
-        applicant.reservedCoins -= reservation.amount; leader.coins += reservation.amount
-        reservation.status = 'SETTLED'; reservation.updatedAt = this.now()
-        this.ledger(state, applicant, 0, 'PARTY_SLOT_PAYMENT', reservation.id)
-        this.ledger(state, leader, reservation.amount, 'PARTY_SLOT_PAYMENT', reservation.id)
-      }
+      this.settlePartySlotsInState(state, roomId, leaderId, memberIds)
+    })
+  }
+
+  async startExpedition(marker: DurableExpeditionStart, leaderId: string, memberIds: string[]): Promise<{ applied: boolean; marker: DurableExpeditionStart }> {
+    return this.repository.startExpeditionTransact(leaderId, `rift:start:${marker.roomId}`, marker, (state) => {
+      this.settlePartySlotsInState(state, marker.roomId, leaderId, memberIds)
     })
   }
 
@@ -308,6 +307,24 @@ export class EconomyService {
       const quantity = Math.min(buy.remainingQuantity, sell.remainingQuantity)
       const unitPrice = buy.createdAt < sell.createdAt || (buy.createdAt === sell.createdAt && buy.id < sell.id) ? buy.pricePerUnit : sell.pricePerUnit
       this.settleFill(state, buy, sell, quantity, unitPrice)
+    }
+  }
+
+  private settlePartySlotsInState(state: EconomyState, roomId: string, leaderId: string, memberIds: string[]): void {
+    const accepted = [...state.partySlotReservations.values()].filter((item) => item.roomId === roomId && item.status === 'ACCEPTED')
+    const invalid = accepted.find((item) => !memberIds.includes(item.applicantId))
+    if (invalid) throw new EconomyError('SLOT_SETTLEMENT_FAILED', 'Accepted reservation is not a current party member.')
+    const leader = this.player(state, leaderId)
+    for (const reservation of accepted) {
+      const applicant = this.player(state, reservation.applicantId)
+      if (reservation.leaderId !== leaderId || applicant.reservedCoins < reservation.amount) throw new EconomyError('SLOT_SETTLEMENT_FAILED', 'Paid slot settlement failed.')
+    }
+    for (const reservation of accepted) {
+      const applicant = this.player(state, reservation.applicantId)
+      applicant.reservedCoins -= reservation.amount; leader.coins += reservation.amount
+      reservation.status = 'SETTLED'; reservation.updatedAt = this.now()
+      this.ledger(state, applicant, 0, 'PARTY_SLOT_PAYMENT', reservation.id)
+      this.ledger(state, leader, reservation.amount, 'PARTY_SLOT_PAYMENT', reservation.id)
     }
   }
 
@@ -362,8 +379,8 @@ export class EconomyService {
   }
 
   private async tradeMutation(playerId: string, key: string, type: string, mutate: (state: EconomyState) => string): Promise<TradeSnapshot> {
-    const result = await this.repository.economyTransact(playerId, key, type, mutate)
-    const tradeId = result.applied ? result.value : await this.repository.economyRead((state) => [...state.trades.values()].find((trade) => this.isParticipant(trade, playerId) && (trade.status === 'REQUESTED' || trade.status === 'ACTIVE' || trade.status === 'COMPLETED'))?.id)
+    const result = await this.repository.economyTransact(playerId, key, type, mutate, (tradeId) => tradeId)
+    const tradeId = result.applied ? result.value : result.referenceId
     if (!tradeId) throw new EconomyError('TRADE_NOT_FOUND', 'Trade not found.')
     return this.repository.economyRead((state) => this.tradeSnapshot(state, this.trade(state, tradeId)))
   }
@@ -410,7 +427,11 @@ export class EconomyService {
   }
 
   private openOrders(state: EconomyState, itemId: string, side: 'BUY' | 'SELL'): MarketOrder[] { return [...state.marketOrders.values()].filter((order) => order.itemId === itemId && order.side === side && (order.status === 'OPEN' || order.status === 'PARTIALLY_FILLED')) }
-  private updateOrderStatus(order: MarketOrder): void { order.status = order.remainingQuantity === 0 ? 'FILLED' : order.remainingQuantity === order.originalQuantity ? 'OPEN' : 'PARTIALLY_FILLED'; order.updatedAt = this.now() }
+  private updateOrderStatus(order: MarketOrder): void {
+    order.status = order.remainingQuantity === 0 ? 'FILLED' : order.remainingQuantity === order.originalQuantity ? 'OPEN' : 'PARTIALLY_FILLED'
+    if (order.side === 'SELL' && order.status === 'FILLED') order.escrowItemId = undefined
+    order.updatedAt = this.now()
+  }
   private player(state: EconomyState, playerId: string): StoredPlayerProfile { const player = state.players.get(playerId); if (!player) throw new EconomyError('PLAYER_NOT_FOUND', 'Player not found.'); return player }
   private trade(state: EconomyState, id: string): DirectTrade { const trade = state.trades.get(id); if (!trade) throw new EconomyError('TRADE_NOT_FOUND', 'Trade not found.'); return trade }
   private isParticipant(trade: DirectTrade, id: string): boolean { return trade.requesterId === id || trade.receiverId === id }

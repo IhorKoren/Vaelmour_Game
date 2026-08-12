@@ -1,4 +1,4 @@
-.creation-shell, .result-shell { min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; position: relative; overflow: hidden; }
+.creation-shell, .result-shell { min-height: var(--tg-viewport-stable-height, 100dvh); display: grid; place-items: center; padding: calc(24px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left)); position: relative; overflow: hidden; }
 .creation-shell::before, .result-shell::before { content: ''; position: fixed; inset: 0; opacity: .28; pointer-events: none; background-image: linear-gradient(30deg, transparent 48%, #29332e 49%, transparent 50%), linear-gradient(-30deg, transparent 48%, #29332e 49%, transparent 50%); background-size: 80px 140px; mask-image: linear-gradient(to bottom, black, transparent 65%); }
 .ambient { position: absolute; width: 420px; height: 420px; border: 1px solid #a9824130; border-radius: 50%; box-shadow: 0 0 100px #92743c18, inset 0 0 100px #92743c12; top: -240px; }
 .creation-card, .result-card { width: min(100%, 580px); padding: 22px 0; position: relative; z-index: 1; text-align: center; }
@@ -32,7 +32,7 @@
 .primary-button span, .confirm-button span { float: right; font-size: 18px; line-height: 12px; }
 
 /* City */
-.city-shell { min-height: 100vh; max-width: 1100px; margin: auto; padding: 0 16px 30px; }
+.city-shell { min-height: var(--tg-viewport-stable-height, 100dvh); max-width: 1100px; margin: auto; padding: env(safe-area-inset-top) calc(16px + env(safe-area-inset-right)) calc(30px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left)); }
 .city-header { height: 68px; display: flex; align-items: center; border-bottom: 1px solid #29332e; gap: 12px; }
 .brand-mark { width: 34px; height: 34px; border: 1px solid var(--gold); transform: rotate(45deg); display: grid; place-items: center; color: var(--gold); font-family: serif; }
 .city-header > div:nth-child(2) { flex: 1; margin-left: 5px; }
@@ -58,7 +58,7 @@
 .text-button { border: 0; background: none; color: #737c76; cursor: pointer; text-decoration: underline; font-size: 9px; }.reset-button { display: block; margin: 20px auto; }.city-footer { border-top: 1px solid #242c28; padding-top: 15px; display: flex; justify-content: space-between; color: #59625d; font-size: 7px; }
 
 /* Combat */
-.combat-shell { width: 100%; max-width: 1180px; min-height: 100vh; margin: auto; padding: 0 12px 30px; }
+.combat-shell { width: 100%; max-width: 1180px; min-height: var(--tg-viewport-stable-height, 100dvh); margin: auto; padding: env(safe-area-inset-top) calc(12px + env(safe-area-inset-right)) calc(30px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left)); }
 .combat-header { height: 58px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #29312d; }.back-button { font-size: 23px; line-height: 1; }.combat-header > div:nth-child(2) { flex: 1; }.combat-header p { margin: 0; font: 700 17px 'Cormorant Garamond'; }.combat-header span { font-size: 7px; color: #8d7b5a; letter-spacing: .15em; }.encounter-chip { border-left: 1px solid #313a35; padding-left: 10px; font-size: 7px; color: #6e7771; letter-spacing: .1em; }.encounter-chip strong { font-size: 13px; color: var(--gold-bright); margin-left: 4px; }
 .round-bar { height: 50px; display: grid; grid-template-columns: 70px 1fr 92px; align-items: center; gap: 8px; border-bottom: 1px solid #242d28; }.round-bar > div:first-child { display: flex; gap: 7px; align-items: center; }.round-bar small { font-size: 6px; color: #66706a; letter-spacing: .11em; }.round-bar strong { font: 22px 'Cormorant Garamond'; }.round-bar > small { text-align: right; }.timer { display: flex; align-items: center; gap: 8px; }.timer > span { color: #d8c69e; font-size: 12px; font-weight: 700; }.timer > span.urgent { color: #d56a5f; }.timer div { flex: 1; height: 2px; background: #2a332e; }.timer i { display: block; height: 100%; background: var(--gold); transition: width 1s linear; }
 .enemy-panel { border: 1px solid #303934; margin: 13px 0; background: linear-gradient(120deg, #171e1b, #101513); position: relative; }.enemy-art { min-height: 112px; display: grid; place-items: center; align-content: center; background: radial-gradient(circle, #775d3430, transparent 60%); border-bottom: 1px solid #2a332e; overflow: hidden; }.enemy-rune { font: 50px Georgia; color: #ae8a4c; text-shadow: 0 0 30px #c29146; }.enemy-art > span { font-size: 6px; letter-spacing: .25em; color: #625c4f; }.enemy-info { padding: 12px; position: relative; }.enemy-info p { color: var(--gold); font-size: 7px; letter-spacing: .14em; margin: 0 0 3px; }.enemy-info h1 { font-size: 25px; margin: 0; }.enemy-info > div:first-child > span { color: #9a8170; font-size: 8px; }.enemy-hp-label { display: flex; justify-content: space-between; margin: 9px 0 5px; font-size: 7px; color: #7a837d; }.enemy-hp-label strong { color: #bcb2a0; }.enemy-hp { height: 7px; }.enemy-hp span { display: block; height: 100%; background: linear-gradient(90deg, #7d342f, #bc554a); transition: width .4s; }.enemy-panel.boss { border-color: #665138; }.boss-indicator { padding: 8px 12px; border-top: 1px solid #433a2d; font-size: 8px; color: #a58a60; display: flex; justify-content: space-between; }.boss-indicator.warning { background: #3a1816; color: #e49986; }.boss-indicator em { font-style: normal; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; font-size: 7px; }
@@ -158,7 +158,7 @@
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
 
 /* Phase 2 multiplayer */
-.lobby-shell { width: 100%; max-width: 1080px; min-height: 100vh; margin: auto; padding: 0 14px 36px; }
+.lobby-shell { width: 100%; max-width: 1080px; min-height: var(--tg-viewport-stable-height, 100dvh); margin: auto; padding: env(safe-area-inset-top) calc(14px + env(safe-area-inset-right)) calc(36px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left)); }
 .lobby-header .connection-indicator { margin-left: auto; }
 .connection-indicator { display: inline-flex; align-items: center; gap: 5px; color: #859088; font-size: 7px; letter-spacing: .07em; white-space: nowrap; }
 .connection-indicator i { width: 6px; height: 6px; border-radius: 50%; background: #656e68; box-shadow: 0 0 8px currentColor; }

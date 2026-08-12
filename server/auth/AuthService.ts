@@ -61,7 +61,7 @@ export class AuthService {
       include: { account: { include: { player: true, telegramIdentity: true } } },
     })
     const now = new Date(this.now())
-    if (!session || session.revokedAt || session.expiresAt <= now) throw new AuthenticationError('SESSION_EXPIRED', 'Session expired.')
+    if (!session || session.revokedAt || session.expiresAt <= now) throw new AuthenticationError('AUTH_SESSION_EXPIRED', 'Session expired.')
     await this.prisma.authSession.update({ where: { id: session.id }, data: { lastUsedAt: now } })
     return {
       sessionId: session.id, accountId: session.accountId, playerId: session.account.player?.id ?? null,
@@ -80,8 +80,15 @@ export class AuthService {
 
   private async issueSession(accountId: string, playerId: string | null, telegramUserId: string | null): Promise<LoginResult> {
     const token = randomBytes(32).toString('base64url')
+    const now = new Date(this.now())
     const expiresAt = new Date(this.now() + this.config.sessionTtlSeconds * 1000)
-    const session = await this.prisma.authSession.create({ data: { accountId, sessionHash: this.hashSession(token), expiresAt } })
+    const session = await this.prisma.$transaction(async (tx) => {
+      await tx.authSession.deleteMany({ where: { accountId, OR: [{ expiresAt: { lte: now } }, { revokedAt: { not: null } }] } })
+      const active = await tx.authSession.findMany({ where: { accountId, revokedAt: null, expiresAt: { gt: now } }, orderBy: { createdAt: 'asc' }, select: { id: true } })
+      const overflow = active.length - (this.config.maxSessionsPerAccount ?? 8) + 1
+      if (overflow > 0) await tx.authSession.updateMany({ where: { id: { in: active.slice(0, overflow).map((item) => item.id) } }, data: { revokedAt: now } })
+      return tx.authSession.create({ data: { accountId, sessionHash: this.hashSession(token), expiresAt } })
+    })
     return { sessionToken: token, sessionId: session.id, accountId, playerId, telegramUserId, expiresAt }
   }
 

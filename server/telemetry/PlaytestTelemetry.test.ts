@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import type { DevIdentity, ServerMessage } from '../../shared/protocol'
 import { RoomManager } from '../rooms/RoomManager'
 import type { ClientPeer } from '../types/room'
-import { PlaytestTelemetry, sanitizeTelemetryPayload, type ExpeditionMarker, type TelemetryEvent, type TelemetrySink } from './PlaytestTelemetry'
+import { PlaytestTelemetry, SafeTelemetrySink, sanitizeTelemetryPayload, type ExpeditionMarker, type TelemetryEvent, type TelemetrySink } from './PlaytestTelemetry'
 import { generatePlaytestReport } from './playtestReport'
 import type { PrismaClient } from '../generated/prisma/client'
 
@@ -37,7 +37,9 @@ describe('gameplay-only playtest telemetry', () => {
     await manager.applyToParty('member', room.id); await manager.reviewApplication('leader', 'member', true)
     manager.setReady('leader', true); manager.setReady('member', true)
     await manager.startExpedition('leader')
-    expect(telemetry.markers).toHaveLength(1)
+    // Durable START is now owned by the economy repository transaction rather
+    // than the observational telemetry sink.
+    expect(telemetry.markers).toHaveLength(0)
     expect(telemetry.events.map((event) => event.type)).toEqual(expect.arrayContaining(['PARTY_CREATED', 'RIFT_STARTED', 'ENCOUNTER_STARTED']))
 
     await manager.submitAction('leader', { round: 1, defendZone: 'head', usePotion: true })
@@ -77,6 +79,57 @@ describe('gameplay-only playtest telemetry', () => {
     await telemetry.record(event); await telemetry.record(event)
     expect(rows).toHaveLength(1)
     expect(rows.get('rift:e1').payload).toEqual({ floor: 1 })
+  })
+
+  it('telemetry failure cannot deadlock round resolution or duplicate a potion', async () => {
+    let attempts = 0
+    const failing = new RecordingTelemetry()
+    failing.record = async () => { attempts += 1; throw new Error('telemetry unavailable') }
+    const manager = new RoomManager({ telemetry: new SafeTelemetrySink(failing, 60_000), random: () => 0.5, autoTimers: false, minPartySize: 1 })
+    managers.push(manager)
+    await connect(manager, 'leader')
+    const room = manager.createParty('leader')!
+    manager.setReady('leader', true)
+    await manager.startExpedition('leader')
+    const before = await manager.playerStates.countItem('leader', 'healing_potion')
+    await manager.submitAction('leader', { round: 1, defendZone: 'head', usePotion: true })
+    expect(room.resolving).toBe(false)
+    expect(room.round).toBe(2)
+    expect(await manager.playerStates.countItem('leader', 'healing_potion')).toBe(before - 1)
+    expect(attempts).toBeGreaterThan(0)
+  })
+
+  it('telemetry failure cannot block START or an encounter reward', async () => {
+    const failing = new RecordingTelemetry()
+    failing.record = async () => { throw new Error('telemetry unavailable') }
+    const manager = new RoomManager({ telemetry: new SafeTelemetrySink(failing, 60_000, 1), random: () => 0.5, autoTimers: false, minPartySize: 1 })
+    managers.push(manager)
+    await connect(manager, 'leader')
+    const room = manager.createParty('leader')!
+    manager.setReady('leader', true)
+    await expect(manager.startExpedition('leader')).resolves.toBe(true)
+    room.enemy = { ...room.enemy!, attack: 0, currentHP: 1, maxHP: 1 }
+    const coinsBefore = (await manager.playerStates.snapshot('leader')).coins
+    await manager.submitAction('leader', { round: 1, attackZone: 'head', defendZone: 'head', usePotion: false })
+    expect(room.phase).toBe('POST_ENCOUNTER')
+    expect((await manager.playerStates.snapshot('leader')).coins).toBeGreaterThan(coinsBefore)
+  })
+
+  it('an interruption-notice telemetry failure cannot block reconnect', async () => {
+    const failing = new RecordingTelemetry()
+    failing.consumeInterruption = async () => { throw new Error('notice store unavailable') }
+    const safe = new SafeTelemetrySink(failing, 60_000, 1)
+    await expect(safe.consumeInterruption('player')).resolves.toBe(false)
+  })
+
+  it.each(['ROUND_RESOLVED', 'POTION_USED', 'PLAYER_DIED', 'RIFT_COMPLETED'] as const)('absorbs a %s storage failure with a stable event key', async (type) => {
+    const seen: TelemetryEvent[] = []
+    const failing = new RecordingTelemetry()
+    failing.record = async (event) => { seen.push(event); throw new Error(`forced ${type} failure`) }
+    const safe = new SafeTelemetrySink(failing, 60_000, 1)
+    await expect(safe.record({ type, eventKey: `fault:${type}` })).resolves.toBeUndefined()
+    expect(seen).toHaveLength(1)
+    expect(seen[0].eventKey).toBe(`fault:${type}`)
   })
 
   it('recovers active expeditions once as server interruptions and emits one notice per player', async () => {

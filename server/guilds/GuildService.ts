@@ -5,7 +5,7 @@ import type { GuildListItem, GuildPermissionView, GuildRank, GuildSnapshot, Guil
 import { EconomyError } from '../players/PlayerStateService'
 import type { SocialRepository, SocialState } from '../repositories/types'
 import type { PresenceService } from '../social/PresenceService'
-import { memberGuildId, publicPlayer } from '../social/social-utils'
+import { exactPlayer, memberGuildId, publicPlayer } from '../social/social-utils'
 
 const RANKS: GuildRank[] = ['LEADER', 'OFFICER', 'MEMBER', 'RECRUIT']
 const DEFAULT_PERMISSIONS: Record<GuildRank, { canDeposit: boolean; canWithdraw: boolean }> = {
@@ -87,7 +87,7 @@ export class GuildService {
   async invite(actorId: string, playerName: string, operationId: string): Promise<GuildSnapshot> {
     await this.repository.socialTransact(actorId, `guild-invite:${actorId}:${operationId}`, 'INVITE_TO_GUILD', (state) => {
       const actor = this.requireRank(state, actorId, ['LEADER', 'OFFICER'])
-      const target = this.exactPlayer(state, playerName)
+      const target = exactPlayer(state, playerName)
       if (memberGuildId(state, target.playerId)) throw new EconomyError('ALREADY_IN_GUILD', 'Player already belongs to a guild.')
       if ([...state.guildInvites.values()].some((value) => value.guildId === actor.guildId && value.playerId === target.playerId && value.status === 'PENDING')) throw new EconomyError('INVITE_EXISTS', 'Invitation is already pending.')
       const id = randomUUID(); state.guildInvites.set(id, { id, guildId: actor.guildId, playerId: target.playerId, invitedByPlayerId: actorId, status: 'PENDING', createdAt: this.now() })
@@ -246,7 +246,6 @@ export class GuildService {
   private deleteGuild(state: SocialState, guildId: string) { state.guilds.delete(guildId); for (const [id, value] of state.guildMembers) if (value.guildId === guildId) state.guildMembers.delete(id); for (const [id, value] of state.guildApplications) if (value.guildId === guildId) state.guildApplications.delete(id); for (const [id, value] of state.guildInvites) if (value.guildId === guildId) state.guildInvites.delete(id); for (const [id, value] of state.guildPermissions) if (value.guildId === guildId) state.guildPermissions.delete(id); state.guildStorageLogs = state.guildStorageLogs.filter((value) => value.guildId !== guildId); state.chatMessages = state.chatMessages.filter((value) => value.guildId !== guildId) }
   private quantity(available: number, requested: number | undefined, stackable: boolean): number { const quantity = Math.floor(requested ?? available); if (quantity < 1 || quantity > available || (!stackable && quantity !== 1)) throw new EconomyError('INVALID_QUANTITY', 'Invalid item quantity.'); return quantity }
   private player(state: SocialState, playerId: string) { const player = state.players.get(playerId); if (!player) throw new EconomyError('PLAYER_NOT_FOUND', 'Player not found.'); return player }
-  private exactPlayer(state: SocialState, name: string) { const normalized = name.trim().toLocaleLowerCase(); const players = [...state.players.values()].filter((value) => value.name.toLocaleLowerCase() === normalized); if (players.length !== 1) throw new EconomyError(players.length ? 'AMBIGUOUS_PLAYER_NAME' : 'PLAYER_NOT_FOUND', 'Exact player name was not found.'); return players[0] }
   private guild(state: SocialState, guildId: string) { const guild = state.guilds.get(guildId); if (!guild) throw new EconomyError('GUILD_NOT_FOUND', 'Guild not found.'); return guild }
   private listItem(state: SocialState, guildId: string): GuildListItem { const guild = this.guild(state, guildId); return { id: guild.id, name: guild.name, tag: guild.tag, description: guild.description, memberCount: [...state.guildMembers.values()].filter((value) => value.guildId === guildId).length, maxMembers: GUILD_MAX_MEMBERS } }
 }

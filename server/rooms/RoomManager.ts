@@ -31,6 +31,8 @@ import { floorEncounters } from '../../shared/game-data/rifts'
 import { floorDefinition } from '../../shared/game-data/rifts/firstRift'
 import { createFirstRiftEnemy } from '../combat/firstRiftEnemyFactory'
 import { NoopTelemetry, type TelemetrySink } from '../telemetry/PlaytestTelemetry'
+import { SafeTelemetrySink } from '../telemetry/PlaytestTelemetry'
+import { log } from '../logging/logger'
 
 interface ManagerOptions {
   roundDurationMs?: number
@@ -90,7 +92,7 @@ export class RoomManager {
     this.random = options.random ?? Math.random
     this.autoTimers = options.autoTimers ?? true
     this.minPartySize = options.minPartySize ?? DEV_MIN_PARTY_SIZE
-    this.telemetry = options.telemetry ?? new NoopTelemetry()
+    this.telemetry = options.telemetry instanceof SafeTelemetrySink ? options.telemetry : new SafeTelemetrySink(options.telemetry ?? new NoopTelemetry(), 10)
     this.playerStates = options.playerStates ?? new PlayerStateService()
     this.economy = options.economy ?? new EconomyService(this.playerStates.repository as EconomyRepository, this.now)
     this.presence = options.presence ?? new PresenceService()
@@ -113,11 +115,21 @@ export class RoomManager {
   private async connectResolved(accountId: string, authenticatedCharacter: Character, peer: ClientPeer, playSessionId: string): Promise<string | null> {
     const authenticated = { accountId, character: authenticatedCharacter }
     const playerId = authenticated.character.id
-    const existingRoom = this.findMemberRoom(playerId)
-    const existingMember = existingRoom?.members.get(playerId)
+    let existingRoom = this.findMemberRoom(playerId)
+    let existingMember = existingRoom?.members.get(playerId)
     if (existingMember?.disconnectedAt && this.now() - existingMember.disconnectedAt > this.reconnectGraceMs) {
-      peer.send({ type: 'ERROR', payload: { code: 'SESSION_EXPIRED', message: 'Час для відновлення сесії минув.' } })
-      return null
+      if (existingRoom?.phase === 'LOBBY') {
+        await this.removeExpiredLobbyMember(existingRoom.id, playerId)
+        existingRoom = undefined
+        existingMember = undefined
+      } else if (existingRoom && (existingRoom.phase === 'COMBAT' || existingRoom.phase === 'POST_ENCOUNTER')) {
+        peer.send({ type: 'ERROR', payload: { code: 'RIFT_RECONNECT_EXPIRED', message: 'Час для відновлення Rift-сесії минув. Дочекайтеся завершення поточного забігу.' } })
+        return null
+      } else if (existingRoom) {
+        this.finalizeRoom(existingRoom)
+        existingRoom = undefined
+        existingMember = undefined
+      }
     }
 
     const previousPeer = this.peers.get(playerId)
@@ -174,9 +186,8 @@ export class RoomManager {
     member.disconnectedAt = this.now()
     this.broadcastParty(room)
     if (room.phase === 'COMBAT') this.broadcastCombat(room, 'COMBAT_SNAPSHOT')
-    if (room.phase === 'LOBBY') {
-      setTimeout(() => void this.removeExpiredLobbyMember(room.id, playerId), this.reconnectGraceMs)
-    }
+    const timer = setTimeout(() => { void this.handleReconnectExpiry(room.id, playerId).catch((error) => log('error', 'rift_reconnect_expiry_failed', { roomId: room.id, playerId }, error)) }, this.reconnectGraceMs)
+    timer.unref?.()
   }
 
   async handle(playerId: string, message: Exclude<ClientMessage, { type: 'HELLO' }>): Promise<void> {
@@ -391,47 +402,72 @@ export class RoomManager {
     const room = this.findMemberRoom(playerId)
     if (!room || room.leaderId !== playerId) return Boolean(this.fail(playerId, 'LEADER_ONLY', 'Лише лідер може почати експедицію.'))
     if (room.phase !== 'LOBBY') return Boolean(this.fail(playerId, 'ALREADY_STARTED', 'Експедиція вже почалася.'))
-    if (room.members.size < this.minPartySize) return Boolean(this.fail(playerId, 'PARTY_TOO_SMALL', `Потрібно щонайменше ${this.minPartySize} гравці.`))
+    if (room.members.size < this.minPartySize) return Boolean(this.fail(playerId, 'PARTY_TOO_SMALL', 'Група повинна містити лідера.'))
+    const disconnected = [...room.members.values()].find((member) => !member.connected || !member.peer || !this.peers.has(member.character.id))
+    if (disconnected) return Boolean(this.fail(playerId, 'PARTY_MEMBER_DISCONNECTED', `"${disconnected.character.name}" відключився. Дочекайтеся повернення або видаліть його з групи.`))
     if ([...room.members.values()].some((member) => !member.ready)) return Boolean(this.fail(playerId, 'NOT_READY', 'Усі учасники мають підтвердити готовність.'))
     for (const [id, member] of room.members) {
       const progress = await this.playerStates.riftProgress(id, room.riftId)
       if (room.floorNumber > progress.highestUnlockedFloor) return Boolean(this.fail(playerId, 'PARTY_FLOOR_LOCKED', `${member.character.name} has not unlocked Floor ${room.floorNumber}.`))
     }
 
-    try {
-      for (const applicantId of room.applications.keys()) await this.economy.refundPartySlot(room.id, applicantId, `start-reject:${room.id}:${applicantId}`)
-      await this.economy.settlePartySlots(room.id, playerId, [...room.members.keys()], `start:${room.id}`)
-    } catch (error) { if (error instanceof EconomyError) { this.fail(playerId, error.code, error.message); return false } throw error }
     room.expeditionId = randomUUID()
     room.playSessionId = this.playSessions.get(playerId) ?? randomUUID()
-    room.expeditionStartedAt = this.now()
-    room.encounterStartedAt = this.now()
-    await this.telemetry.beginExpedition({ expeditionId: room.expeditionId, playSessionId: room.playSessionId, roomId: room.id, riftId: room.riftId, floor: room.floorNumber, playerIds: [...room.members.keys()] })
-    room.phase = 'COMBAT'
-    for (const id of room.members.keys()) { this.presence.set(id, 'RIFT'); this.broadcastPresence(id) }
-    for (const id of room.members.keys()) await this.sendCharacterState(id)
-    room.applications.clear()
-    room.encounterIndex = 0
-    room.enemy = this.createEnemy(room.floorNumber, 0, room.members.size)
-    room.round = 1
-    room.log = ['Експедиція входить до Першого Розлому.']
-    room.personalRewards.clear()
-    room.expeditionLoot = new Map([...room.members.keys()].map((id) => [id, { resources: {}, recipeIds: [] }]))
-    room.extracted = false
-    for (const [id, member] of room.members) {
-      this.economy.setAvailability(id, member.connected, true)
-      const lockedCharacter = await this.playerStates.character(id)
-      member.character = { ...lockedCharacter, currentHP: lockedCharacter.maxHP, alive: true, ready: false }
-      member.potionCooldown = 0
-      member.expeditionPotionQuantities = Object.fromEntries(await Promise.all(Object.values(POTION_IDS).map(async (itemId) => [itemId, await this.playerStates.countItem(id, itemId)])))
-      member.expeditionPotions = Object.values(member.expeditionPotionQuantities).reduce((sum, quantity) => sum + quantity, 0)
-    }
-    const composition = await this.compositionPayload(room)
-    await Promise.all([
-      this.telemetry.record({ type: 'PARTY_STARTED', eventKey: `party-started:${room.expeditionId}`, playSessionId: room.playSessionId, expeditionId: room.expeditionId, playerId, riftId: room.riftId, floor: room.floorNumber, payload: composition }),
-      this.telemetry.record({ type: 'RIFT_STARTED', eventKey: `rift-started:${room.expeditionId}`, playSessionId: room.playSessionId, expeditionId: room.expeditionId, playerId, riftId: room.riftId, floor: room.floorNumber, payload: composition }),
-      this.telemetry.record({ type: 'ENCOUNTER_STARTED', eventKey: `encounter-started:${room.expeditionId}:0`, playSessionId: room.playSessionId, expeditionId: room.expeditionId, riftId: room.riftId, floor: room.floorNumber, encounter: 0, payload: { ...composition, enemyId: room.enemy.id } }),
-    ])
+    try {
+      for (const applicantId of room.applications.keys()) await this.economy.refundPartySlot(room.id, applicantId, `start-reject:${room.id}:${applicantId}`)
+      const disconnectedDuringStart = [...room.members.values()].find((member) => !member.connected || !member.peer || !this.peers.has(member.character.id))
+      if (disconnectedDuringStart) return Boolean(this.fail(playerId, 'PARTY_MEMBER_DISCONNECTED', `"${disconnectedDuringStart.character.name}" відключився. Дочекайтеся повернення або видаліть його з групи.`))
+
+      // Complete every fallible database read before the atomic paid START.
+      // Once startExpedition commits payment + the durable marker, only
+      // deterministic in-memory state changes and isolated telemetry remain.
+      const prepared = new Map(await Promise.all([...room.members.keys()].map(async (id) => {
+        const character = await this.playerStates.character(id)
+        const potionQuantities = Object.fromEntries(await Promise.all(Object.values(POTION_IDS).map(async (itemId) => [itemId, await this.playerStates.countItem(id, itemId)]))) as Record<string, number>
+        const state = await this.playerStates.snapshot(id)
+        return [id, { character, potionQuantities, state }] as const
+      })))
+      const enemy = this.createEnemy(room.floorNumber, 0, room.members.size)
+      const composition: Record<string, number> = {}
+      for (const member of room.members.values()) composition[member.character.classId] = (composition[member.character.classId] ?? 0) + 1
+      const compositionPayload = {
+        partySize: room.members.size,
+        composition,
+        playerLevels: [...room.members.values()].map((member) => member.character.level),
+        gearTiers: [...prepared.values()].map(({ state }) => Object.values(state.equipment).filter(Boolean).map((entry) => ITEM_CATALOG[entry!.itemId]?.tier ?? 0)),
+      }
+      const started = await this.economy.startExpedition({ expeditionId: room.expeditionId, playSessionId: room.playSessionId, roomId: room.id, riftId: room.riftId, floor: room.floorNumber, playerIds: [...room.members.keys()] }, playerId, [...room.members.keys()])
+      room.expeditionId = started.marker.expeditionId
+      room.playSessionId = started.marker.playSessionId
+
+      room.expeditionStartedAt = this.now()
+      room.encounterStartedAt = this.now()
+      room.phase = 'COMBAT'
+      room.applications.clear()
+      room.encounterIndex = 0
+      room.enemy = enemy
+      room.round = 1
+      room.log = ['Експедиція входить до Першого Розлому.']
+      room.personalRewards.clear()
+      room.expeditionLoot = new Map([...room.members.keys()].map((id) => [id, { resources: {}, recipeIds: [] }]))
+      room.extracted = false
+      for (const [id, member] of room.members) {
+        const memberState = prepared.get(id)!
+        this.economy.setAvailability(id, member.connected, true)
+        member.character = { ...memberState.character, currentHP: memberState.character.maxHP, alive: true, ready: false }
+        member.potionCooldown = 0
+        member.expeditionPotionQuantities = memberState.potionQuantities
+        member.expeditionPotions = Object.values(memberState.potionQuantities).reduce((sum, quantity) => sum + quantity, 0)
+        this.presence.set(id, 'RIFT')
+        this.broadcastPresence(id)
+        this.send(id, { type: 'CHARACTER_STATE', payload: memberState.state })
+      }
+      await Promise.all([
+        this.telemetry.record({ type: 'PARTY_STARTED', eventKey: `party-started:${room.expeditionId}`, playSessionId: room.playSessionId, expeditionId: room.expeditionId, playerId, riftId: room.riftId, floor: room.floorNumber, payload: compositionPayload }),
+        this.telemetry.record({ type: 'RIFT_STARTED', eventKey: `rift-started:${room.expeditionId}`, playSessionId: room.playSessionId, expeditionId: room.expeditionId, playerId, riftId: room.riftId, floor: room.floorNumber, payload: compositionPayload }),
+        this.telemetry.record({ type: 'ENCOUNTER_STARTED', eventKey: `encounter-started:${room.expeditionId}:0`, playSessionId: room.playSessionId, expeditionId: room.expeditionId, riftId: room.riftId, floor: room.floorNumber, encounter: 0, payload: { ...compositionPayload, enemyId: room.enemy.id } }),
+      ])
+    } catch (error) { if (error instanceof EconomyError) { this.fail(playerId, error.code, error.message); return false } throw error }
     this.startRound(room, 'EXPEDITION_STARTED')
     this.broadcastPartyLists()
     return true
@@ -526,8 +562,9 @@ export class RoomManager {
   private async resolveRoomRound(room: RoomState): Promise<void> {
     if (room.resolving || room.phase !== 'COMBAT' || !room.enemy) return
     room.resolving = true
-    if (room.roundTimer) clearTimeout(room.roundTimer)
-    room.roundTimer = null
+    try {
+      if (room.roundTimer) clearTimeout(room.roundTimer)
+      room.roundTimer = null
     const resolvedEarly = this.now() < (room.roundEndsAt ?? this.now())
     const submittedIds = new Set(room.actions.keys())
     const before = new Map([...room.members].map(([id, member]) => [id, { hp: member.character.currentHP, alive: member.character.alive }]))
@@ -596,23 +633,35 @@ export class RoomManager {
     this.broadcastCombat(room, 'ROUND_RESOLVED')
 
     if (![...room.members.values()].some((member) => member.character.alive)) {
-      room.phase = 'FAILED'; room.roundEndsAt = null; room.resolving = false
+      room.phase = 'FAILED'; room.roundEndsAt = null
       for (const id of room.members.keys()) { this.presence.set(id, 'CITY'); this.broadcastPresence(id) }
       for (const id of room.members.keys()) this.economy.setAvailability(id, room.members.get(id)!.connected, false)
       await this.extractLoot(room, false)
       await this.telemetry.record({ type: 'RIFT_FAILED', eventKey: `rift-failed:${room.expeditionId}`, playSessionId: room.playSessionId ?? undefined, expeditionId: room.expeditionId ?? undefined, riftId: room.riftId, floor: room.floorNumber, payload: this.outcomePayload(room) })
       if (room.expeditionId) await this.telemetry.finishExpedition(room.expeditionId, 'FAILED')
       this.broadcastCombat(room, 'EXPEDITION_RESULT')
+      this.finalizeRoom(room)
       return
     }
     if (room.enemy.currentHP <= 0) {
       await this.completeEncounter(room)
-      room.resolving = false
       return
     }
     room.round += 1
-    room.resolving = false
     this.startRound(room, 'ROUND_STARTED')
+    } catch (error) {
+      log('error', 'rift_round_resolution_failed', { roomId: room.id, expeditionId: room.expeditionId, round: room.round, phase: room.phase }, error)
+      for (const id of room.members.keys()) this.fail(id, 'RIFT_RESOLUTION_FAILED', 'Раунд не вдалося завершити. Сервер безпечно зупинив експедицію.')
+      room.phase = 'FAILED'
+      room.roundEndsAt = null
+      if (room.roundTimer) clearTimeout(room.roundTimer)
+      room.roundTimer = null
+      if (room.expeditionId) await this.telemetry.finishExpedition(room.expeditionId, 'FAILED')
+      this.broadcastCombat(room, 'EXPEDITION_RESULT')
+      this.finalizeRoom(room)
+    } finally {
+      room.resolving = false
+    }
   }
 
   private async completeEncounter(room: RoomState): Promise<void> {
@@ -678,6 +727,7 @@ export class RoomManager {
       await this.telemetry.record({ type: completed ? 'RIFT_COMPLETED' : 'RIFT_EXIT', eventKey: `rift-result:${room.expeditionId}`, playSessionId: room.playSessionId ?? undefined, expeditionId: room.expeditionId ?? undefined, riftId: room.riftId, floor: room.floorNumber, payload: this.outcomePayload(room) })
       if (room.expeditionId) await this.telemetry.finishExpedition(room.expeditionId, completed ? 'COMPLETED' : 'EXITED')
       this.broadcastCombat(room, 'EXPEDITION_RESULT')
+      this.finalizeRoom(room)
       return
     }
     room.encounterIndex += 1
@@ -763,7 +813,20 @@ export class RoomManager {
 
   private broadcastPresence(playerId: string): void {
     const payload = { playerId, status: this.presence.get(playerId) }
-    for (const id of this.peers.keys()) this.send(id, { type: 'PRESENCE_UPDATE', payload })
+    void (this.playerStates.repository as SocialRepository).socialRead((state) => {
+      const recipients = new Set<string>([playerId])
+      const room = this.findMemberRoom(playerId)
+      for (const id of room?.members.keys() ?? []) recipients.add(id)
+      for (const friendship of state.friendships.values()) {
+        if (friendship.playerLowId === playerId) recipients.add(friendship.playerHighId)
+        if (friendship.playerHighId === playerId) recipients.add(friendship.playerLowId)
+      }
+      const guildId = state.guildMembers.get(playerId)?.guildId
+      if (guildId) for (const member of state.guildMembers.values()) if (member.guildId === guildId) recipients.add(member.playerId)
+      return [...recipients].filter((id) => !state.blocks.has(`${id}:${playerId}`) && !state.blocks.has(`${playerId}:${id}`))
+    }).then((recipients) => {
+      for (const id of recipients) if (this.peers.has(id)) this.send(id, { type: 'PRESENCE_UPDATE', payload })
+    }).catch((error) => log('error', 'presence_fanout_failed', { playerId }, error))
   }
 
   private async broadcastSocialState(): Promise<void> {
@@ -975,5 +1038,33 @@ export class RoomManager {
       this.broadcastParty(room)
     }
     this.broadcastPartyLists()
+  }
+
+  private async handleReconnectExpiry(roomId: string, playerId: string): Promise<void> {
+    const room = this.rooms.get(roomId)
+    const member = room?.members.get(playerId)
+    if (!room || !member || member.connected || !member.disconnectedAt || this.now() - member.disconnectedAt < this.reconnectGraceMs) return
+    if (room.phase === 'LOBBY') return this.removeExpiredLobbyMember(roomId, playerId)
+    if (room.phase === 'POST_ENCOUNTER' && ![...room.members.values()].some((candidate) => candidate.connected && candidate.character.alive)) {
+      room.phase = 'FAILED'
+      await this.extractLoot(room, false)
+      if (room.expeditionId) await this.telemetry.finishExpedition(room.expeditionId, 'FAILED')
+      this.broadcastCombat(room, 'EXPEDITION_RESULT')
+      this.finalizeRoom(room)
+    }
+  }
+
+  private finalizeRoom(room: RoomState): void {
+    if (room.phase !== 'FINISHED' && room.phase !== 'FAILED') return
+    if (room.roundTimer) clearTimeout(room.roundTimer)
+    room.roundTimer = null
+    for (const id of room.members.keys()) {
+      this.economy.setAvailability(id, this.peers.has(id), false)
+      this.presence.set(id, this.peers.has(id) ? 'CITY' : 'OFFLINE')
+      this.broadcastPresence(id)
+    }
+    room.members.clear()
+    room.applications.clear()
+    this.rooms.delete(room.id)
   }
 }

@@ -3,6 +3,8 @@ import { CLASSES } from '../../src/data/config/balance'
 import type { SocialPlayer } from '../../shared/social-types'
 import type { SocialState, StoredPlayerProfile } from '../repositories/types'
 import type { PresenceService } from './PresenceService'
+import { findPlayerByName } from '../players/playerName'
+import { EconomyError } from '../players/PlayerStateService'
 
 export function memberGuildId(state: SocialState, playerId: string): string | null { return state.guildMembers.get(playerId)?.guildId ?? null }
 export function canonicalPair(a: string, b: string): [string, string] { return a < b ? [a, b] : [b, a] }
@@ -28,4 +30,10 @@ export function publicPlayer(state: SocialState, playerId: string, presence: Pre
   const stats = profileStats(profile)
   const status = presence.get(playerId)
   return { playerId, name: profile.name, classId: profile.classId, level: profile.level, ...stats, guildId: memberGuildId(state, playerId), status, online: status !== 'OFFLINE' }
+}
+
+export function exactPlayer(state: SocialState, name: string): StoredPlayerProfile {
+  const player = findPlayerByName(state.players.values(), name)
+  if (!player) throw new EconomyError('PLAYER_NOT_FOUND', 'Exact player name was not found.')
+  return player
 }

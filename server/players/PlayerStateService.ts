@@ -10,7 +10,8 @@ import { PROFESSION_RESOURCE_IDS } from '../../shared/game-data/resources'
 import { isProfessionClass } from '../../shared/game-data/economy'
 import type { EquipmentSlot, EquipmentState, InventoryEntry, PersonalLoot, PlayerRiftProgress } from '../../shared/game-data/types'
 import { InMemoryPlayerRepository } from '../repositories/InMemoryPlayerRepository'
-import type { AccountSetup, CoinLedgerRecord, PlayerRepository, RepositoryOperation, StoredPlayerProfile } from '../repositories/types'
+import type { AccountSetup, AdminAuditWrite, CoinLedgerRecord, PlayerRepository, RepositoryOperation, StoredPlayerProfile } from '../repositories/types'
+import { normalizePlayerName } from './playerName'
 
 export class EconomyError extends Error {
   constructor(readonly code: string, message: string) { super(message) }
@@ -42,6 +43,7 @@ export class PlayerStateService {
       return { accountId: profile.accountId, character: this.toCharacter(profile) }
     } catch (error) {
       if (error instanceof Error && error.message === 'ACCOUNT_SETUP_REQUIRED') throw new EconomyError('ACCOUNT_SETUP_REQUIRED', 'Створіть персонажа для цієї development session.')
+      if (error instanceof Error && (error.message === 'PLAYER_NAME_TAKEN' || error.message.includes('Unique constraint'))) throw new EconomyError('PLAYER_NAME_TAKEN', 'Це ім\'я вже зайняте.')
       throw error
     }
   }
@@ -54,6 +56,7 @@ export class PlayerStateService {
       return { accountId: profile.accountId, character: this.toCharacter(profile) }
     } catch (error) {
       if (error instanceof Error && error.message === 'ACCOUNT_SETUP_REQUIRED') throw new EconomyError('ACCOUNT_SETUP_REQUIRED', 'Створіть персонажа для цього облікового запису.')
+      if (error instanceof Error && (error.message === 'PLAYER_NAME_TAKEN' || error.message.includes('Unique constraint'))) throw new EconomyError('PLAYER_NAME_TAKEN', 'Це ім\'я вже зайняте.')
       throw error
     }
   }
@@ -234,13 +237,26 @@ export class PlayerStateService {
   }
 
   async ledger(playerId: string): Promise<CoinLedgerRecord[]> { return this.repository.ledger(playerId) }
+
+  async adminMutateAtomic(playerId: string, action: 'RESET_RIFT_PROGRESS' | 'GRANT_COINS' | 'GRANT_ITEM' | 'SET_LEVEL', value: { amount?: number; itemId?: string; quantity?: number; level?: number }, operationId: string, audit: AdminAuditWrite): Promise<CharacterState> {
+    if (!this.repository.adminTransact) throw new Error('ATOMIC_ADMIN_UNAVAILABLE')
+    const operation: RepositoryOperation = { key: `admin:${action}:${playerId}:${operationId}`, type: 'ADMIN', referenceId: operationId }
+    if (action === 'GRANT_COINS') operation.ledger = { amount: value.amount ?? 0, reason: 'ADMIN', referenceId: operationId }
+    const result = await this.repository.adminTransact(playerId, operation, audit, (profile) => {
+      if (action === 'RESET_RIFT_PROGRESS') profile.riftProgress = { first_rift: { riftId: 'first_rift', highestUnlockedFloor: 1, highestCompletedFloor: 0, completionCount: {} } }
+      else if (action === 'GRANT_COINS') { if (!Number.isSafeInteger(value.amount) || (value.amount ?? 0) <= 0) throw new EconomyError('INVALID_ADMIN_VALUE', 'Invalid coin amount.'); profile.coins += value.amount! }
+      else if (action === 'GRANT_ITEM') { if (!value.itemId || !ITEM_CATALOG[value.itemId] || !Number.isSafeInteger(value.quantity) || (value.quantity ?? 0) <= 0) throw new EconomyError('INVALID_ADMIN_VALUE', 'Invalid item grant.'); this.addItem(profile.inventory, value.itemId, value.quantity!) }
+      else { if (!Number.isInteger(value.level) || (value.level ?? 0) < 1 || (value.level ?? 0) > 100) throw new EconomyError('INVALID_ADMIN_VALUE', 'Invalid level.'); profile.level = value.level!; profile.currentXP = 0 }
+    })
+    return this.toSnapshot(result.profile)
+  }
   async disconnect(): Promise<void> { await this.repository.disconnect() }
   hashToken(token: string): string { return createHmac('sha256', this.authSecret).update(token).digest('hex') }
 
   private starterProfile(accountId: string, playerId: string, setup: AccountSetup): StoredPlayerProfile {
     const classId = setup.classId in CLASSES ? setup.classId : 'warrior'
     const profile: StoredPlayerProfile = {
-      accountId, playerId, name: setup.name.trim().slice(0, 18) || 'Мандрівник', classId,
+      accountId, playerId, name: setup.name.trim().normalize('NFKC').slice(0, 18) || 'Мандрівник', nameKey: normalizePlayerName(setup.name || 'Мандрівник').slice(0, 18), classId,
       level: setup.legacyPlayerId ? Math.max(1, Math.min(100, Math.floor(setup.level || 1))) : 1, currentXP: 0, coins: 0, reservedCoins: 0,
       inventory: [], storage: [], equipment: emptyEquipment(),
       learnedRecipes: new Set(isProfessionClass(classId) ? STARTER_LEARNED_RECIPES[classId] ?? [] : []),
