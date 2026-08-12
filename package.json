@@ -26,6 +26,7 @@
     "simulate:balance": "tsx server/scripts/simulateBalance.ts",
     "simulate:balance:smoke": "tsx server/scripts/simulateBalance.ts --smoke",
     "simulate:economy": "tsx server/scripts/simulateEconomy.ts",
+    "simulate:professions": "tsx server/scripts/simulateProfessions.ts",
     "report:playtest": "tsx server/scripts/reportPlaytest.ts",
     "smoke:staging": "tsx server/scripts/stagingSmoke.ts",
     "preview": "vite preview"

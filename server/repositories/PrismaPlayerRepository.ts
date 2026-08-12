@@ -11,7 +11,7 @@ import { cloneEconomyState, cloneProfile, cloneSocialState } from './types'
 
 const SLOTS: GameEquipmentSlot[] = ['weapon', 'head', 'chest', 'hands', 'legs', 'feet', 'ring1', 'ring2', 'amulet']
 
-type PlayerRow = Prisma.PlayerGetPayload<{ include: { items: true; learnedRecipes: true } }>
+type PlayerRow = Prisma.PlayerGetPayload<{ include: { items: true; learnedRecipes: true; professionProgress: true; professionJobs: true } }>
 
 export class PrismaPlayerRepository implements SocialRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -19,7 +19,7 @@ export class PrismaPlayerRepository implements SocialRepository {
   async initialize(devTokenHash: string, setup: AccountSetup | null, starter: (accountId: string, playerId: string, setup: AccountSetup) => StoredPlayerProfile): Promise<StoredPlayerProfile> {
     return this.prisma.$transaction(async (tx) => {
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${devTokenHash}))`
-      const existing = await tx.account.findUnique({ where: { devTokenHash }, include: { player: { include: { items: true, learnedRecipes: true } } } })
+      const existing = await tx.account.findUnique({ where: { devTokenHash }, include: { player: { include: { items: true, learnedRecipes: true, professionProgress: true, professionJobs: true } } } })
       if (existing?.player) return this.fromRow(existing.player)
       if (!setup) throw new Error('ACCOUNT_SETUP_REQUIRED')
       const account = existing ?? await tx.account.create({ data: { devTokenHash } })
@@ -33,7 +33,7 @@ export class PrismaPlayerRepository implements SocialRepository {
           items: { createMany: { data: this.itemRows(profile) } },
           learnedRecipes: { createMany: { data: [...profile.learnedRecipes].map((recipeId) => ({ recipeId })) } },
         },
-        include: { items: true, learnedRecipes: true },
+        include: { items: true, learnedRecipes: true, professionProgress: true, professionJobs: true },
       })
       return this.fromRow(row)
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable })
@@ -42,7 +42,7 @@ export class PrismaPlayerRepository implements SocialRepository {
   async initializeAccount(accountId: string, setup: AccountSetup | null, starter: (accountId: string, playerId: string, setup: AccountSetup) => StoredPlayerProfile): Promise<StoredPlayerProfile> {
     return this.prisma.$transaction(async (tx) => {
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${accountId}))`
-      const account = await tx.account.findUnique({ where: { id: accountId }, include: { player: { include: { items: true, learnedRecipes: true } } } })
+      const account = await tx.account.findUnique({ where: { id: accountId }, include: { player: { include: { items: true, learnedRecipes: true, professionProgress: true, professionJobs: true } } } })
       if (!account) throw new Error('ACCOUNT_NOT_FOUND')
       if (account.player) return this.fromRow(account.player)
       if (!setup) throw new Error('ACCOUNT_SETUP_REQUIRED')
@@ -56,14 +56,14 @@ export class PrismaPlayerRepository implements SocialRepository {
           items: { createMany: { data: this.itemRows(profile) } },
           learnedRecipes: { createMany: { data: [...profile.learnedRecipes].map((recipeId) => ({ recipeId })) } },
         },
-        include: { items: true, learnedRecipes: true },
+        include: { items: true, learnedRecipes: true, professionProgress: true, professionJobs: true },
       })
       return this.fromRow(row)
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable })
   }
 
   async read(playerId: string): Promise<StoredPlayerProfile | null> {
-    const row = await this.prisma.player.findUnique({ where: { id: playerId }, include: { items: true, learnedRecipes: true } })
+    const row = await this.prisma.player.findUnique({ where: { id: playerId }, include: { items: true, learnedRecipes: true, professionProgress: true, professionJobs: true } })
     return row ? this.fromRow(row) : null
   }
 
@@ -73,7 +73,7 @@ export class PrismaPlayerRepository implements SocialRepository {
         return await this.prisma.$transaction(async (tx) => {
           await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`player:${playerId}`}))`
           const duplicate = await tx.economyOperation.findUnique({ where: { operationKey: operation.key } })
-          const row = await tx.player.findUnique({ where: { id: playerId }, include: { items: true, learnedRecipes: true } })
+          const row = await tx.player.findUnique({ where: { id: playerId }, include: { items: true, learnedRecipes: true, professionProgress: true, professionJobs: true } })
           if (!row) throw new Error('PLAYER_NOT_FOUND')
           if (duplicate) return { profile: this.fromRow(row), applied: false }
 
@@ -85,6 +85,7 @@ export class PrismaPlayerRepository implements SocialRepository {
           if (itemRows.length) await tx.itemEntry.createMany({ data: itemRows.map((item) => ({ ...item, playerId })) })
           await tx.learnedRecipe.deleteMany({ where: { playerId } })
           if (profile.learnedRecipes.size) await tx.learnedRecipe.createMany({ data: [...profile.learnedRecipes].map((recipeId) => ({ playerId, recipeId })) })
+          await this.persistProfession(tx, profile)
           if (operation.ledger) await tx.coinLedgerEntry.create({ data: {
             playerId, amount: operation.ledger.amount, resultingBalance: profile.coins,
             reason: operation.ledger.reason as CoinLedgerReason, referenceId: operation.ledger.referenceId,
@@ -104,7 +105,7 @@ export class PrismaPlayerRepository implements SocialRepository {
     return this.prisma.$transaction(async (tx) => {
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`player:${playerId}`}))`
       const duplicate = await tx.economyOperation.findUnique({ where: { operationKey: operation.key } })
-      const row = await tx.player.findUnique({ where: { id: playerId }, include: { items: true, learnedRecipes: true } })
+      const row = await tx.player.findUnique({ where: { id: playerId }, include: { items: true, learnedRecipes: true, professionProgress: true, professionJobs: true } })
       if (!row) throw new Error('PLAYER_NOT_FOUND')
       if (duplicate) return { profile: this.fromRow(row), applied: false }
       const profile = this.fromRow(row)
@@ -115,6 +116,7 @@ export class PrismaPlayerRepository implements SocialRepository {
       if (itemRows.length) await tx.itemEntry.createMany({ data: itemRows.map((item) => ({ ...item, playerId })) })
       await tx.learnedRecipe.deleteMany({ where: { playerId } })
       if (profile.learnedRecipes.size) await tx.learnedRecipe.createMany({ data: [...profile.learnedRecipes].map((recipeId) => ({ playerId, recipeId })) })
+      await this.persistProfession(tx, profile)
       if (operation.ledger) await tx.coinLedgerEntry.create({ data: { playerId, amount: operation.ledger.amount, resultingBalance: profile.coins, reason: operation.ledger.reason as CoinLedgerReason, referenceId: operation.ledger.referenceId } })
       await tx.adminAuditLog.create({ data: { ...audit, details: audit.details as Prisma.InputJsonValue } })
       await tx.economyOperation.create({ data: { playerId, operationKey: operation.key, type: operation.type, referenceId: operation.referenceId } })
@@ -138,7 +140,7 @@ export class PrismaPlayerRepository implements SocialRepository {
     for (let attempt = 0; attempt < 3; attempt += 1) {
       try {
         return await this.prisma.$transaction(async (tx) => {
-          await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`economy:${playerId}`}))`
+          await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`player:${playerId}`}))`
           const duplicate = await tx.economyOperation.findUnique({ where: { operationKey } })
           if (duplicate) return { value: undefined as T, applied: false, referenceId: duplicate.referenceId ?? undefined }
           const state = await this.loadEconomy(tx)
@@ -162,7 +164,7 @@ export class PrismaPlayerRepository implements SocialRepository {
     for (let attempt = 0; attempt < 3; attempt += 1) {
       try {
         return await this.prisma.$transaction(async (tx) => {
-          await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`economy:${playerId}`}))`
+          await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`player:${playerId}`}))`
           await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`party:${marker.roomId}`}))`
           const duplicate = await tx.economyOperation.findUnique({ where: { operationKey } })
           if (duplicate) {
@@ -194,7 +196,7 @@ export class PrismaPlayerRepository implements SocialRepository {
     for (let attempt = 0; attempt < 3; attempt += 1) {
       try {
         return await this.prisma.$transaction(async (tx) => {
-          await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`social:${playerId}`}))`
+          await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`player:${playerId}`}))`
           const duplicate = await tx.economyOperation.findUnique({ where: { operationKey } })
           if (duplicate) return { value: undefined as T, applied: false }
           const state = await this.loadSocial(tx)
@@ -222,7 +224,7 @@ export class PrismaPlayerRepository implements SocialRepository {
 
   private async loadEconomy(tx: Prisma.TransactionClient): Promise<EconomyState> {
     const [players, orders, fills, trades, slots, ledger] = await Promise.all([
-      tx.player.findMany({ include: { items: true, learnedRecipes: true } }),
+      tx.player.findMany({ include: { items: true, learnedRecipes: true, professionProgress: true, professionJobs: true } }),
       tx.marketOrder.findMany(), tx.marketFill.findMany(),
       tx.directTrade.findMany({ include: { items: true, coins: true } }),
       tx.partySlotReservation.findMany(), tx.coinLedgerEntry.findMany(),
@@ -310,7 +312,7 @@ export class PrismaPlayerRepository implements SocialRepository {
 
   private async loadSocial(tx: Prisma.TransactionClient): Promise<SocialState> {
     const [players, guilds, members, applications, invites, permissions, storage, logs, requests, friendships, blocks, conversations, messages, reads, ledger] = await Promise.all([
-      tx.player.findMany({ include: { items: true, learnedRecipes: true } }), tx.guild.findMany(), tx.guildMember.findMany(),
+      tx.player.findMany({ include: { items: true, learnedRecipes: true, professionProgress: true, professionJobs: true } }), tx.guild.findMany(), tx.guildMember.findMany(),
       tx.guildApplication.findMany(), tx.guildInvite.findMany(), tx.guildRankPermission.findMany(), tx.guildStorageItem.findMany(),
       tx.guildStorageLog.findMany(), tx.friendRequest.findMany(), tx.friendship.findMany(), tx.playerBlock.findMany(),
       tx.privateConversation.findMany(), tx.socialChatMessage.findMany(), tx.chatReadState.findMany(), tx.coinLedgerEntry.findMany(),
@@ -469,6 +471,23 @@ export class PrismaPlayerRepository implements SocialRepository {
       learnedRecipes: new Set(row.learnedRecipes.map((recipe) => recipe.recipeId)), reservedItems,
       riftProgress: row.riftProgress && typeof row.riftProgress === 'object' && !Array.isArray(row.riftProgress)
         ? row.riftProgress as unknown as StoredPlayerProfile['riftProgress'] : {},
+      professionProgress: row.professionProgress ? { profession: row.professionProgress.profession, level: row.professionProgress.level, xp: row.professionProgress.xp } : undefined,
+      professionJobs: row.professionJobs.map((job) => ({
+        id: job.id, profession: job.profession, activityId: job.activityId, resourceId: job.resourceId, tier: job.tier as 1 | 2 | 3 | 4 | 5 | 6,
+        durationMinutes: job.durationMinutes, startedAt: job.startedAt.getTime(), completesAt: job.completesAt.getTime(), status: job.status,
+        plannedQuantity: job.plannedQuantity, plannedXP: job.plannedXP, cancelledAt: job.cancelledAt?.getTime(), collectedAt: job.collectedAt?.getTime(),
+      })),
+    }
+  }
+
+  private async persistProfession(tx: Prisma.TransactionClient, profile: StoredPlayerProfile): Promise<void> {
+    if (profile.professionProgress) {
+      const progress = profile.professionProgress
+      await tx.professionProgress.upsert({ where: { playerId: profile.playerId }, create: { playerId: profile.playerId, profession: progress.profession, level: progress.level, xp: progress.xp }, update: { profession: progress.profession, level: progress.level, xp: progress.xp } })
+    }
+    for (const job of profile.professionJobs ?? []) {
+      const data = { playerId: profile.playerId, activePlayerKey: job.status === 'ACTIVE' ? profile.playerId : null, profession: job.profession, activityId: job.activityId, resourceId: job.resourceId, tier: job.tier, durationMinutes: job.durationMinutes, startedAt: new Date(job.startedAt), completesAt: new Date(job.completesAt), status: job.status, plannedQuantity: job.plannedQuantity, plannedXP: job.plannedXP, cancelledAt: job.cancelledAt ? new Date(job.cancelledAt) : null, collectedAt: job.collectedAt ? new Date(job.collectedAt) : null }
+      await tx.professionJob.upsert({ where: { id: job.id }, create: { id: job.id, ...data }, update: data })
     }
   }
 

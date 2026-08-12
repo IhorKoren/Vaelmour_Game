@@ -1,5 +1,6 @@
 import type { CharacterClass } from '../../src/types/game'
 import type { EquipmentState, InventoryEntry, PlayerRiftProgress } from '../../shared/game-data/types'
+import type { ProfessionJobRecord, ProfessionProgressRecord } from '../../shared/professions'
 import type { DirectTrade, MarketFill, MarketOrder, PartySlotReservation, ReservedItemEntry } from '../../shared/economy-types'
 import type {
   ChatReadRecord, FriendRequestRecord, FriendshipRecord, GuildApplicationRecord, GuildInviteRecord, GuildMemberRecord,
@@ -23,6 +24,8 @@ export interface StoredPlayerProfile {
   learnedRecipes: Set<string>
   reservedItems: ReservedItemEntry[]
   riftProgress?: Record<string, PlayerRiftProgress>
+  professionProgress?: ProfessionProgressRecord
+  professionJobs?: ProfessionJobRecord[]
 }
 
 export interface AccountSetup {
@@ -140,6 +143,8 @@ export function cloneProfile(profile: StoredPlayerProfile): StoredPlayerProfile 
     learnedRecipes: new Set(profile.learnedRecipes),
     reservedItems: profile.reservedItems.map((entry) => ({ ...entry })),
     riftProgress: Object.fromEntries(Object.entries(profile.riftProgress ?? {}).map(([id, progress]) => [id, { ...progress, completionCount: { ...progress.completionCount } }])),
+    professionProgress: profile.professionProgress ? { ...profile.professionProgress } : undefined,
+    professionJobs: profile.professionJobs?.map((job) => ({ ...job })),
   }
 }
 

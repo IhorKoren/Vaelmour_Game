@@ -4,6 +4,8 @@ const TYPES = new Set<ClientMessage['type']>([
   'HELLO','LIST_PARTIES','CREATE_PARTY','APPLY_TO_PARTY','CANCEL_APPLICATION','ACCEPT_APPLICATION','REJECT_APPLICATION','LEAVE_PARTY','SET_READY','START_EXPEDITION','SELECT_RIFT_FLOOR','SUBMIT_ACTION','SET_AUTO_BATTLE','POST_ENCOUNTER_VOTE','PARTY_CHAT_MESSAGE','GET_CHARACTER_STATE','EQUIP_ITEM','UNEQUIP_ITEM','MOVE_TO_STORAGE','MOVE_FROM_STORAGE','LEARN_RECIPE','CRAFT_ITEM','GET_MARKET','GET_MY_ORDERS','CREATE_SELL_ORDER','CREATE_BUY_ORDER','CANCEL_MARKET_ORDER','BUY_NOW','SELL_NOW','REQUEST_TRADE','ACCEPT_TRADE','DECLINE_TRADE','UPDATE_TRADE_OFFER','CONFIRM_TRADE','CANCEL_TRADE','GET_GUILD_STATE','SEARCH_GUILDS','CREATE_GUILD','APPLY_TO_GUILD','CANCEL_GUILD_APPLICATION','ACCEPT_GUILD_APPLICATION','REJECT_GUILD_APPLICATION','INVITE_TO_GUILD','ACCEPT_GUILD_INVITE','DECLINE_GUILD_INVITE','LEAVE_GUILD','KICK_GUILD_MEMBER','SET_GUILD_RANK','TRANSFER_GUILD_LEADERSHIP','UPDATE_GUILD','UPDATE_GUILD_PERMISSIONS','DISBAND_GUILD','GET_GUILD_STORAGE','DEPOSIT_GUILD_STORAGE','WITHDRAW_GUILD_STORAGE','GET_GUILD_STORAGE_HISTORY','SEARCH_PLAYER','GET_FRIENDS_STATE','SEND_FRIEND_REQUEST','ACCEPT_FRIEND_REQUEST','DECLINE_FRIEND_REQUEST','REMOVE_FRIEND','BLOCK_PLAYER','UNBLOCK_PLAYER','SEND_CHAT_MESSAGE','GET_CHAT_HISTORY','GET_PRIVATE_CONVERSATIONS','INVITE_TO_PARTY',
 ])
 const NO_PAYLOAD = new Set(['LIST_PARTIES','CREATE_PARTY','LEAVE_PARTY','START_EXPEDITION','GET_CHARACTER_STATE','GET_MY_ORDERS','GET_GUILD_STATE','GET_GUILD_STORAGE','GET_FRIENDS_STATE','GET_PRIVATE_CONVERSATIONS'])
+TYPES.add('GET_PROFESSION_STATE').add('START_PROFESSION_JOB').add('CANCEL_PROFESSION_JOB').add('COLLECT_PROFESSION_JOB')
+NO_PAYLOAD.add('GET_PROFESSION_STATE')
 const STRING_FIELDS: Record<string, string[]> = {
   APPLY_TO_PARTY:['partyId','operationId'], CANCEL_APPLICATION:['partyId'], ACCEPT_APPLICATION:['applicantId'], REJECT_APPLICATION:['applicantId'],
   EQUIP_ITEM:['entryId','operationId'], UNEQUIP_ITEM:['slot','operationId'], MOVE_TO_STORAGE:['entryId','operationId'], MOVE_FROM_STORAGE:['entryId','operationId'], LEARN_RECIPE:['entryId','operationId'], CRAFT_ITEM:['recipeId','operationId'],
@@ -14,6 +16,10 @@ const STRING_FIELDS: Record<string, string[]> = {
   SELECT_RIFT_FLOOR:['riftId'],
 }
 const POSITIVE_INT_FIELDS: Record<string, string[]> = { CREATE_SELL_ORDER:['quantity','pricePerUnit'], CREATE_BUY_ORDER:['quantity','pricePerUnit'], BUY_NOW:['quantity'], SELL_NOW:['quantity'], SELECT_RIFT_FLOOR:['floorNumber'], SUBMIT_ACTION:['round'] }
+STRING_FIELDS.START_PROFESSION_JOB = ['activityId','operationId']
+STRING_FIELDS.CANCEL_PROFESSION_JOB = ['operationId']
+STRING_FIELDS.COLLECT_PROFESSION_JOB = ['operationId']
+POSITIVE_INT_FIELDS.START_PROFESSION_JOB = ['durationMinutes']
 
 function object(value: unknown): value is Record<string, unknown> { return Boolean(value) && typeof value === 'object' && !Array.isArray(value) }
 function validString(value: unknown, max = 100): value is string { return typeof value === 'string' && value.length > 0 && value.length <= max }
@@ -33,6 +39,7 @@ export function validateClientMessage(value: unknown): ClientMessage | null {
   if (payload.pricePerUnit !== undefined && (!Number.isSafeInteger(payload.pricePerUnit) || Number(payload.pricePerUnit) <= 0 || Number(payload.pricePerUnit) > 1_000_000_000)) return null
   if (payload.slotOfferCoins !== undefined && (!Number.isSafeInteger(payload.slotOfferCoins) || Number(payload.slotOfferCoins) < 0 || Number(payload.slotOfferCoins) > 1_000_000_000)) return null
   if (payload.floorNumber !== undefined && (!Number.isSafeInteger(payload.floorNumber) || Number(payload.floorNumber) < 1 || Number(payload.floorNumber) > 3)) return null
+  if (payload.durationMinutes !== undefined && ![10, 60, 240, 480].includes(Number(payload.durationMinutes))) return null
   if (payload.limit !== undefined && (!Number.isSafeInteger(payload.limit) || Number(payload.limit) < 1 || Number(payload.limit) > 100)) return null
   if (type === 'HELLO') {
     const session = payload.sessionToken
