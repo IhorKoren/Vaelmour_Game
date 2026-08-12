@@ -1,14 +1,14 @@
 import type { CharacterClass } from '../../src/types/game'
 import type { ContentTier, ItemDefinition, ItemEquipType, Profession, RecipeDefinition, ResourceDefinition } from './types'
 
-export const CONTENT_TIERS: ContentTier[] = [1, 2, 3]
+export const CONTENT_TIERS: ContentTier[] = [1, 2, 3, 4, 5, 6]
 export const GEAR_CLASSES: CharacterClass[] = ['warrior', 'ranger', 'blacksmith', 'alchemist', 'jeweler']
 export const GEAR_SLOTS: ItemEquipType[] = ['weapon', 'head', 'chest', 'hands', 'legs', 'feet']
 
 const RESOURCE_NAMES: Record<Profession, Array<[string, string, string]>> = {
-  blacksmith: [['Rift Iron', 'Dark Plate Fragment', 'Core Metal'], ['Echo Silver', 'Vein Alloy', 'Veskara Core'], ['Void Titanium', 'Sovereign Plate', 'Nhal Core']],
-  alchemist: [['Rift Essence', 'Mutated Blood', 'Spore Extract'], ['Moonroot', 'Echo Bile', 'Fractured Essence'], ['Void Bloom', 'Oracle Blood', 'Ruin Essence']],
-  jeweler: [['Rift Crystal', 'Gem Fragment', 'Core Shard'], ['Echo Opal', 'Vein Sapphire', 'Eye Prism'], ['Void Diamond', 'Obsidian Star', 'Ruin Prism']],
+  blacksmith: [['Rift Iron', 'Dark Plate Fragment', 'Core Metal'], ['Echo Silver', 'Vein Alloy', 'Veskara Core'], ['Void Titanium', 'Sovereign Plate', 'Nhal Core'], ['Cindersteel', 'Pyre Plate', 'Vuldra Core'], ['Grave Silver', 'Ossuary Alloy', 'Malgor Core'], ['Eclipse Adamant', 'Crown Plate', 'Astaroth Core']],
+  alchemist: [['Rift Essence', 'Mutated Blood', 'Spore Extract'], ['Moonroot', 'Echo Bile', 'Fractured Essence'], ['Void Bloom', 'Oracle Blood', 'Ruin Essence'], ['Ashen Myrrh', 'Cinder Ichor', 'Vuldra Essence'], ['Gravebloom', 'Wraith Bile', 'Malgor Essence'], ['Eclipse Lotus', 'Seraph Blood', 'Astaroth Essence']],
+  jeweler: [['Rift Crystal', 'Gem Fragment', 'Core Shard'], ['Echo Opal', 'Vein Sapphire', 'Eye Prism'], ['Void Diamond', 'Obsidian Star', 'Ruin Prism'], ['Cinder Ruby', 'Furnace Opal', 'Vuldra Prism'], ['Grave Pearl', 'Ossuary Sapphire', 'Malgor Prism'], ['Eclipse Diamond', 'Nightglass Star', 'Astaroth Prism']],
 }
 const ROLES: ResourceDefinition['role'][] = ['COMMON', 'SECONDARY', 'CORE']
 
@@ -27,9 +27,9 @@ export function tierResources(profession: Profession, tier: ContentTier): Resour
 
 const SLOT_NAMES: Record<ItemEquipType, string> = { weapon: 'Weapon', head: 'Crown', chest: 'Vestment', hands: 'Grips', legs: 'Legguards', feet: 'Treads', ring: 'Ring', amulet: 'Amulet' }
 const CLASS_NAMES: Record<CharacterClass, string> = { warrior: 'Vanguard', ranger: 'Hawkeye', blacksmith: 'Forgekeeper', alchemist: 'Essenceweaver', jeweler: 'Gemwright' }
-const TIER_NAMES: Record<ContentTier, string> = { 1: 'Ember', 2: 'Echo', 3: 'Void' }
-export const ATTACK_BUDGET: Record<ContentTier, number> = { 1: 6, 2: 14, 3: 22 }
-export const HP_BUDGET: Record<ContentTier, number> = { 1: 40, 2: 95, 3: 150 }
+const TIER_NAMES: Record<ContentTier, string> = { 1: 'Ember', 2: 'Echo', 3: 'Void', 4: 'Cinder', 5: 'Ossuary', 6: 'Eclipse' }
+export const ATTACK_BUDGET: Record<ContentTier, number> = { 1: 6, 2: 14, 3: 22, 4: 31, 5: 41, 6: 52 }
+export const HP_BUDGET: Record<ContentTier, number> = { 1: 40, 2: 95, 3: 150, 4: 220, 5: 300, 6: 390 }
 const CLASS_ATTACK_FACTOR: Record<CharacterClass, number> = { ranger: 1.1, warrior: 1, jeweler: 0.9, alchemist: 0.82, blacksmith: 0.75 }
 const CLASS_HP_FACTOR: Record<CharacterClass, number> = { blacksmith: 1.15, warrior: 1.08, alchemist: 1, jeweler: 0.9, ranger: 0.86 }
 const SLOT_ATTACK_SHARE: Record<ItemEquipType, number> = { weapon: 0.58, head: 0.08, chest: 0.05, hands: 0.13, legs: 0.07, feet: 0.09, ring: 0, amulet: 0 }
@@ -53,9 +53,9 @@ const tierJewelry: ItemDefinition[] = CONTENT_TIERS.flatMap((tier) => JEWELRY_ST
     hp: style.startsWith('hp') ? 30 * tier : style.startsWith('balanced') ? 16 * tier : undefined, tier } satisfies ItemDefinition
 }))
 
-export const POTION_IDS = { 1: 'lesser_healing_potion', 2: 'healing_potion', 3: 'greater_healing_potion' } as const
-export const POTION_HEAL_PERCENT: Record<ContentTier, number> = { 1: 0.25, 2: 0.35, 3: 0.45 }
-const potionNames: Record<ContentTier, string> = { 1: 'Lesser Healing Potion', 2: 'Healing Potion', 3: 'Greater Healing Potion' }
+export const POTION_IDS: Record<ContentTier, string> = { 1: 'lesser_healing_potion', 2: 'healing_potion', 3: 'greater_healing_potion', 4: 'cinder_healing_potion', 5: 'ossuary_healing_potion', 6: 'eclipse_healing_potion' }
+export const POTION_HEAL_PERCENT: Record<ContentTier, number> = { 1: 0.25, 2: 0.35, 3: 0.45, 4: 0.50, 5: 0.55, 6: 0.60 }
+const potionNames: Record<ContentTier, string> = { 1: 'Lesser Healing Potion', 2: 'Healing Potion', 3: 'Greater Healing Potion', 4: 'Cinder Healing Potion', 5: 'Ossuary Healing Potion', 6: 'Eclipse Healing Potion' }
 const tierPotions: ItemDefinition[] = CONTENT_TIERS.map((tier) => ({ id: POTION_IDS[tier], name: potionNames[tier], category: 'consumable', icon: '✣', stackable: true, tier, potionHealPercent: POTION_HEAL_PERCENT[tier] }))
 
 export const PHASE7_ITEMS: Record<string, ItemDefinition> = Object.fromEntries([...tierGear, ...tierJewelry, ...tierPotions].map((item) => [item.id, item]))

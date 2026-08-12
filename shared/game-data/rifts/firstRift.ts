@@ -4,6 +4,8 @@ export const FIRST_RIFT: RiftDefinition = {
   id: 'first_rift',
   name: 'Перший Розлом',
   description: 'Три шари викривленої реальності та перша повна експедиційна прогресія.',
+  theme: 'Fractured reality, void growths, and ruined forge guardians.',
+  recommendedPartySize: { min: 3, max: 5 },
   floors: [
     { floorNumber: 1, recommendedLevel: { min: 1, max: 10 }, resourceTier: 1,
       encounterEnemyIds: ['f1_ash_rat', 'f1_hollow_guard', 'f1_sporeling', 'f1_shardling', 'f1_iron_maw'], bossId: 'f1_mordar' },

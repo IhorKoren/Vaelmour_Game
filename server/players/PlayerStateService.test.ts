@@ -1,13 +1,44 @@
 import { describe, expect, it } from 'vitest'
 import { ITEM_CATALOG, recipeItemId } from '../../shared/game-data/catalog'
+import { RECIPES } from '../../shared/game-data/recipes'
 import { CLASSES } from '../../src/data/config/balance'
 import { EconomyError, PlayerStateService } from './PlayerStateService'
+import { createMemoryDatabase, InMemoryPlayerRepository } from '../repositories/InMemoryPlayerRepository'
 
 async function create(service: PlayerStateService, id: string, classId: 'warrior' | 'ranger' | 'blacksmith' | 'alchemist' | 'jeweler' = 'warrior', level = 1) {
   await service.getOrCreate({ playerId: id, character: { name: id, classId, level } })
 }
 
 describe('authoritative items, equipment and crafting', () => {
+  it('allows a legacy First Rift clear profile to complete Second Rift Floor 1', async () => {
+    const database = createMemoryDatabase()
+    const service = new PlayerStateService(new InMemoryPlayerRepository(database))
+    await create(service, 'legacy')
+    await service.completeRiftFloor('legacy', 'first_rift', 1, 'legacy-first-1')
+    await service.completeRiftFloor('legacy', 'first_rift', 2, 'legacy-first-2')
+    await service.completeRiftFloor('legacy', 'first_rift', 3, 'legacy-first-3')
+    delete database.players.get('legacy')!.riftProgress?.second_rift
+
+    expect((await service.completeRiftFloor('legacy', 'second_rift', 1, 'legacy-second-1')).highestUnlockedFloor).toBe(2)
+  })
+
+  it('stores, restores, and equips Tier VI gear through generic inventory rules', async () => {
+    const service = new PlayerStateService(); await create(service, 'warrior')
+    const item = await service.addItemForTesting('warrior', 'rift_t6_warrior_weapon')
+    await service.move('warrior', item.entryId, true)
+    expect((await service.snapshot('warrior')).storage.some((entry) => entry.entryId === item.entryId)).toBe(true)
+    await service.move('warrior', item.entryId, false)
+    expect((await service.equip('warrior', item.entryId)).equipment.weapon?.itemId).toBe('rift_t6_warrior_weapon')
+  })
+
+  it('learns and crafts a Tier IV profession recipe persistently', async () => {
+    const service = new PlayerStateService(); await create(service, 'smith', 'blacksmith')
+    const recipe = await service.addItemForTesting('smith', recipeItemId('recipe_rift_t4_warrior_weapon'))
+    await service.learnRecipe('smith', recipe.entryId, 'learn-t4')
+    for (const [itemId, quantity] of Object.entries(RECIPES.recipe_rift_t4_warrior_weapon.requirements)) await service.addItemForTesting('smith', itemId, quantity, `ingredient-${itemId}`)
+    expect((await service.craft('smith', 'recipe_rift_t4_warrior_weapon', 'craft-t4')).inventory.some((entry) => entry.itemId === 'rift_t4_warrior_weapon')).toBe(true)
+    expect((await service.snapshot('smith')).learnedRecipes).toContain('recipe_rift_t4_warrior_weapon')
+  })
   it('enforces normalized unique names under concurrent creation', async () => {
     const service = new PlayerStateService()
     const results = await Promise.allSettled([

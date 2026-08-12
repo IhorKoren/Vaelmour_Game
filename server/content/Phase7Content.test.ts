@@ -14,18 +14,18 @@ describe('Phase 7 data-driven content', () => {
     expect(encounters.at(-1)?.type).toBe('BOSS')
     expect(encounters.slice(0, -1).every((enemy) => enemy.type !== 'BOSS')).toBe(true)
   })
-  it('has all requested enemy references', () => expect(Object.keys(ENEMY_CATALOG)).toHaveLength(20))
+  it('has all requested First Rift enemy references', () => expect(new Set(FIRST_RIFT.floors.flatMap((floor) => [...floor.encounterEnemyIds, floor.bossId]))).toHaveLength(20))
   it('contains four new normal enemies per floor', () => {
     for (const floor of FIRST_RIFT.floors) expect(new Set(floor.encounterEnemyIds.filter((id) => ENEMY_CATALOG[id].type === 'NORMAL'))).toHaveLength(4)
   })
   it('defines 27 profession resources across three tiers', () => {
-    expect(Object.keys(PHASE7_RESOURCES)).toHaveLength(27)
+    expect(Object.values(PHASE7_RESOURCES).filter((resource) => (resource.tier ?? 0) <= 3)).toHaveLength(27)
     for (const tier of [1, 2, 3]) for (const profession of ['blacksmith', 'alchemist', 'jeweler'])
       expect(Object.values(PHASE7_RESOURCES).filter((resource) => resource.tier === tier && resource.profession === profession)).toHaveLength(3)
   })
-  it('generates all 90 class equipment pieces with stable ids', () => expect(Object.values(PHASE7_ITEMS).filter((item) => item.category === 'equipment')).toHaveLength(90))
+  it('generates all 90 original class equipment pieces with stable ids', () => expect(Object.values(PHASE7_ITEMS).filter((item) => item.category === 'equipment' && (item.tier ?? 0) <= 3)).toHaveLength(90))
   it('generates all 18 universally equippable jewelry pieces', () => {
-    const jewelry = Object.values(PHASE7_ITEMS).filter((item) => item.category === 'jewelry')
+    const jewelry = Object.values(PHASE7_ITEMS).filter((item) => item.category === 'jewelry' && (item.tier ?? 0) <= 3)
     expect(jewelry).toHaveLength(18)
     expect(jewelry.every((item) => item.allowedClass === undefined)).toBe(true)
   })
@@ -40,7 +40,7 @@ describe('Phase 7 data-driven content', () => {
     expect(PHASE7_RECIPES.recipe_rift_t1_alchemist_weapon.profession).toBe('alchemist')
     expect(PHASE7_RECIPES.recipe_rift_t1_jeweler_weapon.profession).toBe('jeweler')
   })
-  it('defines potion tiers and one shared recipe relationship', () => expect(POTION_HEAL_PERCENT).toEqual({ 1: 0.25, 2: 0.35, 3: 0.45 }))
+  it('preserves the original potion tiers', () => expect(Object.fromEntries(Object.entries(POTION_HEAL_PERCENT).filter(([tier]) => Number(tier) <= 3))).toEqual({ 1: 0.25, 2: 0.35, 3: 0.45 }))
   it('has globally usable deterministic catalog ids', () => {
     expect(new Set(Object.keys(ITEMS)).size).toBe(Object.keys(ITEMS).length)
     expect(new Set(Object.keys(RECIPES)).size).toBe(Object.keys(RECIPES).length)

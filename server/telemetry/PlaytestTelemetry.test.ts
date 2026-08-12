@@ -66,6 +66,21 @@ describe('gameplay-only playtest telemetry', () => {
     expect(sanitizeTelemetryPayload({ telegramInitData: 'secret', sessionToken: 'secret', privateChat: 'text', safe: { phone: 'x', floor: 2 } })).toEqual({ safe: { floor: 2 } })
   })
 
+  it('records the authoritative Second Rift id and floor without coupling gameplay to telemetry', async () => {
+    const telemetry = new RecordingTelemetry()
+    const manager = new RoomManager({ telemetry, random: () => 0.5, autoTimers: false, minPartySize: 1 })
+    managers.push(manager); await connect(manager, 'leader')
+    await manager.playerStates.completeRiftFloor('leader', 'first_rift', 1, 'unlock-1')
+    await manager.playerStates.completeRiftFloor('leader', 'first_rift', 2, 'unlock-2')
+    await manager.playerStates.completeRiftFloor('leader', 'first_rift', 3, 'unlock-3')
+    manager.createParty('leader')!
+    expect(await manager.selectRiftFloor('leader', 'second_rift', 1)).toBe(true)
+    manager.setReady('leader', true)
+    expect(await manager.startExpedition('leader')).toBe(true)
+    expect(telemetry.events.find((event) => event.type === 'RIFT_STARTED')).toMatchObject({ riftId: 'second_rift', floor: 1 })
+    expect(telemetry.events.find((event) => event.type === 'ENCOUNTER_STARTED')).toMatchObject({ riftId: 'second_rift', floor: 1 })
+  })
+
   it('uses event keys to make critical telemetry idempotent', async () => {
     const rows = new Map<string, any>()
     const fake = {

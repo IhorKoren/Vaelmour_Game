@@ -27,9 +27,8 @@ import { PresenceService } from '../social/PresenceService'
 import { FriendsService } from '../social/FriendsService'
 import { GuildService } from '../guilds/GuildService'
 import { ChatService } from '../chat/ChatService'
-import { floorEncounters } from '../../shared/game-data/rifts'
-import { floorDefinition } from '../../shared/game-data/rifts/firstRift'
-import { createFirstRiftEnemy } from '../combat/firstRiftEnemyFactory'
+import { floorDefinition, floorEncounters, nextUnlockAfterCompletion, riftDefinition } from '../../shared/game-data/rifts'
+import { createRiftEnemy } from '../combat/firstRiftEnemyFactory'
 import { NoopTelemetry, type TelemetrySink } from '../telemetry/PlaytestTelemetry'
 import { SafeTelemetrySink } from '../telemetry/PlaytestTelemetry'
 import { log } from '../logging/logger'
@@ -209,7 +208,7 @@ export class RoomManager {
       case 'LEAVE_PARTY': await this.leaveParty(playerId); break
       case 'SET_READY': this.setReady(playerId, message.payload.ready); break
       case 'START_EXPEDITION': await this.startExpedition(playerId); break
-      case 'SELECT_RIFT_FLOOR': await this.selectRiftFloor(playerId, message.payload.floorNumber); break
+      case 'SELECT_RIFT_FLOOR': await this.selectRiftFloor(playerId, message.payload.riftId, message.payload.floorNumber); break
       case 'SUBMIT_ACTION': await this.submitAction(playerId, message.payload); break
       case 'SET_AUTO_BATTLE': await this.setAutoBattle(playerId, message.payload.enabled); break
       case 'POST_ENCOUNTER_VOTE': await this.vote(playerId, message.payload.vote); break
@@ -294,13 +293,16 @@ export class RoomManager {
     return room
   }
 
-  async selectRiftFloor(playerId: string, floorNumber: number): Promise<boolean> {
+  async selectRiftFloor(playerId: string, riftOrFloor: string | number, requestedFloor?: number): Promise<boolean> {
+    const riftId = typeof riftOrFloor === 'string' ? riftOrFloor : 'first_rift'
+    const floorNumber = typeof riftOrFloor === 'number' ? riftOrFloor : requestedFloor!
     const room = this.findMemberRoom(playerId)
     if (!room || room.leaderId !== playerId) return Boolean(this.fail(playerId, 'LEADER_ONLY', 'Only the leader can select a floor.'))
     if (room.phase !== 'LOBBY') return Boolean(this.fail(playerId, 'PARTY_LOCKED', 'The floor can only be changed in the lobby.'))
-    if (!floorDefinition(floorNumber)) return Boolean(this.fail(playerId, 'INVALID_FLOOR', 'That floor does not exist.'))
-    const progress = await this.playerStates.riftProgress(playerId, room.riftId)
+    if (!floorDefinition(riftId, floorNumber)) return Boolean(this.fail(playerId, 'INVALID_FLOOR', 'That Rift floor does not exist.'))
+    const progress = await this.playerStates.riftProgress(playerId, riftId)
     if (floorNumber > progress.highestUnlockedFloor) return Boolean(this.fail(playerId, 'FLOOR_LOCKED', `You have not unlocked Floor ${floorNumber}.`))
+    room.riftId = riftId
     room.floorNumber = floorNumber
     room.members.forEach((member) => { member.ready = false })
     this.broadcastParty(room)
@@ -427,7 +429,7 @@ export class RoomManager {
         const state = await this.playerStates.snapshot(id)
         return [id, { character, potionQuantities, state }] as const
       })))
-      const enemy = this.createEnemy(room.floorNumber, 0, room.members.size)
+      const enemy = this.createEnemy(room.riftId, room.floorNumber, 0, room.members.size)
       const composition: Record<string, number> = {}
       for (const member of room.members.values()) composition[member.character.classId] = (composition[member.character.classId] ?? 0) + 1
       const compositionPayload = {
@@ -447,7 +449,7 @@ export class RoomManager {
       room.encounterIndex = 0
       room.enemy = enemy
       room.round = 1
-      room.log = ['Експедиція входить до Першого Розлому.']
+      room.log = [`Експедиція входить до ${riftDefinition(room.riftId)?.name ?? room.riftId}.`]
       room.personalRewards.clear()
       room.expeditionLoot = new Map([...room.members.keys()].map((id) => [id, { resources: {}, recipeIds: [] }]))
       room.extracted = false
@@ -540,8 +542,8 @@ export class RoomManager {
     return { character: { ...character }, connected: true, peer: null, ready: false, autoBattle: false, potionCooldown: 0, expeditionPotions: 0, expeditionPotionQuantities: {}, disconnectedAt: null }
   }
 
-  private createEnemy(floorNumber: number, index: number, partySize: number): Enemy {
-    return createFirstRiftEnemy(floorNumber, index, partySize)
+  private createEnemy(riftId: string, floorNumber: number, index: number, partySize: number): Enemy {
+    return createRiftEnemy(riftId, floorNumber, index, partySize)
   }
 
   private startRound(room: RoomState, messageType: 'EXPEDITION_STARTED' | 'ROUND_STARTED'): void {
@@ -665,7 +667,7 @@ export class RoomManager {
   }
 
   private async completeEncounter(room: RoomState): Promise<void> {
-    const encounters = floorEncounters(room.floorNumber)
+    const encounters = floorEncounters(room.riftId, room.floorNumber)
     const definition = encounters[room.encounterIndex]
     const kind = definition.type === 'NORMAL' ? 'mob' : definition.type === 'ELITE' ? 'elite' : 'boss'
     const lootLabel = `Tier ${definition.lootTier} profession materials`
@@ -698,7 +700,8 @@ export class RoomManager {
     if (room.encounterIndex === encounters.length - 1) {
       for (const id of room.members.keys()) {
         await this.playerStates.completeRiftFloor(id, room.riftId, room.floorNumber, `${room.id}:floor:${room.floorNumber}`)
-        await this.telemetry.record({ type: 'FLOOR_UNLOCKED', eventKey: `floor-unlocked:${room.expeditionId}:${id}`, playSessionId: room.playSessionId ?? undefined, expeditionId: room.expeditionId ?? undefined, playerId: id, riftId: room.riftId, floor: Math.min(3, room.floorNumber + 1) })
+        const unlocked = nextUnlockAfterCompletion(room.riftId, room.floorNumber)
+        await this.telemetry.record({ type: 'FLOOR_UNLOCKED', eventKey: `floor-unlocked:${room.expeditionId}:${id}`, playSessionId: room.playSessionId ?? undefined, expeditionId: room.expeditionId ?? undefined, playerId: id, riftId: unlocked.riftId, floor: unlocked.floorNumber, payload: { completedRiftId: room.riftId, completedFloor: room.floorNumber } })
       }
     }
     room.phase = 'POST_ENCOUNTER'
@@ -717,7 +720,7 @@ export class RoomManager {
       decision = continueVotes === exitVotes ? (room.votes.get(room.leaderId) ?? 'EXIT') : continueVotes > exitVotes ? 'CONTINUE' : 'EXIT'
     }
     if (!decision) return
-    const encounters = floorEncounters(room.floorNumber)
+    const encounters = floorEncounters(room.riftId, room.floorNumber)
     if (decision === 'EXIT' || room.encounterIndex >= encounters.length - 1) {
       room.phase = 'FINISHED'
       for (const id of room.members.keys()) { this.presence.set(id, 'CITY'); this.broadcastPresence(id) }
@@ -731,7 +734,7 @@ export class RoomManager {
       return
     }
     room.encounterIndex += 1
-    room.enemy = this.createEnemy(room.floorNumber, room.encounterIndex, room.members.size)
+    room.enemy = this.createEnemy(room.riftId, room.floorNumber, room.encounterIndex, room.members.size)
     room.round = 1
     room.reward = null
     room.personalRewards.clear()
@@ -771,7 +774,7 @@ export class RoomManager {
   private combatSnapshot(room: RoomState, viewerId: string): CombatSnapshot {
     return {
       roomId: room.id, riftId: room.riftId, floorNumber: room.floorNumber, phase: room.phase, leaderId: room.leaderId,
-      encounterIndex: room.encounterIndex, encounterTotal: floorEncounters(room.floorNumber).length, round: room.round,
+      encounterIndex: room.encounterIndex, encounterTotal: floorEncounters(room.riftId, room.floorNumber).length, round: room.round,
       roundEndsAt: room.roundEndsAt, serverNow: this.now(), enemy: room.enemy,
       party: [...room.members].map(([id, member]) => this.publicMember(room, id, member)),
       log: room.log, reward: room.reward, personalReward: room.personalRewards.get(viewerId) ?? null,

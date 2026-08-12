@@ -3,19 +3,19 @@ import { CLASSES, ZONES } from '../../src/data/config/balance'
 import type { Character, CharacterClass, CombatAction, Enemy, Zone } from '../../src/types/game'
 import { COIN_MULTIPLIER, FAILED_EXPEDITION_LOOT_LOSS } from '../../shared/game-data/economy'
 import { PHASE7_ITEMS, POTION_HEAL_PERCENT } from '../../shared/game-data/phase7Catalog'
-import { FIRST_RIFT } from '../../shared/game-data/rifts/firstRift'
-import { floorEncounters } from '../../shared/game-data/rifts'
+import { floorDefinition, floorEncounters } from '../../shared/game-data/rifts'
 import { adjustedEnemyXP } from '../../shared/game-data/progression'
 import { generateProfessionLoot } from '../loot/professionLoot'
-import type { Profession } from '../../shared/game-data/types'
+import type { ContentTier, Profession } from '../../shared/game-data/types'
 import { SIMULATION_BALANCE_CONFIG } from '../../shared/game-data/balance'
-import { createFirstRiftEnemy } from '../combat/firstRiftEnemyFactory'
+import { createRiftEnemy } from '../combat/firstRiftEnemyFactory'
 
 export type BehaviorProfile = 'RANDOM' | 'BASIC_SMART'
 export type GearProfile = 'UNDERGEARED' | 'RECOMMENDED' | 'STRONG'
 
 export interface SimulationScenario {
   id: string
+  riftId?: string
   floorNumber: number
   classes: CharacterClass[]
   gear: GearProfile
@@ -66,25 +66,31 @@ export function seededRandom(seed: number): () => number {
   }
 }
 
-export function createScenarioEnemy(floorNumber: number, encounterIndex: number, partySize: number): Enemy {
-  return createFirstRiftEnemy(floorNumber, encounterIndex, partySize)
+export function createScenarioEnemy(floorNumber: number, encounterIndex: number, partySize: number, riftId = 'first_rift'): Enemy {
+  return createRiftEnemy(riftId, floorNumber, encounterIndex, partySize)
 }
 
-function gearTier(floor: number, gear: GearProfile): number {
-  if (gear === 'UNDERGEARED') return Math.max(0, floor - 2)
-  if (gear === 'RECOMMENDED') return Math.max(0, floor - 1)
-  return floor
+function targetTier(riftId: string, floor: number): ContentTier {
+  return floorDefinition(riftId, floor)?.resourceTier ?? 1
 }
 
-function levelFor(floor: number, gear: GearProfile): number {
-  const recommendation = FIRST_RIFT.floors[floor - 1].recommendedLevel
+function gearTier(riftId: string, floor: number, gear: GearProfile): number {
+  const target = targetTier(riftId, floor)
+  if (gear === 'UNDERGEARED') return Math.max(0, target - 2)
+  if (gear === 'RECOMMENDED') return Math.max(0, target - 1)
+  return target
+}
+
+function levelFor(riftId: string, floor: number, gear: GearProfile): number {
+  const recommendation = floorDefinition(riftId, floor)!.recommendedLevel
   if (gear === 'UNDERGEARED') return Math.max(1, recommendation.min - 3)
   return Math.round((recommendation.min + recommendation.max) / 2)
 }
 
 function createParty(scenario: SimulationScenario): Character[] {
-  const tier = gearTier(scenario.floorNumber, scenario.gear)
-  const level = levelFor(scenario.floorNumber, scenario.gear)
+  const riftId = scenario.riftId ?? 'first_rift'
+  const tier = gearTier(riftId, scenario.floorNumber, scenario.gear)
+  const level = levelFor(riftId, scenario.floorNumber, scenario.gear)
   return scenario.classes.map((classId, index) => {
     const gear = tier > 0 ? Object.values(PHASE7_ITEMS).filter((item) => item.tier === tier && item.allowedClass === classId) : []
     const attack = CLASSES[classId].attack + level - 1 + gear.reduce((sum, item) => sum + (item.attack ?? 0), 0)
@@ -93,7 +99,7 @@ function createParty(scenario: SimulationScenario): Character[] {
   })
 }
 
-export function createSimulationAction(member: Character, enemy: Enemy, behavior: BehaviorProfile, potions: number, random: () => number, potionTier: 1 | 2 | 3 = 1): CombatAction {
+export function createSimulationAction(member: Character, enemy: Enemy, behavior: BehaviorProfile, potions: number, random: () => number, potionTier: ContentTier = 1): CombatAction {
   if (behavior === 'BASIC_SMART' && potions > 0 && member.currentHP / member.maxHP < SIMULATION_BALANCE_CONFIG.basicSmartPotionThresholdByTier[potionTier]) {
     return { type: 'potion', defendZone: weightedZone(enemy.attackZoneWeights, random) }
   }
@@ -105,6 +111,7 @@ export function createSimulationAction(member: Character, enemy: Enemy, behavior
 }
 
 export function simulateScenario(scenario: SimulationScenario): SimulationMetrics {
+  const riftId = scenario.riftId ?? 'first_rift'
   const random = seededRandom(scenario.seed)
   let clears = 0, deaths = 0, totalRounds = 0, completedEncounters = 0, totalPotions = 0
   let totalXP = 0, totalCoins = 0, totalResources = 0, totalRecipes = 0, beforeExtraction = 0, afterExtraction = 0
@@ -114,13 +121,13 @@ export function simulateScenario(scenario: SimulationScenario): SimulationMetric
   for (let run = 0; run < scenario.runs; run += 1) {
     let party = createParty(scenario)
     // Keep the consumable loadout fixed across gear profiles so the gear comparison isolates equipment power.
-    const potionTier = Math.max(1, scenario.floorNumber - 1) as 1 | 2 | 3
+    const potionTier = Math.max(1, targetTier(riftId, scenario.floorNumber) - 1) as ContentTier
     const potions: Record<string, number> = Object.fromEntries(party.map((member) => [member.id, scenario.behavior === 'BASIC_SMART' ? SIMULATION_BALANCE_CONFIG.potionsPerPlayer : 0]))
     const cooldowns: Record<string, number> = Object.fromEntries(party.map((member) => [member.id, 0]))
     let runResources = 0, runRecipes = 0, runFailed = false, runPotions = 0
-    const encounters = floorEncounters(scenario.floorNumber)
+    const encounters = floorEncounters(riftId, scenario.floorNumber)
     for (let encounterIndex = 0; encounterIndex < encounters.length; encounterIndex += 1) {
-      let enemy = createScenarioEnemy(scenario.floorNumber, encounterIndex, scenario.classes.length)
+      let enemy = createScenarioEnemy(scenario.floorNumber, encounterIndex, scenario.classes.length, riftId)
       let encounterRounds = 0
       while (enemy.currentHP > 0 && party.some((member) => member.alive) && encounterRounds < 200) {
         const actions: Record<string, CombatAction> = {}

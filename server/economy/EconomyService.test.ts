@@ -18,6 +18,7 @@ async function item(players: PlayerStateService, playerId: string, itemId = 'rif
 async function profile(repository: InMemoryPlayerRepository, playerId: string) { return repository.economyRead((state) => state.players.get(playerId)!) }
 
 describe('Phase 5 Market', () => {
+  it('trades a Tier VI item through the generic Market path', async () => { const c = await setup(); const e = await item(c.players, 'alice', 'rift_t6_alchemist_weapon'); await c.economy.createSellOrder('alice', e.entryId, 1, 250, 't6-sell'); await fund(c.players, 'bob', 300); await c.economy.buyNow('bob', 'rift_t6_alchemist_weapon', 1, 't6-buy'); expect((await c.players.snapshot('bob')).inventory.some((entry) => entry.itemId === 'rift_t6_alchemist_weapon')).toBe(true) })
   it('create sell order reserves item', async () => { const c = await setup(); const e = await item(c.players, 'alice', 'rift_essence', 10); await c.economy.createSellOrder('alice', e.entryId, 4, 5, 'sell'); expect(await c.players.countItem('alice', 'rift_essence')).toBe(14); expect((await profile(c.repository, 'alice')).reservedItems[0].quantity).toBe(4) })
   it('cannot sell equipped item', async () => { const c = await setup(); const e = await item(c.players, 'alice', 'crafted_alchemist_weapon'); await c.players.equip('alice', e.entryId); await expect(c.economy.createSellOrder('alice', e.entryId, 1, 5, 'sell')).rejects.toThrow() })
   it('cannot sell more than owned stack', async () => { const c = await setup(); const e = await item(c.players, 'alice', 'rift_essence', 2); await expect(c.economy.createSellOrder('alice', e.entryId, 99, 5, 'sell')).rejects.toThrow() })
@@ -87,6 +88,7 @@ describe('Phase 8 idempotent transaction identity', () => {
 })
 
 describe('Phase 5 Direct Trade', () => {
+  it('moves a Tier VI resource through Direct Trade', async () => { const c = await setup(); const e = await item(c.players, 'alice', 'astaroth_essence'); const t = await c.economy.requestTrade('alice', 'Bob', 't6-r'); await c.economy.acceptTrade('bob', t.id, 't6-a'); const x = await c.economy.updateTradeOffer('alice', t.id, { items: [{ entryId: e.entryId, quantity: 1 }], coins: 0 }, 't6-u'); await c.economy.confirmTrade('alice', t.id, x.revision, 't6-ca'); await c.economy.confirmTrade('bob', t.id, x.revision, 't6-cb'); expect(await c.players.countItem('bob', 'astaroth_essence')).toBe(1) })
   it('supports request and accept flow', async () => { const c = await setup(); const request = await c.economy.requestTrade('alice', 'Bob', 'r'); expect(request.status).toBe('REQUESTED'); expect((await c.economy.acceptTrade('bob', request.id, 'a')).status).toBe('ACTIVE') })
   it('rejects self trade', async () => { const c = await setup(); await expect(c.economy.requestTrade('alice', 'Alice', 'r')).rejects.toThrow() })
   it('rejects active expedition trade', async () => { const c = await setup(); c.economy.setAvailability('bob', true, true); await expect(c.economy.requestTrade('alice', 'Bob', 'r')).rejects.toThrow() })
