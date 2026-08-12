@@ -19,7 +19,7 @@ export interface RecipeAcquisitionMetric {
   duplicateShare: number
 }
 
-export function simulateRecipeAcquisition(floorNumber: number, runs: number, populationSize: number, seed: number): RecipeAcquisitionMetric[] {
+export function simulateRecipeAcquisition(floorNumber: number, runs: number, populationSize: number, seed: number, riftId = 'first_rift'): RecipeAcquisitionMetric[] {
   const random = seededRandom(seed)
   const professions: Profession[] = ['blacksmith', 'alchemist', 'jeweler']
   const known = Object.fromEntries(professions.map((profession) => [profession, Array.from({ length: populationSize }, () => new Set<string>())])) as Record<Profession, Set<string>[]>
@@ -27,7 +27,7 @@ export function simulateRecipeAcquisition(floorNumber: number, runs: number, pop
   const fresh: Record<Profession, number> = { blacksmith: 0, alchemist: 0, jeweler: 0 }
   const duplicate: Record<Profession, number> = { blacksmith: 0, alchemist: 0, jeweler: 0 }
   const dropRuns: Record<Profession, number[]> = { blacksmith: [], alchemist: [], jeweler: [] }
-  const encounters = floorEncounters(floorNumber)
+  const encounters = floorEncounters(riftId, floorNumber)
   for (let run = 1; run <= runs; run += 1) {
     const collector = (run - 1) % populationSize
     const participants = professions.map((profession) => ({ id: profession, classId: profession, alive: true }))

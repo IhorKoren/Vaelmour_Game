@@ -12,6 +12,7 @@ import type { EquipmentSlot, EquipmentState, InventoryEntry, PersonalLoot, Playe
 import { InMemoryPlayerRepository } from '../repositories/InMemoryPlayerRepository'
 import type { AccountSetup, AdminAuditWrite, CoinLedgerRecord, PlayerRepository, RepositoryOperation, StoredPlayerProfile } from '../repositories/types'
 import { normalizePlayerName } from './playerName'
+import { defaultRiftProgress, prerequisiteMet, RIFT_CATALOG } from '../../shared/game-data/rifts'
 
 export class EconomyError extends Error {
   constructor(readonly code: string, message: string) { super(message) }
@@ -69,17 +70,31 @@ export class PlayerStateService {
 
   async riftProgress(playerId: string, riftId = 'first_rift'): Promise<PlayerRiftProgress> {
     const profile = await this.requireProfile(playerId)
-    return profile.riftProgress?.[riftId] ?? { riftId, highestUnlockedFloor: 1, highestCompletedFloor: 0, completionCount: {} }
+    const stored = profile.riftProgress?.[riftId]
+    if (stored) return stored
+    const initial = defaultRiftProgress(riftId)
+    if (prerequisiteMet(riftId, profile.riftProgress ?? {})) initial.highestUnlockedFloor = 1
+    return initial
   }
 
   async completeRiftFloor(playerId: string, riftId: string, floorNumber: number, operationId: string): Promise<PlayerRiftProgress> {
     const result = await this.repository.transact(playerId, { key: `rift-progress:${playerId}:${operationId}`, type: 'RIFT_FLOOR_COMPLETE', referenceId: operationId }, (profile) => {
-      const current = profile.riftProgress?.[riftId] ?? { riftId, highestUnlockedFloor: 1, highestCompletedFloor: 0, completionCount: {} }
+      const definition = RIFT_CATALOG[riftId as keyof typeof RIFT_CATALOG]
+      if (!definition || !definition.floors.some((floor) => floor.floorNumber === floorNumber)) throw new EconomyError('INVALID_RIFT_FLOOR', 'Unknown Rift floor.')
+      const stored = profile.riftProgress?.[riftId]
+      const current = stored ?? defaultRiftProgress(riftId)
+      if (!stored && prerequisiteMet(riftId, profile.riftProgress ?? {})) current.highestUnlockedFloor = 1
+      if (floorNumber > current.highestUnlockedFloor) throw new EconomyError('RIFT_FLOOR_LOCKED', 'Rift floor is locked.')
       profile.riftProgress ??= {}
       profile.riftProgress[riftId] = { riftId,
         highestCompletedFloor: Math.max(current.highestCompletedFloor, floorNumber),
-        highestUnlockedFloor: Math.max(current.highestUnlockedFloor, Math.min(3, floorNumber + 1)),
+        highestUnlockedFloor: Math.max(current.highestUnlockedFloor, Math.min(definition.floors.length, floorNumber + 1)),
         completionCount: { ...current.completionCount, [floorNumber]: (current.completionCount[floorNumber] ?? 0) + 1 } }
+      for (const candidate of Object.values(RIFT_CATALOG)) {
+        if (candidate.unlockRequires?.riftId !== riftId || candidate.unlockRequires.floorNumber > floorNumber) continue
+        const next = profile.riftProgress[candidate.id] ?? defaultRiftProgress(candidate.id)
+        profile.riftProgress[candidate.id] = { ...next, highestUnlockedFloor: Math.max(1, next.highestUnlockedFloor) }
+      }
     })
     return result.profile.riftProgress![riftId]
   }
@@ -301,6 +316,15 @@ export class PlayerStateService {
 
   private toSnapshot(profile: StoredPlayerProfile): CharacterState {
     const character = this.toCharacter(profile)
+    const storedRiftProgress = profile.riftProgress ?? {}
+    const riftProgress = Object.fromEntries(Object.values(RIFT_CATALOG).map((rift) => {
+      const stored = storedRiftProgress[rift.id]
+      const progress = stored ?? defaultRiftProgress(rift.id)
+      const normalized = !stored && prerequisiteMet(rift.id, storedRiftProgress)
+        ? { ...progress, highestUnlockedFloor: 1 }
+        : progress
+      return [rift.id, { ...normalized, completionCount: { ...normalized.completionCount } }]
+    }))
     return {
       playerId: profile.playerId, name: profile.name, classId: profile.classId, level: profile.level,
       currentXP: profile.currentXP, xpRequired: calculateXPRequired(profile.level), attack: character.attack,
@@ -309,7 +333,7 @@ export class PlayerStateService {
       inventory: profile.inventory.map((entry) => ({ ...entry })), storage: profile.storage.map((entry) => ({ ...entry })),
       equipment: Object.fromEntries(SLOTS.map((slot) => [slot, profile.equipment[slot] ? { ...profile.equipment[slot]! } : null])) as EquipmentState,
       learnedRecipes: [...profile.learnedRecipes],
-      riftProgress: Object.fromEntries(Object.entries(profile.riftProgress ?? {}).map(([id, progress]) => [id, { ...progress, completionCount: { ...progress.completionCount } }])),
+      riftProgress,
     }
   }
 

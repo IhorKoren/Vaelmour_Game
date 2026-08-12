@@ -137,7 +137,7 @@ export type ClientMessage =
   | { type: 'LEAVE_PARTY' }
   | { type: 'SET_READY'; payload: { ready: boolean } }
   | { type: 'START_EXPEDITION' }
-  | { type: 'SELECT_RIFT_FLOOR'; payload: { floorNumber: number } }
+  | { type: 'SELECT_RIFT_FLOOR'; payload: { riftId: string; floorNumber: number } }
   | { type: 'SUBMIT_ACTION'; payload: { round: number; attackZone?: Zone; defendZone: Zone; usePotion: boolean; potionItemId?: string } }
   | { type: 'SET_AUTO_BATTLE'; payload: { enabled: boolean } }
   | { type: 'POST_ENCOUNTER_VOTE'; payload: { vote: ExpeditionVote } }

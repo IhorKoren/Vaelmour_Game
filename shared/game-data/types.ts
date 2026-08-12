@@ -1,7 +1,7 @@
 import type { CharacterClass } from '../../src/types/game'
 
 export type Profession = 'blacksmith' | 'alchemist' | 'jeweler'
-export type ContentTier = 1 | 2 | 3
+export type ContentTier = 1 | 2 | 3 | 4 | 5 | 6
 export type ItemCategory = 'equipment' | 'jewelry' | 'consumable' | 'resource' | 'recipe'
 export type RecipeCategory = 'equipment' | 'consumables' | 'jewelry'
 export type ItemEquipType = 'weapon' | 'head' | 'chest' | 'hands' | 'legs' | 'feet' | 'ring' | 'amulet'

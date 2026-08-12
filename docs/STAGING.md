@@ -1,4 +1,4 @@
-# Phase 8.2 staging — Neon, Render, Telegram
+# Phase 9 staging — Neon, Render, Telegram
 
 ## Topology and secrets
 
@@ -43,6 +43,8 @@ npm run db:deploy && npm run start:server
 This makes Render staging self-contained. Before multi-instance production, move `db:deploy` to a single release job. Never use `prisma migrate reset` outside local development.
 
 Render readiness remains `/ready`. It verifies database connectivity and migration `20260812010000_phase8_reliability`.
+
+Phase 9 adds no database schema migration: multi-Rift unlocks are additive keys inside the existing `riftProgress` JSON field. Deployment must preserve the Phase 8 migration and all existing player, inventory, guild, Market, and session data.
 
 ## Restart/recovery contract
 

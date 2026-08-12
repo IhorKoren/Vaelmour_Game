@@ -37,4 +37,23 @@ describe('profession loot pools', () => {
     expect(Object.keys(result.personal.alive.resources)).toHaveLength(1)
     expect(result.personal.alive.recipeIds).toHaveLength(1)
   })
+
+  it.each([[4, 'cindersteel'], [5, 'grave_silver'], [6, 'eclipse_adamant']] as const)('uses Tier %i Second Rift profession resources', (tier, expected) => {
+    const result = generateProfessionLoot([{ id: 'smith', classId: 'blacksmith', alive: true }], 0, 'mob', { tier, random: always, resourceChance: { combatClass: 0, correctProfession: 1 }, recipeChance: { mob: 0, elite: 0, boss: 0 } })
+    expect(result.personal.smith.resources[expected]).toBe(1)
+  })
+
+  it('keeps combat-class Second Rift resource chance low and generic', () => {
+    const none = generateProfessionLoot([{ id: 'warrior', classId: 'warrior', alive: true }], 0, 'mob', { tier: 4, random: () => 0.5, resourceChance: { combatClass: 0.1, correctProfession: 1 } })
+    expect(none.personal.warrior.resources).toEqual({})
+    const drop = generateProfessionLoot([{ id: 'warrior', classId: 'warrior', alive: true }], 0, 'mob', { tier: 4, random: always, resourceChance: { combatClass: 1, correctProfession: 1 } })
+    expect(Object.keys(drop.personal.warrior.resources)).toHaveLength(1)
+  })
+
+  it('duplicate Second Rift professions still produce one shared pool roll', () => {
+    const result = generateProfessionLoot([{ id: 'a', classId: 'jeweler', alive: true }, { id: 'b', classId: 'jeweler', alive: true }], 0, 'boss', { tier: 6, random: always, resourceChance: { combatClass: 0, correctProfession: 1 }, recipeChance: { mob: 1, elite: 1, boss: 1 } })
+    expect(result.professionPoolRolls.jeweler).toBe(1)
+    expect(result.recipeRolls.jeweler).toBe(1)
+    expect(Object.values(result.personal).reduce((sum, loot) => sum + loot.recipeIds.length, 0)).toBe(1)
+  })
 })

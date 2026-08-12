@@ -5,6 +5,7 @@ import WebSocket, { WebSocketServer } from 'ws'
 import type { ClientMessage, ServerMessage } from '../../shared/protocol'
 import { RoomManager } from '../rooms/RoomManager'
 import { attachWebSocket } from './attachWebSocket'
+import { validateClientMessage } from './validateClientMessage'
 
 interface Inbox {
   messages: ServerMessage[]
@@ -42,6 +43,11 @@ function send(socket: WebSocket, message: ClientMessage): void {
 }
 
 describe('real WebSocket transport', () => {
+  it('requires an authoritative Rift id with floor selection', () => {
+    expect(validateClientMessage({ type: 'SELECT_RIFT_FLOOR', payload: { riftId: 'second_rift', floorNumber: 1 } })).toBeTruthy()
+    expect(validateClientMessage({ type: 'SELECT_RIFT_FLOOR', payload: { floorNumber: 1 } })).toBeNull()
+    expect(validateClientMessage({ type: 'SELECT_RIFT_FLOOR', payload: { riftId: 'second_rift', floorNumber: 4 } })).toBeNull()
+  })
   const cleanup: Array<() => void> = []
   afterEach(() => cleanup.splice(0).forEach((close) => close()))
 

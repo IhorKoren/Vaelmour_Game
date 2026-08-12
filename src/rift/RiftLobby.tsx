@@ -4,8 +4,7 @@ import { ConnectionIndicator } from '../network/ConnectionIndicator'
 import type { MultiplayerClient } from '../network/useMultiplayer'
 import type { Character } from '../types/game'
 import { GroupChat } from './GroupChat'
-import { FIRST_RIFT } from '../../shared/game-data/rifts/firstRift'
-import { ENEMY_CATALOG } from '../../shared/game-data/rifts'
+import { ENEMY_CATALOG, RIFT_CATALOG } from '../../shared/game-data/rifts'
 import { RECOMMENDED_PARTY_SIZE } from '../../shared/game-data/balance'
 
 interface Props {
@@ -21,7 +20,7 @@ export function RiftLobby({ client, onBack }: Props) {
   const self = party?.members.find((member) => member.id === client.playerId)
   const isLeader = party?.leaderId === client.playerId
   const canStart = Boolean(isLeader && party && party.members.length >= 1 && party.members.every((member) => member.ready && member.connected))
-  const progress = client.characterState?.riftProgress.first_rift ?? { highestUnlockedFloor: 1, highestCompletedFloor: 0, completionCount: {} }
+  const selectedRift = RIFT_CATALOG[(party?.riftId ?? 'first_rift') as keyof typeof RIFT_CATALOG] ?? RIFT_CATALOG.first_rift
 
   const apply = (partyId: string) => {
     client.send({ type: 'APPLY_TO_PARTY', payload: { partyId, slotOfferCoins: Math.max(0, Math.floor(slotOffer)), operationId: crypto.randomUUID() } })
@@ -32,21 +31,26 @@ export function RiftLobby({ client, onBack }: Props) {
     <main className="lobby-shell">
       <header className="combat-header lobby-header">
         <button className="back-button" onClick={onBack} aria-label="Повернутися до міста">‹</button>
-        <div><p>Перший Розлом</p><span>RIFT LOBBY · ПОВЕРХ {party?.floorNumber ?? 1}</span></div>
+        <div><p>{selectedRift.name}</p><span>RIFT LOBBY · FLOOR {party?.floorNumber ?? 1}</span></div>
         <ConnectionIndicator state={client.connection} />
       </header>
 
       {client.error && <button className="network-error" onClick={client.clearError}>{client.error}<span>×</span></button>}
 
       <section className="floor-selector">
-        {FIRST_RIFT.floors.map((floor) => {
-          const unlocked = floor.floorNumber <= progress.highestUnlockedFloor
-          return <article key={floor.floorNumber} className={`${unlocked ? 'unlocked' : 'locked'} ${party?.floorNumber === floor.floorNumber ? 'selected' : ''}`}>
-            <div><small>FLOOR {floor.floorNumber}</small><strong>{unlocked ? 'Unlocked' : 'Locked'}</strong></div>
-            <p>Recommended Level: {floor.recommendedLevel.min}–{floor.recommendedLevel.max}</p>
-            <span>{floor.encounterEnemyIds.length + 1} encounters · Boss: {unlocked ? ENEMY_CATALOG[floor.bossId].name : '???'} · Tier {floor.resourceTier} resources</span>
-            {party && isLeader && <button disabled={!unlocked || party.floorNumber === floor.floorNumber} onClick={() => client.send({ type: 'SELECT_RIFT_FLOOR', payload: { floorNumber: floor.floorNumber } })}>Select</button>}
-          </article>
+        {Object.values(RIFT_CATALOG).flatMap((rift) => {
+          const progress = client.characterState?.riftProgress[rift.id] ?? { riftId: rift.id, highestUnlockedFloor: rift.unlockRequires ? 0 : 1, highestCompletedFloor: 0, completionCount: {} }
+          return rift.floors.map((floor) => {
+            const unlocked = floor.floorNumber <= progress.highestUnlockedFloor
+            const selected = party?.riftId === rift.id && party.floorNumber === floor.floorNumber
+            const prerequisite = rift.unlockRequires ? `Requires ${RIFT_CATALOG[rift.unlockRequires.riftId as keyof typeof RIFT_CATALOG]?.name ?? rift.unlockRequires.riftId} Floor ${rift.unlockRequires.floorNumber} completion` : floor.unlockRequiresFloor ? `Requires Floor ${floor.unlockRequiresFloor} completion` : 'Available by default'
+            return <article key={`${rift.id}:${floor.floorNumber}`} className={`${unlocked ? 'unlocked' : 'locked'} ${selected ? 'selected' : ''}`}>
+              <div><small>{rift.name} · FLOOR {floor.floorNumber}</small><strong>{unlocked ? 'Unlocked' : 'Locked'}</strong></div>
+              <p>Recommended Level: {floor.recommendedLevel.min}–{floor.recommendedLevel.max} · Party {rift.recommendedPartySize.min}–{rift.recommendedPartySize.max}</p>
+              <span>{floor.encounterEnemyIds.length + 1} encounters · Boss: {unlocked ? ENEMY_CATALOG[floor.bossId].name : '???'} · Tier {floor.resourceTier} · {prerequisite}</span>
+              {party && isLeader && <button disabled={!unlocked || selected} onClick={() => client.send({ type: 'SELECT_RIFT_FLOOR', payload: { riftId: rift.id, floorNumber: floor.floorNumber } })}>Select</button>}
+            </article>
+          })
         })}
       </section>
 
@@ -60,13 +64,13 @@ export function RiftLobby({ client, onBack }: Props) {
           </section>
 
           <section className="open-parties">
-            <div className="section-heading"><div><span>Перший Розлом</span><h2>Відкриті групи</h2></div><button className="refresh-button" onClick={() => client.send({ type: 'LIST_PARTIES' })}>Оновити</button></div>
+            <div className="section-heading"><div><span>First Rift · Second Rift</span><h2>Відкриті групи</h2></div><button className="refresh-button" onClick={() => client.send({ type: 'LIST_PARTIES' })}>Оновити</button></div>
             <div className="party-browser">
               {client.parties.length === 0 && <div className="empty-parties"><span>◇</span><strong>Відкритих груп немає</strong><p>Створіть першу експедицію.</p></div>}
               {client.parties.map((item) => (
                 <article key={item.id} className="party-listing">
                   <div className="leader-avatar">♛</div>
-                  <div><small>ЛІДЕР</small><strong>{item.leaderName}</strong><span>Перший Розлом · Поверх {item.floorNumber}</span></div>
+                  <div><small>ЛІДЕР</small><strong>{item.leaderName}</strong><span>{RIFT_CATALOG[item.riftId as keyof typeof RIFT_CATALOG]?.name ?? item.riftId} · Floor {item.floorNumber}</span></div>
                   <em>Players: {item.playerCount}/{item.maxPlayers}</em>
                   {applicationId === item.id
                     ? <button className="secondary-button" onClick={() => { client.send({ type: 'CANCEL_APPLICATION', payload: { partyId: item.id } }); setApplicationId(null) }}>Скасувати заявку</button>

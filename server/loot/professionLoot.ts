@@ -2,7 +2,7 @@ import { PROFESSIONS, RECIPE_DROP_CHANCE, RESOURCE_DROP_CHANCE, isProfessionClas
 import { PROFESSION_RECIPE_IDS } from '../../shared/game-data/recipes'
 import { FIRST_RIFT_LOOT_POOLS, RESOURCES } from '../../shared/game-data/resources'
 import { PHASE7_RECIPES, PHASE7_RESOURCES, tierResources } from '../../shared/game-data/phase7Catalog'
-import type { PersonalLoot, Profession } from '../../shared/game-data/types'
+import type { ContentTier, PersonalLoot, Profession } from '../../shared/game-data/types'
 import type { CharacterClass, Enemy } from '../../src/types/game'
 
 export interface LootParticipant {
@@ -15,7 +15,7 @@ interface LootOptions {
   random?: () => number
   resourceChance?: { combatClass: number; correctProfession: number }
   recipeChance?: { mob: number; elite: number; boss: number }
-  tier?: 1 | 2 | 3
+  tier?: ContentTier
 }
 
 export interface ProfessionLootResult {

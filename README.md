@@ -1,8 +1,8 @@
-# Перший Розлом — Phase 8.2
+# Vaelmour — Phase 9: Second Rift
 
 Mobile-first Telegram Mini App vertical slice with authoritative multiplayer combat, PostgreSQL persistence, Market/Trade, Guilds, Friends, Chat, telemetry, and staging operations.
 
-Phase 9 / Second Rift is intentionally out of scope.
+Phase 9 adds the **Second Rift: The Ashen Deep** without changing the authoritative combat engine. The volcanic necropolis theme spans Tier IV–VI, 3 floors, 18 mobs/elites, and 3 bosses. Rift definitions, floors, unlock prerequisites, encounter sequences, enemy catalogs, rewards, and tiers are data-driven so later Rifts do not require duplicated combat logic.
 
 ## Local verification
 
@@ -35,6 +35,15 @@ Local development uses `npm run dev`. Production uses the compiled SSR server bu
 - The leader may START solo or below the recommendation.
 - Every current member must be authenticated, connected, ready, have floor access, and have a valid paid-slot reservation when applicable.
 - Central enemy multipliers preserve the existing 3/4/5 model and add explicit solo/duo tuning. See [reports/phase8-2-balance-report.md](reports/phase8-2-balance-report.md).
+
+## Second Rift progression
+
+- First Rift Floor 3 completion unlocks Second Rift Floor 1.
+- Second Rift Floor 1 unlocks Floor 2; Floor 2 unlocks Floor 3. The server rejects skipped or spoofed floors.
+- Floors map to Tier IV, V, and VI resources, recipes, equipment, jewelry, and healing potions.
+- Supported party size remains **1–5**; **3–5** is recommended. Second Rift uses separately verified solo/duo modifiers.
+- Progress remains in the existing persistent `riftProgress` JSON, so no destructive migration is required and old accounts remain compatible.
+- New content uses the existing Market, Buy/Sell Now, Direct Trade, personal Storage, Guild Storage, crafting, extraction, and SafeTelemetrySink paths.
 
 ## Reliability boundaries
 
@@ -80,6 +89,7 @@ Deployment and Telegram verification steps are in [docs/STAGING.md](docs/STAGING
 
 ## Reports
 
+- [Phase 9 Second Rift balance](reports/phase9-balance-report.md)
 - [Phase 8.2 party balance](reports/phase8-2-balance-report.md)
 - [Economy supply model](reports/economy-supply-report.md)
 - [Playtest report](reports/playtest-report.md)

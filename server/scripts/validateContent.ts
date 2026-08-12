@@ -6,5 +6,5 @@ if (errors.length) {
   errors.forEach((error) => console.error(`- ${error}`))
   process.exitCode = 1
 } else {
-  console.log('Content validation passed: 3 floors, 20 enemies, 27 tier resources, 111 Phase 7 recipes, and all references are valid.')
+  console.log('Content validation passed: 2 Rifts, 6 floors, 41 enemies, 54 tier resources, 222 tier recipes, and all references are valid.')
 }

@@ -31,10 +31,16 @@ const metrics: SimulationMetrics[] = []
 for (const [composition, classes] of Object.entries(compositions)) for (const floorNumber of [1, 2, 3]) for (const gear of gears) for (const behavior of behaviors) {
   metrics.push(simulateScenario({ id: composition, floorNumber, classes, gear, behavior, runs, seed: 710_000 + metrics.length * 97 }))
 }
+const secondPartyIds = ['H_SOLO_COMBAT', 'K_DUO_MIXED', 'E_3_PLAYERS', 'F_4_PLAYERS', 'G_5_PLAYERS']
+const secondMetrics: SimulationMetrics[] = []
+for (const id of secondPartyIds) for (const floorNumber of [1, 2, 3]) for (const gear of gears) for (const behavior of behaviors) {
+  secondMetrics.push(simulateScenario({ id, riftId: 'second_rift', floorNumber, classes: compositions[id], gear, behavior, runs, seed: 910_000 + secondMetrics.length * 131 }))
+}
 
 const pct = (value: number) => `${(value * 100).toFixed(1)}%`
 const num = (value: number) => Number.isFinite(value) ? value.toFixed(2) : '∞'
 const find = (id: string, floor: number, gear: GearProfile, behavior: BehaviorProfile) => metrics.find((metric) => metric.scenario.id === id && metric.scenario.floorNumber === floor && metric.scenario.gear === gear && metric.scenario.behavior === behavior)!
+const findSecond = (id: string, floor: number, gear: GearProfile, behavior: BehaviorProfile) => secondMetrics.find((metric) => metric.scenario.id === id && metric.scenario.floorNumber === floor && metric.scenario.gear === gear && metric.scenario.behavior === behavior)!
 const ids = ['E_3_PLAYERS', 'F_4_PLAYERS', 'G_5_PLAYERS', 'A_5_COMBAT', 'D_DUPLICATE_PROF']
 const beforeRecommended: Record<string, number[]> = { E_3_PLAYERS: [1, 0, 0], F_4_PLAYERS: [22.4, 6, 1], G_5_PLAYERS: [85, 74, 77.8], A_5_COMBAT: [90.4, 90.9, 91.6], D_DUPLICATE_PROF: [86.9, 76.7, 81] }
 const beforeStrong: Record<string, number[]> = { E_3_PLAYERS: [12.7, 14.7, 1.1], F_4_PLAYERS: [71.6, 92, 95], G_5_PLAYERS: [99, 100, 100], A_5_COMBAT: [99.6, 100, 100], D_DUPLICATE_PROF: [99.2, 100, 100] }
@@ -80,9 +86,54 @@ const phase82Report = report
   .replace('# Phase 7.1 Balance Pass — Before / After', '# Phase 8.2 First Rift Balance — Party Sizes 1–5')
   .replace('| 5-player HP / Attack | 100% / 100% | 100% / 100% |', `| 5-player HP / Attack | 100% / 100% | 100% / 100% |\n| 2-player base HP / Attack | unsupported | ${PARTY_SIZE_SCALING[2].hp * 100}% / ${PARTY_SIZE_SCALING[2].attack * 100}% |\n| 1-player base HP / Attack | unsupported | ${PARTY_SIZE_SCALING[1].hp * 100}% / ${PARTY_SIZE_SCALING[1].attack * 100}% |\n${([1, 2] as const).flatMap((size) => ([1, 2, 3] as const).map((floor) => `| ${size}P Floor ${floor} effective HP / Attack | unsupported | ${(PARTY_SIZE_SCALING[size].hp * LOW_PARTY_FLOOR_MODIFIERS[size][floor].hp * 100).toFixed(2)}% / ${(PARTY_SIZE_SCALING[size].attack * LOW_PARTY_FLOOR_MODIFIERS[size][floor].attack * 100).toFixed(2)}% |`)).join('\n')}`)
   .replace('| Party | Floor | Clear | Rounds/run | Manual min/run | Retained resources/hour | Recipes/hour | Coins/hour |\n|---|---:|---:|---:|---:|---:|---:|---:|', '| Party | Floor | Gear | Mode | Clear | Deaths | Rounds/run | Minutes/run | Potions/run | Potion exhaustion | Retained resources/hour | Recipes/hour | Coins/hour |\n|---|---:|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|')
+
+const secondRows = (behavior: BehaviorProfile) => secondPartyIds.map((id) => `| ${compositions[id].length} | ${[1, 2, 3].map((floor) => pct(findSecond(id, floor, 'RECOMMENDED', behavior).clearRate)).join(' | ')} |`).join('\n')
+const secondEconomyRows = secondPartyIds.flatMap((id) => [1, 2, 3].map((floor) => {
+  const metric = findSecond(id, floor, 'RECOMMENDED', 'BASIC_SMART')
+  return `| ${compositions[id].length} | ${floor} | ${num(metric.averageXP)} | ${num(metric.averageCoins)} | ${num(metric.coinsPerHour)} | ${num(metric.retainedResourcesPerRun)} | ${num(metric.recipesPer100Runs)} | ${num(metric.averagePotions)} | ${num(metric.averageTotalRounds)} |`
+})).join('\n')
+const secondRecipe = [1, 2, 3].flatMap((floor) => simulateRecipeAcquisition(floor, 1_000, 10, 990_000 + floor, 'second_rift'))
+const secondRecipeRows = secondRecipe.map((metric) => `| ${metric.floorNumber} | ${metric.profession} | ${num(metric.dropsPer100Runs)} | ${num(metric.averageRunsToAny)} | ${num(metric.expectedAfter10Runs)} | ${num(metric.expectedAfter50Runs)} | ${pct(metric.duplicateShare)} |`).join('\n')
+const phase9Report = `# Phase 9 Second Rift Balance Report
+
+The Ashen Deep was simulated through the production combat engine and generic Rift factory with **${runs.toLocaleString()} runs/scenario**. Recommended gear means the preceding tier; strong gear means the current floor tier. Solo and duo remain allowed, while 3–5 is the recommended party range.
+
+## Party clear rates — recommended/manual
+
+| Party size | Floor 1 | Floor 2 | Floor 3 |
+|---:|---:|---:|---:|
+${secondRows('BASIC_SMART')}
+
+## Auto/random clear rates — recommended gear
+
+| Party size | Floor 1 | Floor 2 | Floor 3 |
+|---:|---:|---:|---:|
+${secondRows('RANDOM')}
+
+## Economy and combat load
+
+| Party | Floor | XP/run | Coins/run | Coins/hour | Retained resources/run | Recipes/100 | Potions/run | Rounds/run |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+${secondEconomyRows}
+
+## Recipe acquisition
+
+| Floor | Profession | Drops/100 | Avg runs to any | Expected after 10 | Expected after 50 | Duplicate share |
+|---:|---|---:|---:|---:|---:|---:|
+${secondRecipeRows}
+
+## Progression conclusions
+
+- Each tier has 37 profession recipes, while a successful run yields only probabilistic profession-specific recipe drops; one or two clears cannot complete a tier.
+- Tier IV–VI gear uses 9–14 materials per recipe, so players need repeated clears and market/profession cooperation.
+- Combat classes keep full coin rewards; profession classes retain the existing 60% multiplier. Existing fees and guild costs were not changed.
+- Failed runs retain configured partial non-coin loot, so difficult solo/duo attempts still progress without matching prepared groups.
+- Floor 3 intentionally remains the hardest current content. Low Auto/Random results are reported, not normalized toward 100%.
+`
 if (smoke) {
-  console.log(`Balance smoke passed for ${metrics.length * runs} expeditions plus recipe population simulations.`)
+  console.log(`Balance smoke passed for ${(metrics.length + secondMetrics.length) * runs} expeditions plus First/Second Rift recipe population simulations.`)
 } else {
   await writeFile('reports/phase8-2-balance-report.md', phase82Report, 'utf8')
-  console.log(`Generated reports/phase8-2-balance-report.md from ${metrics.length * runs} expeditions plus recipe population simulations.`)
+  await writeFile('reports/phase9-balance-report.md', phase9Report, 'utf8')
+  console.log(`Generated First Rift and reports/phase9-balance-report.md from ${(metrics.length + secondMetrics.length) * runs} expeditions plus recipe population simulations.`)
 }

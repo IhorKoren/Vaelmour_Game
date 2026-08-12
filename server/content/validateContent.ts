@@ -3,16 +3,26 @@ import { PHASE7_ITEMS, PHASE7_RECIPES, PHASE7_RESOURCES } from '../../shared/gam
 import { RECIPES } from '../../shared/game-data/recipes'
 import { RESOURCES } from '../../shared/game-data/resources'
 import { ENEMY_CATALOG, RIFT_CATALOG } from '../../shared/game-data/rifts'
-import type { Profession } from '../../shared/game-data/types'
+import type { ContentTier, Profession } from '../../shared/game-data/types'
 
 export function validateContent(): string[] {
   const errors: string[] = []
   const validSlots = new Set(['weapon', 'head', 'chest', 'hands', 'legs', 'feet', 'ring', 'amulet'])
-  for (const rift of Object.values(RIFT_CATALOG)) for (const floor of rift.floors) {
+  const validTiers = new Set<ContentTier>([1, 2, 3, 4, 5, 6])
+  const riftIds = Object.values(RIFT_CATALOG).map((rift) => rift.id)
+  if (new Set(riftIds).size !== riftIds.length) errors.push('Duplicate Rift id')
+  for (const rift of Object.values(RIFT_CATALOG)) {
+    if (rift.unlockRequires && !RIFT_CATALOG[rift.unlockRequires.riftId as keyof typeof RIFT_CATALOG]) errors.push(`${rift.id} has inaccessible prerequisite Rift`)
+    if (new Set(rift.floors.map((floor) => floor.floorNumber)).size !== rift.floors.length) errors.push(`${rift.id} has duplicate floor numbers`)
+    for (const floor of rift.floors) {
     const ids = [...floor.encounterEnemyIds, floor.bossId]
     ids.forEach((id) => { if (!ENEMY_CATALOG[id]) errors.push(`Missing enemy ${id} in ${rift.id}/floor-${floor.floorNumber}`) })
     if (ENEMY_CATALOG[floor.bossId]?.type !== 'BOSS') errors.push(`${floor.bossId} is not a boss`)
     if (floor.encounterEnemyIds.some((id) => ENEMY_CATALOG[id]?.type === 'BOSS')) errors.push(`Boss appears before final encounter on floor ${floor.floorNumber}`)
+    if (!validTiers.has(floor.resourceTier)) errors.push(`${rift.id}/floor-${floor.floorNumber} has invalid tier`)
+    if (floor.unlockRequiresFloor !== undefined && floor.unlockRequiresFloor !== floor.floorNumber - 1) errors.push(`${rift.id}/floor-${floor.floorNumber} can skip progression`)
+    ids.forEach((id) => { if (ENEMY_CATALOG[id] && ENEMY_CATALOG[id].lootTier !== floor.resourceTier) errors.push(`${id} loot tier disagrees with ${rift.id}/floor-${floor.floorNumber}`) })
+    }
   }
   for (const recipe of Object.values(RECIPES)) {
     const output = ITEMS[recipe.outputItemId]
@@ -28,5 +38,9 @@ export function validateContent(): string[] {
   const ids = [...Object.keys(PHASE7_ITEMS), ...Object.keys(PHASE7_RESOURCES)]
   if (new Set(ids).size !== ids.length) errors.push('Duplicate Phase 7 item/resource id')
   if (new Set(Object.keys(PHASE7_RECIPES)).size !== Object.keys(PHASE7_RECIPES).length) errors.push('Duplicate Phase 7 recipe id')
+  const usedIngredients = new Set(Object.values(RECIPES).flatMap((recipe) => Object.keys(recipe.requirements)))
+  for (const resource of Object.values(PHASE7_RESOURCES)) if (!usedIngredients.has(resource.id)) errors.push(`Unused resource ${resource.id}`)
+  const recipeOutputs = new Set(Object.values(RECIPES).map((recipe) => recipe.outputItemId))
+  for (const item of Object.values(PHASE7_ITEMS)) if (item.tier && !recipeOutputs.has(item.id)) errors.push(`Orphan tier item ${item.id}`)
   return errors
 }
